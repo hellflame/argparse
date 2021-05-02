@@ -100,7 +100,7 @@ func (a *arg) formatHelpHeader() string {
     if a.IsFlag {
         return strings.Join(watchers, ", ")
     }
-    signedWatchers := make([]string, len(watchers))
+    var signedWatchers []string
     for _, w := range watchers {
         signedWatchers = append(signedWatchers, fmt.Sprintf("%s %s", w, metaName))
     }
