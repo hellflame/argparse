@@ -32,16 +32,21 @@ func getTerminalWidth() int {
 func formatHelpRow(head, content string, maxHeadLength int) string {
     terminalWidth := getTerminalWidth()
     content = strings.Replace(content, "\n", "", -1)
-    result := fmt.Sprintf(" %s ", head)
+    result := fmt.Sprintf("  %s ", head)
     headLeftPadding := maxHeadLength - len(result)
     if headLeftPadding > 0 {
         result += strings.Repeat(" ", headLeftPadding)
     }
-    contentPadding := strings.Repeat(" ", terminalWidth - maxHeadLength)
-
+    contentPadding := strings.Repeat(" ", maxHeadLength)
     rows := []string{result + content}
-    for len(rows[len(rows) -1]) > maxHeadLength {
-        rows = append(rows, contentPadding + rows[len(rows) - 1][maxHeadLength: ])
+    cnt := 1
+    for len(rows[len(rows) - 1]) > terminalWidth {
+        cnt += 1
+        lastOne := rows[len(rows) - 1]
+        if len(lastOne) < terminalWidth {
+            break
+        }
+        rows = append(rows, contentPadding + lastOne[terminalWidth: ])
     }
     return strings.Join(rows, "\n")
 }
