@@ -9,9 +9,9 @@ const fullPrefix = "--"
 const shortPrefix = "-"
 
 type arg struct {
-	short  string
-	full   string
-	target interface{}
+	short    string
+	full     string
+	target   interface{}
 	assigned bool
 	Option
 }
@@ -44,6 +44,9 @@ func (a *arg) validate() error {
 	}
 	if strings.HasPrefix(a.short, shortPrefix) {
 		return fmt.Errorf("arg short name with extra prefix '%s'", shortPrefix)
+	}
+	if a.short == a.full {
+		return fmt.Errorf("arg short is full")
 	}
 	if a.Positional {
 		if a.isFlag {
@@ -107,61 +110,67 @@ func (a *arg) formatHelpHeader() string {
 }
 
 func (a *arg) parseValue(values []string) error {
-    a.assigned = true
-    if a.isFlag {
-        a.target = true
-        return nil
-    }
-    if a.Validate != nil {
-        for _, v := range values {
-            e := a.Validate(v)
-            if e != nil {
-                return e
-            }
-        }
-    }
-    var result []interface{}
-    if a.Formatter != nil {
-        for _, v := range values {
-            f, e := a.Formatter(v)
-            if e != nil {
-                return e
-            }
-            result = append(result, f)
-        }
-    } else {
-        switch a.target.(type) {
-        case *string:
-            result = append(result, values[0])
-        case *[]string:
-            for _, v := range values {
-                result = append(result, v)
-            }
-        }
-    }
-    if len(result) == 0 {
-        return fmt.Errorf("no value to parse")
-    }
-    if len(a.Choices) > 0 {
-        for _, r := range result {
-            found := false
-            for _, c := range a.Choices {
-                if c == r {
-                    found = true
-                }
-            }
-            if !found {
-                return fmt.Errorf("args must one|some of %+v", a.Choices)
-            }
-        }
-    }
-
-    switch a.target.(type) {
-    case *string, *int, *float64:
-        a.target = &result[0]
-    case *[]string, *[]int, *[]float64:
-        a.target = &result
-    }
-
-    return nil
+	a.assigned = true
+	if a.isFlag {
+		*a.target.(*bool) = true
+		return nil
+	}
+	if a.Validate != nil {
+		for _, v := range values {
+			e := a.Validate(v)
+			if e != nil {
+				return e
+			}
+		}
+	}
+	var result []interface{}
+	if a.Formatter != nil {
+		for _, v := range values {
+			f, e := a.Formatter(v)
+			if e != nil {
+				return e
+			}
+			result = append(result, f)
+		}
+	} else {
+		switch a.target.(type) {
+		case *string:
+			result = append(result, values[0])
+		case *[]string:
+			for _, v := range values {
+				result = append(result, v)
+			}
+		}
+	}
+	if len(result) == 0 {
+		return fmt.Errorf("no value to parse")
+	}
+	if len(a.Choices) > 0 {
+		for _, r := range result {
+			found := false
+			for _, c := range a.Choices {
+				if c == r {
+					found = true
+				}
+			}
+			if !found {
+				return fmt.Errorf("args must one|some of %+v", a.Choices)
+			}
+		}
+	}
+	switch a.target.(type) {
+	case *string:
+		*a.target.(*string) = result[0].(string)
+	case *int:
+		*a.target.(*int) = result[0].(int)
+	case *float64:
+		*a.target.(*float64) = result[0].(float64)
+	case *[]string:
+		for _, r := range result {
+			*a.target.(*[]string) = append(*a.target.(*[]string), r.(string))
+		}
+	case *[]int, *[]float64:
+		a.target = result
+	}
+	return nil
 }

@@ -85,12 +85,6 @@ func (p *Parser) registerArgument(a *arg) error {
 }
 
 func (p *Parser) registerParser(parser *Parser) error {
-	if parser.name == "" {
-		return fmt.Errorf("sub command name is empty")
-	}
-	if strings.Contains(parser.name, " ") {
-		return fmt.Errorf("sub command name has space")
-	}
 	if match, exist := p.subParserMap[parser.name]; exist {
 		return fmt.Errorf("conflict sub command for '%s', desc: '%s'",
 			parser.name, match.description)
@@ -101,7 +95,7 @@ func (p *Parser) registerParser(parser *Parser) error {
 }
 
 func (p *Parser) PrintHelp() {
-    fmt.Println(p.FormatHelp())
+	fmt.Println(p.FormatHelp())
 }
 
 func (p *Parser) FormatHelp() string {
@@ -194,36 +188,36 @@ func (p *Parser) formatUsage() string {
 		if arg.isFlag {
 			usage += fmt.Sprintf("[%s] ", sign)
 		} else {
-		    meta := arg.getMetaName()
+			meta := arg.getMetaName()
 			u := fmt.Sprintf("%s %s", sign, meta)
 			if arg.Required {
 				usage += u + " "
 				if arg.multi {
-				    usage += fmt.Sprintf("[%s ...]", meta)
-                }
+					usage += fmt.Sprintf("[%s ...] ", meta)
+				}
 			} else {
-			    if arg.multi {
-			        usage += fmt.Sprintf("[%s [%s ...]] ", u, meta)
-                } else {
-                    usage += fmt.Sprintf("[%s] ", u)
-                }
+				if arg.multi {
+					usage += fmt.Sprintf("[%s [%s ...]] ", u, meta)
+				} else {
+					usage += fmt.Sprintf("[%s] ", u)
+				}
 			}
 		}
 	}
 	for _, arg := range p.positionArgs {
-	    meta := arg.getMetaName()
+		meta := arg.getMetaName()
 		if arg.Required {
-            usage += meta + " "
-            if arg.multi {
-                usage += fmt.Sprintf("[%s ...]", meta)
-            }
-        } else {
-            if arg.multi {
-                usage += fmt.Sprintf("[%s [%s ...]] ", meta, meta)
-            } else {
-                usage += fmt.Sprintf("[%s]", meta)
-            }
-        }
+			usage += meta + " "
+			if arg.multi {
+				usage += fmt.Sprintf("[%s ...] ", meta)
+			}
+		} else {
+			if arg.multi {
+				usage += fmt.Sprintf("[%s [%s ...]] ", meta, meta)
+			} else {
+				usage += fmt.Sprintf("[%s] ", meta)
+			}
+		}
 	}
 	return usage
 }
@@ -235,98 +229,111 @@ func (p *Parser) Parse(args []string) error {
 	}
 	var subParser *Parser
 	if len(args) == 0 {
-	    if !p.config.DisableDefaultShowHelp {
-            p.showHelp = true
-        }
+		if !p.config.DisableDefaultShowHelp {
+			p.showHelp = true
+		}
 	} else {
-	    if len(p.subParser) > 0 {
-	        if sub, ok := p.subParserMap[args[0]]; ok {
-	            subParser = sub
-	            e := sub.Parse(args[1:])
-	            if e != nil {
-	                return e
-                }
-            }
-        } else {
-            lastPositionArgIndex := 0
-            registeredPositionsLength := len(p.positionArgs)
-            for len(args) > 0 {
-                sign := args[0]
-                if arg, ok := p.entryMap[sign]; ok {
-                    if arg.isFlag {
-                        _ = arg.parseValue(nil)
-                        args = args[1:]
-                    } else {
-                        var tillNext []string
-                        breakPoint := 0
-                        for idx, a := range args[1:] {
-                            if _, isEntry := p.entryMap[a]; !isEntry {
-                                tillNext = append(tillNext, a)
-                            } else {
-                                breakPoint = idx
-                                break
-                            }
-                        }
-                        if len(tillNext) == 0 {
-                            return fmt.Errorf("argument %s expect argument",
-                                strings.Join(arg.getWatchers(), "/"))
-                        }
-                        if arg.multi {
-                            e := arg.parseValue(tillNext)
-                            if e != nil {
-                                return e
-                            }
-                            args = args[breakPoint:]
-                        } else {
-                            e := arg.parseValue(tillNext[0:1])
-                            if e != nil {
-                                return e
-                            }
-                            args = args[1:]
-                        }
-                    }
-                } else {
-                    if registeredPositionsLength > lastPositionArgIndex {
-                        arg := p.positionArgs[lastPositionArgIndex]
-                        var tillNext []string
-                        breakPoint := 0
-                        for idx, a := range args {
-                            if _, isEntry := p.entryMap[a]; !isEntry {
-                                tillNext = append(tillNext, a)
-                            } else {
-                                breakPoint = idx
-                                break
-                            }
-                        }
-                        if arg.multi {
-                            e := arg.parseValue(tillNext)
-                            if e != nil {
-                                return e
-                            }
-                            args = args[breakPoint:]
-                        } else {
-                            e := arg.parseValue(tillNext[0:1])
-                            if e != nil {
-                                return e
-                            }
-                            args = args[1:]
-                        }
-                    } else {
-                        return fmt.Errorf("unrecognized arguments: %s", sign)
-                    }
-                }
-            }
-        }
-    }
-    if subParser != nil {
-
-    }
+		if len(p.subParser) > 0 {
+			if sub, ok := p.subParserMap[args[0]]; ok {
+				subParser = sub
+				e := sub.Parse(args[1:])
+				if e != nil {
+					return e
+				}
+			}
+		} else {
+			lastPositionArgIndex := 0
+			registeredPositionsLength := len(p.positionArgs)
+			for len(args) > 0 {
+				sign := args[0]
+				if arg, ok := p.entryMap[sign]; ok {
+					if arg.isFlag {
+						_ = arg.parseValue(nil)
+						args = args[1:]
+					} else {
+						var tillNext []string
+						breakPoint := len(args) - 1
+						for idx, a := range args[1:] {
+							if _, isEntry := p.entryMap[a]; !isEntry {
+								tillNext = append(tillNext, a)
+							} else {
+								breakPoint = idx
+								break
+							}
+						}
+						if len(tillNext) == 0 {
+							return fmt.Errorf("argument %s expect argument",
+								strings.Join(arg.getWatchers(), "/"))
+						}
+						if arg.multi {
+							e := arg.parseValue(tillNext)
+							if e != nil {
+								return e
+							}
+						} else {
+							e := arg.parseValue(tillNext[0:1])
+							if e != nil {
+								return e
+							}
+						}
+						args = args[breakPoint+1:]
+					}
+				} else {
+					if registeredPositionsLength > lastPositionArgIndex {
+						arg := p.positionArgs[lastPositionArgIndex]
+						lastPositionArgIndex += 1
+						var tillNext []string
+						breakPoint := len(args) - 1
+						for idx, a := range args {
+							if _, isEntry := p.entryMap[a]; !isEntry {
+								tillNext = append(tillNext, a)
+							} else {
+								breakPoint = idx
+								break
+							}
+						}
+						if arg.multi {
+							e := arg.parseValue(tillNext)
+							if e != nil {
+								return e
+							}
+							args = args[breakPoint:]
+						} else {
+							e := arg.parseValue(tillNext[0:1])
+							if e != nil {
+								return e
+							}
+							args = args[1:]
+						}
+					} else {
+						return fmt.Errorf("unrecognized arguments: %s", sign)
+					}
+				}
+			}
+		}
+	}
+	targetParser := p
+	if subParser != nil {
+		targetParser = subParser
+	}
+	if targetParser.showHelp {
+		targetParser.PrintHelp()
+		if !targetParser.config.ContinueOnHelp {
+			os.Exit(1)
+		}
+	}
 	return nil
 }
 
 func (p *Parser) AddCommand(name string, description string, config *ParserConfig) *Parser {
 	if config == nil {
 		config = p.config
+	}
+	if name == "" {
+		panic("sub command name is empty")
+	}
+	if strings.Contains(name, " ") {
+		panic("sub command name has space")
 	}
 	parser := NewParser(name, description, config)
 	if e := p.registerParser(parser); e != nil {
@@ -369,22 +376,21 @@ func (p *Parser) String(short, full string, opts *Option) *string {
 }
 
 func (p *Parser) Strings(short, full string, opts *Option) *[]string {
-    var result []string
-    if opts == nil {
-        opts = &Option{}
-    }
-    opts.multi = true
-    if e := p.registerArgument(&arg{
-        short:  short,
-        full:   full,
-        target: &result,
-        Option: *opts,
-    }); e != nil {
-            panic(e.Error())
-    }
-    return &result
+	var result []string
+	if opts == nil {
+		opts = &Option{}
+	}
+	opts.multi = true
+	if e := p.registerArgument(&arg{
+		short:  short,
+		full:   full,
+		target: &result,
+		Option: *opts,
+	}); e != nil {
+		panic(e.Error())
+	}
+	return &result
 }
-
 
 func (p *Parser) Int(short, full string, opts *Option) *int {
 	var result int
