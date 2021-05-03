@@ -44,7 +44,7 @@ func TestParser_help(t *testing.T) {
 
 func TestParser_AddCommand(t *testing.T) {
 
-	parser := NewParser("", "test program", &ParserConfig{Usage: "test [name]"})
+	parser := NewParser("", "test program", &ParserConfig{Usage: "test [name]", ContinueOnHelp: true})
 	func() {
 		defer func() {
 			err := recover()
@@ -76,6 +76,12 @@ func TestParser_AddCommand(t *testing.T) {
 		parser.AddCommand("ab", "", nil)
 	}()
 
+	sub := parser.AddCommand("test", "this is test", nil)
+	sub.Flag("t", "test", nil)
+	if e := parser.Parse([]string{"test", "-t"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
 }
 
 func TestParser_Default(t *testing.T) {

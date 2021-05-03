@@ -17,7 +17,7 @@ type arg struct {
 	Option
 }
 
-// argument options
+// Option is the only type to config when creating argument
 type Option struct {
 	Meta       string                                // meta value for help/usage generate
 	multi      bool                                  // take more than one argument
@@ -75,8 +75,7 @@ func (a *arg) validate() error {
 	return nil
 }
 
-// argument watch list
-// for parser use
+// get argument watch list for parser use
 func (a *arg) getWatchers() []string {
 	if a.Positional {
 		return []string{}

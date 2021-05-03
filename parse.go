@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// Parser is the top level struct
+// it's the only interface to interact with user input, parse & bind each `arg` value
 type Parser struct {
 	name        string
 	description string
@@ -23,6 +25,7 @@ type Parser struct {
 	subParserMap map[string]*Parser
 }
 
+// ParserConfig is the only type to config `Parser`, programmers only need to use this type to control `Parser` action
 type ParserConfig struct {
 	Usage                  string // manual usage display
 	EpiLog                 string // message after help
@@ -31,7 +34,7 @@ type ParserConfig struct {
 	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
 }
 
-// create the parser object with optional name & description & ParserConfig
+// NewParser create the parser object with optional name & description & ParserConfig
 func NewParser(name string, description string, config *ParserConfig) *Parser {
 	if config == nil {
 		config = &ParserConfig{}
@@ -92,12 +95,12 @@ func (p *Parser) registerParser(parser *Parser) error {
 	return nil
 }
 
-// show help message
+// PrintHelp print help message to stdout
 func (p *Parser) PrintHelp() {
 	fmt.Println(p.FormatHelp())
 }
 
-// only format help message for manual use
+// FormatHelp only format help message for manual use, for example: decide when to print help message
 func (p *Parser) FormatHelp() string {
 	result := p.formatUsage()
 	if p.description != "" {
@@ -222,6 +225,7 @@ func (p *Parser) formatUsage() string {
 	return usage
 }
 
+// Parse will parse given args to bind to any registered arguments
 // args: set nil to use os.Args[1:] by default
 func (p *Parser) Parse(args []string) error {
 	if args == nil {
@@ -333,7 +337,8 @@ func (p *Parser) Parse(args []string) error {
 	return nil
 }
 
-// add sub command entry, return a new pointer to sub command parser
+// AddCommand will add sub command entry parser
+// Return a new pointer to sub command parser
 func (p *Parser) AddCommand(name string, description string, config *ParserConfig) *Parser {
 	if config == nil {
 		config = p.config
@@ -351,7 +356,7 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 	return parser
 }
 
-// create flag argument
+// Flag create flag argument
 func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	var result bool
 	if opts == nil {
@@ -369,7 +374,7 @@ func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	return &result
 }
 
-// create string argument
+// String create string argument
 func (p *Parser) String(short, full string, opts *Option) *string {
 	var result string
 	if opts == nil {
@@ -386,7 +391,7 @@ func (p *Parser) String(short, full string, opts *Option) *string {
 	return &result
 }
 
-// create string list argument
+// Strings create string list argument
 func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	var result []string
 	if opts == nil {
@@ -404,7 +409,7 @@ func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	return &result
 }
 
-// create int argument
+// Int create int argument
 func (p *Parser) Int(short, full string, opts *Option) *int {
 	var result int
 	if opts == nil {
@@ -421,7 +426,7 @@ func (p *Parser) Int(short, full string, opts *Option) *int {
 	return &result
 }
 
-// create int list argument
+// Ints create int list argument
 func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	var result []int
 	if opts == nil {
@@ -439,7 +444,7 @@ func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	return &result
 }
 
-// create float argument
+// Float create float argument
 func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	var result float64
 	if opts == nil {
@@ -456,7 +461,7 @@ func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	return &result
 }
 
-// create float list argument
+// Floats create float list argument
 func (p *Parser) Floats(short, full string, opts *Option) *[]float64 {
 	var result []float64
 	if opts == nil {

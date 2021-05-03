@@ -13,13 +13,13 @@ const fallbackWidth = 80
 func getTerminalWidth() int {
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin // this is important
-	result, err := cmd.Output()
-	if err == nil {
-		parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
-		w, e := strconv.Atoi(parse[1])
-		if e == nil {
-			return w
-		}
+	result, e := cmd.Output()
+	if e != nil {
+		return fallbackWidth
+	}
+	parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
+	if w, e := strconv.Atoi(parse[1]); e == nil {
+		return w
 	}
 	return fallbackWidth
 }
@@ -37,9 +37,6 @@ func formatHelpRow(head, content string, maxHeadLength int) string {
 	for len(rows[len(rows)-1]) > terminalWidth {
 		lastIndex := len(rows) - 1
 		lastOne := rows[lastIndex]
-		if len(lastOne) < terminalWidth {
-			break
-		}
 		rows[lastIndex] = rows[lastIndex][0:terminalWidth]
 		rows = append(rows, contentPadding+lastOne[terminalWidth:])
 	}
