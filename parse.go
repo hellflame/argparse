@@ -9,7 +9,7 @@ import (
 type Parser struct {
 	name        string
 	description string
-	showHelp    bool
+	showHelp    *bool
 	config      *ParserConfig
 
 	entries      []*arg
@@ -51,11 +51,8 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		subParserMap:    make(map[string]*Parser),
 	}
 	if !config.DisableHelp {
-		e := parser.registerArgument(&arg{short: "h", full: "help", target: parser.showHelp,
-			Option: Option{isFlag: true, Help: "show this help message"}})
-		if e != nil {
-			panic(e.Error())
-		}
+		parser.showHelp = parser.Flag("h", "help",
+		    &Option{Help: "show this help message"})
 	}
 	return parser
 }
@@ -230,7 +227,8 @@ func (p *Parser) Parse(args []string) error {
 	var subParser *Parser
 	if len(args) == 0 {
 		if !p.config.DisableDefaultShowHelp {
-			p.showHelp = true
+		    help := true
+			p.showHelp = &help
 		}
 	} else {
 		if len(p.subParser) > 0 {
@@ -314,7 +312,7 @@ func (p *Parser) Parse(args []string) error {
 	if subParser != nil {
 		targetParser = subParser
 	}
-	if targetParser.showHelp {
+	if targetParser.showHelp != nil && *targetParser.showHelp {
 		targetParser.PrintHelp()
 		if !targetParser.config.ContinueOnHelp {
 			os.Exit(1)
