@@ -52,7 +52,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 	}
 	if !config.DisableHelp {
 		e := parser.registerArgument(&arg{short: "h", full: "help", target: parser.showHelp,
-			Option: Option{IsFlag: true, Help: "show this help message"}})
+			Option: Option{isFlag: true, Help: "show this help message"}})
 		if e != nil {
 			panic(e.Error())
 		}
@@ -98,6 +98,10 @@ func (p *Parser) registerParser(parser *Parser) error {
 	p.subParser = append(p.subParser, parser)
 	p.subParserMap[parser.name] = parser
 	return nil
+}
+
+func (p *Parser) PrintHelp() {
+    fmt.Println(p.FormatHelp())
 }
 
 func (p *Parser) FormatHelp() string {
@@ -187,31 +191,136 @@ func (p *Parser) formatUsage() string {
 		}
 		parsed[arg.full] = true
 		sign := arg.getWatchers()[0]
-		if arg.IsFlag {
+		if arg.isFlag {
 			usage += fmt.Sprintf("[%s] ", sign)
 		} else {
-			u := fmt.Sprintf("%s %s", sign, arg.getMetaName())
+		    meta := arg.getMetaName()
+			u := fmt.Sprintf("%s %s", sign, meta)
 			if arg.Required {
 				usage += u + " "
+				if arg.multi {
+				    usage += fmt.Sprintf("[%s ...]", meta)
+                }
 			} else {
-				usage += fmt.Sprintf("[%s] ", u)
+			    if arg.multi {
+			        usage += fmt.Sprintf("[%s [%s ...]] ", u, meta)
+                } else {
+                    usage += fmt.Sprintf("[%s] ", u)
+                }
 			}
 		}
 	}
 	for _, arg := range p.positionArgs {
-		usage += arg.getMetaName() + " "
+	    meta := arg.getMetaName()
+		if arg.Required {
+            usage += meta + " "
+            if arg.multi {
+                usage += fmt.Sprintf("[%s ...]", meta)
+            }
+        } else {
+            if arg.multi {
+                usage += fmt.Sprintf("[%s [%s ...]] ", meta, meta)
+            } else {
+                usage += fmt.Sprintf("[%s]", meta)
+            }
+        }
 	}
 	return usage
 }
 
+// args: set nil to use os.Args[1:] by default
 func (p *Parser) Parse(args []string) error {
 	if args == nil {
 		args = os.Args[1:]
 	}
-	if len(args) == 0 && !p.config.DisableDefaultShowHelp {
-		p.showHelp = true
-	}
+	var subParser *Parser
+	if len(args) == 0 {
+	    if !p.config.DisableDefaultShowHelp {
+            p.showHelp = true
+        }
+	} else {
+	    if len(p.subParser) > 0 {
+	        if sub, ok := p.subParserMap[args[0]]; ok {
+	            subParser = sub
+	            e := sub.Parse(args[1:])
+	            if e != nil {
+	                return e
+                }
+            }
+        } else {
+            lastPositionArgIndex := 0
+            registeredPositionsLength := len(p.positionArgs)
+            for len(args) > 0 {
+                sign := args[0]
+                if arg, ok := p.entryMap[sign]; ok {
+                    if arg.isFlag {
+                        _ = arg.parseValue(nil)
+                        args = args[1:]
+                    } else {
+                        var tillNext []string
+                        breakPoint := 0
+                        for idx, a := range args[1:] {
+                            if _, isEntry := p.entryMap[a]; !isEntry {
+                                tillNext = append(tillNext, a)
+                            } else {
+                                breakPoint = idx
+                                break
+                            }
+                        }
+                        if len(tillNext) == 0 {
+                            return fmt.Errorf("argument %s expect argument",
+                                strings.Join(arg.getWatchers(), "/"))
+                        }
+                        if arg.multi {
+                            e := arg.parseValue(tillNext)
+                            if e != nil {
+                                return e
+                            }
+                            args = args[breakPoint:]
+                        } else {
+                            e := arg.parseValue(tillNext[0:1])
+                            if e != nil {
+                                return e
+                            }
+                            args = args[1:]
+                        }
+                    }
+                } else {
+                    if registeredPositionsLength > lastPositionArgIndex {
+                        arg := p.positionArgs[lastPositionArgIndex]
+                        var tillNext []string
+                        breakPoint := 0
+                        for idx, a := range args {
+                            if _, isEntry := p.entryMap[a]; !isEntry {
+                                tillNext = append(tillNext, a)
+                            } else {
+                                breakPoint = idx
+                                break
+                            }
+                        }
+                        if arg.multi {
+                            e := arg.parseValue(tillNext)
+                            if e != nil {
+                                return e
+                            }
+                            args = args[breakPoint:]
+                        } else {
+                            e := arg.parseValue(tillNext[0:1])
+                            if e != nil {
+                                return e
+                            }
+                            args = args[1:]
+                        }
+                    } else {
+                        return fmt.Errorf("unrecognized arguments: %s", sign)
+                    }
+                }
+            }
+        }
+    }
+    if subParser != nil {
 
+    }
 	return nil
 }
 
@@ -231,7 +340,7 @@ func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	if opts == nil {
 		opts = &Option{}
 	}
-	opts.IsFlag = true
+	opts.isFlag = true
 	if e := p.registerArgument(&arg{
 		short:  short,
 		full:   full,
@@ -258,6 +367,24 @@ func (p *Parser) String(short, full string, opts *Option) *string {
 	}
 	return &result
 }
+
+func (p *Parser) Strings(short, full string, opts *Option) *[]string {
+    var result []string
+    if opts == nil {
+        opts = &Option{}
+    }
+    opts.multi = true
+    if e := p.registerArgument(&arg{
+        short:  short,
+        full:   full,
+        target: &result,
+        Option: *opts,
+    }); e != nil {
+            panic(e.Error())
+    }
+    return &result
+}
+
 
 func (p *Parser) Int(short, full string, opts *Option) *int {
 	var result int

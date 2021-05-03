@@ -12,13 +12,15 @@ type arg struct {
 	short  string
 	full   string
 	target interface{}
+	assigned bool
 	Option
 }
 
 type Option struct {
 	Meta       string
+	multi      bool
 	Default    interface{}
-	IsFlag     bool
+	isFlag     bool
 	Required   bool
 	Positional bool
 	Help       string
@@ -44,11 +46,11 @@ func (a *arg) validate() error {
 		return fmt.Errorf("arg short name with extra prefix '%s'", shortPrefix)
 	}
 	if a.Positional {
-		if a.IsFlag {
+		if a.isFlag {
 			return fmt.Errorf("positional is a flag")
 		}
 	}
-	if a.IsFlag {
+	if a.isFlag {
 		if a.Meta != "" {
 			return fmt.Errorf("flag with meta")
 		}
@@ -94,7 +96,7 @@ func (a *arg) formatHelpHeader() string {
 		return metaName
 	}
 	watchers := a.getWatchers()
-	if a.IsFlag {
+	if a.isFlag {
 		return strings.Join(watchers, ", ")
 	}
 	var signedWatchers []string
@@ -102,4 +104,64 @@ func (a *arg) formatHelpHeader() string {
 		signedWatchers = append(signedWatchers, fmt.Sprintf("%s %s", w, metaName))
 	}
 	return strings.Join(signedWatchers, ", ")
+}
+
+func (a *arg) parseValue(values []string) error {
+    a.assigned = true
+    if a.isFlag {
+        a.target = true
+        return nil
+    }
+    if a.Validate != nil {
+        for _, v := range values {
+            e := a.Validate(v)
+            if e != nil {
+                return e
+            }
+        }
+    }
+    var result []interface{}
+    if a.Formatter != nil {
+        for _, v := range values {
+            f, e := a.Formatter(v)
+            if e != nil {
+                return e
+            }
+            result = append(result, f)
+        }
+    } else {
+        switch a.target.(type) {
+        case *string:
+            result = append(result, values[0])
+        case *[]string:
+            for _, v := range values {
+                result = append(result, v)
+            }
+        }
+    }
+    if len(result) == 0 {
+        return fmt.Errorf("no value to parse")
+    }
+    if len(a.Choices) > 0 {
+        for _, r := range result {
+            found := false
+            for _, c := range a.Choices {
+                if c == r {
+                    found = true
+                }
+            }
+            if !found {
+                return fmt.Errorf("args must one|some of %+v", a.Choices)
+            }
+        }
+    }
+
+    switch a.target.(type) {
+    case *string, *int, *float64:
+        a.target = &result[0]
+    case *[]string, *[]int, *[]float64:
+        a.target = &result
+    }
+
+    return nil
 }
