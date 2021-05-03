@@ -1,6 +1,8 @@
 package argparse
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -156,6 +158,101 @@ func TestParser_types(t *testing.T) {
 		len(*d) != 2 || (*d)[1] != 2 || *e != 3.14 ||
 		len(*f) != 2 || (*f)[1] != 2.7 {
 		t.Errorf("failed to apply values")
+		return
+	}
+}
+
+func TestParser_Choices(t *testing.T) {
+	parser := NewParser("", "", nil)
+	parser.String("", "a",
+		&Option{Choices: []interface{}{"x"}})
+	parser.Ints("", "b",
+		&Option{Choices: []interface{}{1, 2}})
+	if e := parser.Parse([]string{"--a", "y"}); e != nil {
+		if e.Error() != "args must one|some of [x]" {
+			t.Error("failed to make a choice")
+			return
+		}
+	}
+	if e := parser.Parse([]string{"--a", "x"}); e != nil {
+		t.Error("error choice")
+		return
+	}
+	if e := parser.Parse([]string{"--b", "3"}); e != nil {
+		if e.Error() != "args must one|some of [1 2]" {
+			t.Error("failed to make choices")
+			return
+		}
+	}
+
+}
+
+func TestParser_Validate(t *testing.T) {
+	parser := NewParser("", "", nil)
+	a := parser.String("", "a", &Option{Validate: func(arg string) error {
+		if arg == "ok" {
+			return fmt.Errorf("not ok")
+		}
+		return nil
+	}})
+	if e := parser.Parse([]string{"--a", "ok"}); e != nil {
+		if e.Error() != "not ok" {
+			t.Error("not ok")
+			return
+		}
+	}
+	if *a != "" {
+		t.Error("this is invalid value")
+		return
+	}
+	if e := parser.Parse([]string{"--a", "this is ok"}); e != nil {
+		t.Error("this is not ok")
+		return
+	}
+	if *a != "this is ok" {
+		t.Error("this should be ok")
+		return
+	}
+}
+
+func TestParser_Formatter(t *testing.T) {
+	parser := NewParser("", "", nil)
+	a := parser.Ints("", "a", &Option{Formatter: func(arg string) (i interface{}, err error) {
+		v, err := strconv.Atoi(arg)
+		if err != nil {
+			return
+		}
+		i = v + 1
+		return
+	}})
+	b := parser.String("", "b", &Option{Formatter: func(arg string) (i interface{}, err error) {
+		if arg == "False" {
+			err = fmt.Errorf("no False")
+			return
+		}
+		i = fmt.Sprintf("=> %s", arg)
+		return
+	}})
+	if e := parser.Parse([]string{"--a", "1"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if (*a)[0] != 2 {
+		t.Error("failed to format value")
+		return
+	}
+	if e := parser.Parse([]string{"--b", "False"}); e != nil {
+		if e.Error() != "no False" {
+			t.Error("formatter should filtered this")
+			return
+		}
+	}
+	if e := parser.Parse([]string{"--b", "b"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if *b != "=> b" {
+		t.Error("formatter is not functioned")
 		return
 	}
 }
