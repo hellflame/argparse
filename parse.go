@@ -52,7 +52,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 	}
 	if !config.DisableHelp {
 		parser.showHelp = parser.Flag("h", "help",
-		    &Option{Help: "show this help message"})
+			&Option{Help: "show this help message"})
 	}
 	return parser
 }
