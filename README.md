@@ -205,5 +205,27 @@ more detail please visit https://github.com/hellflame/argparse  # <=== EpiLog
 
 except the comment above, `ContinueOnHelp` is only affective on your program process, which give you possibility to do something when default `help` is shown
 
+### 2. argument options
+
+related struct:
+
+```go
+type Option struct {
+	Meta       string // meta value for help/usage generate
+	multi      bool   // take more than one argument
+	Default    string // default argument value if not given
+	isFlag     bool   // use as flag
+	Required   bool   // require to be set
+	Positional bool   // is positional argument
+	Help       string // help message
+	Group      string // argument group info, default to be no group
+	Choices    []interface{}  // input argument must be one/some of the choice
+	Validate   func(arg string) error  // customize function to check argument validation
+	Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
+}
+```
+
+
+
 ## Examples
 

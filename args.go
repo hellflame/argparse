@@ -18,17 +18,17 @@ type arg struct {
 }
 
 type Option struct {
-	Meta       string
-	multi      bool
-	Default    interface{}
-	isFlag     bool
-	Required   bool
-	Positional bool
-	Help       string
-	Group      string
-	Choices    []interface{}
-	Validate   func(arg string) error
-	Formatter  func(arg string) (interface{}, error)
+	Meta       string                                // meta value for help/usage generate
+	multi      bool                                  // take more than one argument
+	Default    string                                // default argument value if not given
+	isFlag     bool                                  // use as flag
+	Required   bool                                  // require to be set
+	Positional bool                                  // is positional argument
+	Help       string                                // help message
+	Group      string                                // argument group info, default to be no group
+	Choices    []interface{}                         // input argument must be one/some of the choice
+	Validate   func(arg string) error                // customize function to check argument validation
+	Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
 }
 
 // validate args setting before parsing args, right after adding to parser
@@ -115,6 +115,9 @@ func (a *arg) parseValue(values []string) error {
 	if a.isFlag {
 		*a.target.(*bool) = true
 		return nil
+	}
+	if len(values) == 0 && a.Default != "" {
+		values = append(values, a.Default)
 	}
 	if a.Validate != nil {
 		for _, v := range values {

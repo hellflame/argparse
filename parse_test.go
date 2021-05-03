@@ -80,9 +80,18 @@ func TestParser_AddCommand(t *testing.T) {
 
 func TestParser_Default(t *testing.T) {
 	parser := NewParser("", "", &ParserConfig{ContinueOnHelp: true})
-	parser.String("a", "aa", nil)
+	a := parser.String("", "a", &Option{Default: "default value"})
+	b := parser.Int("", "b", &Option{Default: "1", Positional: true})
 	if e := parser.Parse([]string{}); e != nil {
 		t.Errorf(e.Error())
+		return
+	}
+	if *a != "default value" {
+		t.Error("failed to set default value")
+		return
+	}
+	if *b != 1 {
+		t.Error("failed to set default positional value")
 		return
 	}
 }

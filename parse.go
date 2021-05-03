@@ -320,12 +320,12 @@ func (p *Parser) Parse(args []string) error {
 			os.Exit(1)
 		}
 	}
-	for _, arg := range targetParser.entries {
-		if arg.Required && !arg.assigned {
-			return fmt.Errorf("%s is required", arg.getMetaName())
+	for _, arg := range append(targetParser.entries, targetParser.positionArgs...) {
+		if !arg.assigned && arg.Default != "" {
+			if e := arg.parseValue(nil); e != nil {
+				return e
+			}
 		}
-	}
-	for _, arg := range targetParser.positionArgs {
 		if arg.Required && !arg.assigned {
 			return fmt.Errorf("%s is required", arg.getMetaName())
 		}
