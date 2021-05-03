@@ -133,11 +133,11 @@ relative struct:
 
 ```go
 type ParserConfig struct {
-	Usage                  string	// manual usage display
-	EpiLog                 string	// message after help
-	DisableHelp            bool		// disable help entry register [-h/--help]
-	ContinueOnHelp         bool		// set true to: continue program after default help is printed
-	DisableDefaultShowHelp bool		// set false to: default show help when there is no args to parse (default action)
+	Usage                  string // manual usage display
+	EpiLog                 string // message after help
+	DisableHelp            bool   // disable help entry register [-h/--help]
+	ContinueOnHelp         bool   // set true to: continue program after default help is printed
+	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
 }
 ```
 
@@ -145,20 +145,20 @@ eg:
 
 ```go
 func main() {
-    parser := argparse.NewParser("basic", "this is a basic program",
-    	&argparse.ParserConfig{
-		Usage:                  "basic xxx",
-		EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
-		DisableHelp:            true,
-		ContinueOnHelp:         true,
-		DisableDefaultShowHelp: true,
-	})
-    name := parser.String("n", "name", nil)
+	parser := argparse.NewParser("basic", "this is a basic program",
+		&argparse.ParserConfig{
+			Usage:                  "basic xxx",
+			EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
+			DisableHelp:            true,
+			ContinueOnHelp:         true,
+			DisableDefaultShowHelp: true,
+		})
+	name := parser.String("n", "name", nil)
 	help := parser.Flag("help", "help-me", nil)
-    if e := parser.Parse(nil); e != nil {
-        fmt.Println(e.Error())
+	if e := parser.Parse(nil); e != nil {
+		fmt.Println(e.Error())
 		return
-    }
+	}
 	if *help {
 		parser.PrintHelp()
 		return
