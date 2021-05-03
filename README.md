@@ -225,6 +225,36 @@ type Option struct {
 }
 ```
 
+## How it works
+
+```
+  ┌──────────────────────┐ ┌──────────────────────┐
+  │                      │ │                      │
+  │     OptionArgsMap    │ │  PositionalArgsList  │
+  │                      │ │                      │
+  │      -h ───► helpArg │ │                      │
+  │                      │ │[  posArg1  posArg2  ]│
+  │      -n ──┐          │ │                      │
+  │           │► nameArg │ │                      │
+  │  --name ──┘          │ │                      │
+  │                      │ │                      │
+  └──────────────────────┘ └──────────────────────┘
+             ▲ yes                  no ▲
+             │                         │
+             │ match?──────────────────┘
+             │
+             │
+           ┌─┴──┐                   match helpArg:
+    args:  │ -h │-n  hellflame           ▼
+           └────┘                  ┌──isflag?───┐
+                                   ▼            ▼
+                                  done ┌──MultiValue?───┐
+                                       ▼                ▼
+                                   ┌──parse     consume untill
+                                   ▼            NextOptionArgs
+                                 done
+```
+
 
 
 ## Examples
