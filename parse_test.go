@@ -256,3 +256,35 @@ func TestParser_Formatter(t *testing.T) {
 		return
 	}
 }
+
+func TestParser_Required(t *testing.T) {
+	parser := NewParser("", "", nil)
+	a := parser.String("", "a", &Option{Required: true})
+	parser.String("", "b", nil)
+	c := parser.Int("", "c", &Option{Required: true, Positional: true})
+	if e := parser.Parse([]string{"--b", "linux"}); e != nil {
+		if e.Error() != "A is required" {
+			t.Error("A is required but unknown")
+			return
+		}
+	}
+	// parser should be new, strictly speaking
+	if e := parser.Parse([]string{"--a", "x", "3"}); e != nil {
+		t.Error("failed to parse required value")
+		return
+	}
+	if *a != "x" || *c != 3 {
+		t.Error("failed to parse")
+		return
+	}
+
+	p := NewParser("", "", nil)
+	a = p.String("", "a", &Option{Required: true, Positional: true})
+	p.String("", "b", nil)
+	if e := p.Parse([]string{"--b", "x"}); e != nil {
+		if e.Error() != "A is required" {
+			t.Error("A is required")
+			return
+		}
+	}
+}

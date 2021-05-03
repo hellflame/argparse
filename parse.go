@@ -227,7 +227,7 @@ func (p *Parser) Parse(args []string) error {
 	var subParser *Parser
 	if len(args) == 0 {
 		if !p.config.DisableDefaultShowHelp {
-		    help := true
+			help := true
 			p.showHelp = &help
 		}
 	} else {
@@ -250,12 +250,10 @@ func (p *Parser) Parse(args []string) error {
 						args = args[1:]
 					} else {
 						var tillNext []string
-						breakPoint := len(args) - 1
-						for idx, a := range args[1:] {
+						for _, a := range args[1:] {
 							if _, isEntry := p.entryMap[a]; !isEntry {
 								tillNext = append(tillNext, a)
 							} else {
-								breakPoint = idx
 								break
 							}
 						}
@@ -268,13 +266,14 @@ func (p *Parser) Parse(args []string) error {
 							if e != nil {
 								return e
 							}
+							args = args[len(tillNext)+1:]
 						} else {
 							e := arg.parseValue(tillNext[0:1])
 							if e != nil {
 								return e
 							}
+							args = args[2:]
 						}
-						args = args[breakPoint+1:]
 					}
 				} else {
 					if registeredPositionsLength > lastPositionArgIndex {
@@ -316,6 +315,16 @@ func (p *Parser) Parse(args []string) error {
 		targetParser.PrintHelp()
 		if !targetParser.config.ContinueOnHelp {
 			os.Exit(1)
+		}
+	}
+	for _, arg := range targetParser.entries {
+		if arg.Required && !arg.assigned {
+			return fmt.Errorf("%s is required", arg.getMetaName())
+		}
+	}
+	for _, arg := range targetParser.positionArgs {
+		if arg.Required && !arg.assigned {
+			return fmt.Errorf("%s is required", arg.getMetaName())
 		}
 	}
 	return nil
