@@ -283,12 +283,10 @@ func (p *Parser) Parse(args []string) error {
 						arg := p.positionArgs[lastPositionArgIndex]
 						lastPositionArgIndex += 1
 						var tillNext []string
-						breakPoint := len(args) - 1
-						for idx, a := range args {
+						for _, a := range args {
 							if _, isEntry := p.entryMap[a]; !isEntry {
 								tillNext = append(tillNext, a)
 							} else {
-								breakPoint = idx
 								break
 							}
 						}
@@ -297,7 +295,7 @@ func (p *Parser) Parse(args []string) error {
 							if e != nil {
 								return e
 							}
-							args = args[breakPoint:]
+							args = args[len(tillNext):]
 						} else {
 							e := arg.parseValue(tillNext[0:1])
 							if e != nil {
@@ -397,6 +395,56 @@ func (p *Parser) Int(short, full string, opts *Option) *int {
 	if opts == nil {
 		opts = &Option{}
 	}
+	if e := p.registerArgument(&arg{
+		short:  short,
+		full:   full,
+		target: &result,
+		Option: *opts,
+	}); e != nil {
+		panic(e.Error())
+	}
+	return &result
+}
+
+func (p *Parser) Ints(short, full string, opts *Option) *[]int {
+	var result []int
+	if opts == nil {
+		opts = &Option{}
+	}
+	opts.multi = true
+	if e := p.registerArgument(&arg{
+		short:  short,
+		full:   full,
+		target: &result,
+		Option: *opts,
+	}); e != nil {
+		panic(e.Error())
+	}
+	return &result
+}
+
+func (p *Parser) Float(short, full string, opts *Option) *float64 {
+	var result float64
+	if opts == nil {
+		opts = &Option{}
+	}
+	if e := p.registerArgument(&arg{
+		short:  short,
+		full:   full,
+		target: &result,
+		Option: *opts,
+	}); e != nil {
+		panic(e.Error())
+	}
+	return &result
+}
+
+func (p *Parser) Floats(short, full string, opts *Option) *[]float64 {
+	var result []float64
+	if opts == nil {
+		opts = &Option{}
+	}
+	opts.multi = true
 	if e := p.registerArgument(&arg{
 		short:  short,
 		full:   full,

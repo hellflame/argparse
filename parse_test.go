@@ -82,19 +82,80 @@ func TestParser_Default(t *testing.T) {
 	}
 }
 
+func TestParser_unrec(t *testing.T) {
+	parser := NewParser("", "", nil)
+	parser.String("a", "aa", nil)
+	parser.String("b", "bb", &Option{Positional: true})
+	if e := parser.Parse([]string{"x", "b"}); e != nil {
+		if e.Error() != "unrecognized arguments: b" {
+			t.Error("failed to un-recognize")
+			return
+		}
+	}
+	if e := parser.Parse([]string{"-a", "a", "b", "bx"}); e != nil {
+		if e.Error() != "unrecognized arguments: bx" {
+			t.Error("failed to un-recognize")
+			return
+		}
+	}
+}
+
 func TestParser_Parse(t *testing.T) {
 	parser := NewParser("", "", &ParserConfig{ContinueOnHelp: true})
 	a := parser.String("a", "aa", nil)
 	b := parser.Strings("b", "bb", nil)
 	c := parser.String("", "cc", nil)
 	f := parser.Flag("", "ff", nil)
+	d := parser.String("", "dd", &Option{Positional: true})
+	e := parser.String("", "ee", &Option{Positional: true})
+	g := parser.Strings("", "gg", &Option{Positional: true})
 
 	if e := parser.Parse([]string{"-a", "linux", "-b", "b1", "b2", "--cc", "x", "--ff"}); e != nil {
 		t.Errorf(e.Error())
 	}
-	if *a != "linux" || len(*b) != 2 || (*b)[1] != "b2" || *c != "x" {
+	if *a != "linux" || len(*b) != 2 || (*b)[1] != "b2" || *c != "x" || !*f {
 		t.Error("failed to parse string")
 		return
 	}
-	println(*f)
+	if e := parser.Parse([]string{"-a"}); e == nil {
+		t.Error("expect argument")
+		return
+	}
+	if e := parser.Parse([]string{"linux", "ok"}); e != nil {
+		t.Error("failed to parse")
+		return
+	}
+	if *d != "linux" || *e != "ok" {
+		t.Error("failed to parse position args")
+	}
+	if e := parser.Parse([]string{"linux", "ok", "g1", "g2"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if *e != "ok" || len(*g) != 2 || (*g)[0] != "g1" {
+		t.Error("failed to parse")
+		return
+	}
+}
+
+func TestParser_types(t *testing.T) {
+	parser := NewParser("", "", nil)
+	a := parser.String("", "a", nil)
+	b := parser.Strings("", "b", nil)
+	c := parser.Int("", "c", nil)
+	d := parser.Ints("", "d", nil)
+	e := parser.Float("", "e", nil)
+	f := parser.Floats("", "f", nil)
+	g := parser.Flag("", "g", nil)
+	if e := parser.Parse([]string{"--a", "a", "--b", "b1", "b2", "--c", "1",
+		"--d", "1", "2", "--e", "3.14", "--f", "0.618", "2.7", "--g"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if *a != "a" || !*g || strings.Join(*b, ",") != "b1,b2" || *c != 1 ||
+		len(*d) != 2 || (*d)[1] != 2 || *e != 3.14 ||
+		len(*f) != 2 || (*f)[1] != 2.7 {
+		t.Errorf("failed to apply values")
+		return
+	}
 }

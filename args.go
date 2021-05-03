@@ -2,6 +2,7 @@ package argparse
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -134,10 +135,24 @@ func (a *arg) parseValue(values []string) error {
 		}
 	} else {
 		switch a.target.(type) {
-		case *string:
-			result = append(result, values[0])
-		case *[]string:
+		case *string, *[]string:
 			for _, v := range values {
+				result = append(result, v)
+			}
+		case *int, *[]int:
+			for _, raw := range values {
+				v, e := strconv.Atoi(raw)
+				if e != nil {
+					return fmt.Errorf("invalid int value: %s", raw)
+				}
+				result = append(result, v)
+			}
+		case *float64, *[]float64:
+			for _, raw := range values {
+				v, e := strconv.ParseFloat(raw, 64)
+				if e != nil {
+					return fmt.Errorf("invalid float value: %s", raw)
+				}
 				result = append(result, v)
 			}
 		}
@@ -169,8 +184,14 @@ func (a *arg) parseValue(values []string) error {
 		for _, r := range result {
 			*a.target.(*[]string) = append(*a.target.(*[]string), r.(string))
 		}
-	case *[]int, *[]float64:
-		a.target = result
+	case *[]int:
+		for _, r := range result {
+			*a.target.(*[]int) = append(*a.target.(*[]int), r.(int))
+		}
+	case *[]float64:
+		for _, r := range result {
+			*a.target.(*[]float64) = append(*a.target.(*[]float64), r.(float64))
+		}
 	}
 	return nil
 }
