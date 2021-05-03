@@ -8,7 +8,10 @@ import (
 )
 
 func Test_CreateParser(t *testing.T) {
-	NewParser("test", "this is a desc", nil)
+	p := NewParser("test", "this is a desc", nil)
+	if e := p.Parse(nil); e == nil {
+		t.Error("not available for test env")
+	}
 }
 
 func TestParser_help(t *testing.T) {

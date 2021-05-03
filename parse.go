@@ -24,11 +24,11 @@ type Parser struct {
 }
 
 type ParserConfig struct {
-	Usage                  string
-	EpiLog                 string
-	DisableHelp            bool
-	ContinueOnHelp         bool
-	DisableDefaultShowHelp bool
+	Usage                  string // manual usage display
+	EpiLog                 string // message after help
+	DisableHelp            bool   // disable help entry register [-h/--help]
+	ContinueOnHelp         bool   // set true to: continue program after default help is printed
+	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
 }
 
 func NewParser(name string, description string, config *ParserConfig) *Parser {

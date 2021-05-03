@@ -30,14 +30,14 @@ package main
 import (
     "fmt"
     "github.com/hellflame/argparse"
-    "log"
 )
 
 func main() {
     parser := argparse.NewParser("basic", "this is a basic program", nil)
     name := parser.String("n", "name", nil)
     if e := parser.Parse(nil); e != nil {
-        log.Fatal(e.Error())
+        fmt.Println(e.Error())
+      	return
     }
     fmt.Printf("hello %s\n", *name)
 }
@@ -73,14 +73,6 @@ a few point:
 based on these points, the code can be like this:
 
 ```go
-package main
-
-import (
-    "fmt"
-    "github.com/hellflame/argparse"
-    "os"
-)
-
 func main() {
     parser := argparse.NewParser("", "this is a basic program", &argparse.ParserConfig{
         DisableHelp:true,
@@ -134,6 +126,71 @@ a few points:
 4. notice the order of usage array, it's mostly the order of your arguments
 
 ## Config
+
+### 1. parser config
+
+relative struct: 
+
+```go
+type ParserConfig struct {
+	Usage                  string	// manual usage display
+	EpiLog                 string	// message after help
+	DisableHelp            bool		// disable help entry register [-h/--help]
+	ContinueOnHelp         bool		// set true to: continue program after default help is printed
+	DisableDefaultShowHelp bool		// set false to: default show help when there is no args to parse (default action)
+}
+```
+
+eg:
+
+```go
+func main() {
+    parser := argparse.NewParser("basic", "this is a basic program",
+    	&argparse.ParserConfig{
+		Usage:                  "basic xxx",
+		EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
+		DisableHelp:            true,
+		ContinueOnHelp:         true,
+		DisableDefaultShowHelp: true,
+	})
+    name := parser.String("n", "name", nil)
+	help := parser.Flag("help", "help-me", nil)
+    if e := parser.Parse(nil); e != nil {
+        fmt.Println(e.Error())
+		return
+    }
+	if *help {
+		parser.PrintHelp()
+		return
+	}
+	if *name != "" {
+		fmt.Printf("hello %s\n", *name)
+	}
+}
+```
+
+[example](examples/parser-config)
+
+output:
+
+```bash
+=> go run main.go
+# there will be no help message
+# affected by DisableDefaultShowHelp
+
+=> go run main.go --help-me
+usage: basic xxx   # <=== Usage
+
+this is a basic program
+
+optional arguments: # no [-h/--help] flag is registerd, which is affected by DisableHelp
+  -n NAME, --name NAME
+  -help, --help-me 
+
+more detail please visit https://github.com/hellflame/argparse  # <=== EpiLog
+```
+
+except the comment above, `ContinueOnHelp` is only affective on your program process, which give you possibility to do something when default `help` is shown
 
 ## Examples
 
