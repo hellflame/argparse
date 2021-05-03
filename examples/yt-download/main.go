@@ -16,11 +16,11 @@ func main() {
 	playListStart := parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start at (default is 1)", Meta: "NUMBER", Group: "play-list options", Default: "1"})
 
 	urls := parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", Positional: true, Required: true, Validate: func(arg string) error {
-				if !strings.HasPrefix(arg, "https://") {
-					return fmt.Errorf("url should be start with 'https://'")
-				}
-				return nil
-			}})
+		if !strings.HasPrefix(arg, "https://") {
+			return fmt.Errorf("url should be start with 'https://'")
+		}
+		return nil
+	}})
 
 	if e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
