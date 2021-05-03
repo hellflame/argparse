@@ -38,13 +38,13 @@ func formatHelpRow(head, content string, maxHeadLength int) string {
 	}
 	contentPadding := strings.Repeat(" ", maxHeadLength)
 	rows := []string{result + content}
-	cnt := 1
 	for len(rows[len(rows)-1]) > terminalWidth {
-		cnt += 1
-		lastOne := rows[len(rows)-1]
+		lastIndex := len(rows) - 1
+		lastOne := rows[lastIndex]
 		if len(lastOne) < terminalWidth {
 			break
 		}
+		rows[lastIndex] = rows[lastIndex][0: terminalWidth]
 		rows = append(rows, contentPadding+lastOne[terminalWidth:])
 	}
 	return strings.Join(rows, "\n")

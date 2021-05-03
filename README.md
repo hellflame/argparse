@@ -63,7 +63,7 @@ optional arguments:
 hello hellflame
 ```
 
-a few point:
+a few points
 
 about object __parser__ :
 
@@ -134,11 +134,150 @@ a few points:
 1. `DisableHelp` only avoid `-h/--help` flag to register to parser, but the `help` is still fully functional
 2. if keep `DisableDefaultShowHelp` to be false, where there is no argument, the `help` function will still show up
 3. after the manual call of `parser.PrintHelp()` , program goes on
-4. notice the order of usage array, it's mostly the order of your arguments
+4. notice the order of usage array, it's mostly the order of creating arguments
+
+### Advanced
+
+#### 1. ArgumentGroup
+
+argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so, [eg](examples/yt-download/main.go)
+
+```go
+parser.Flag("", "version", &argparse.Option{Help: "Print program version and exit", Group: "GeneralOptions"})
+```
+
+#### 2. DisplayMeta
+
+when the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help, [eg](examples/yt-download/main.go)
+
+```go
+parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start at (default is 1)", Meta: "NUMBER"})
+```
+
+looks like:
+
+```bash
+  --playlist-start NUMBER  Playlist video to start at (default is 1)
+```
+
+#### 3.DefaultValue
+
+if the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue, [eg](examples/yt-download/main.go)
+
+```go
+parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start at (default is 1)", Default: "1"})
+```
+
+> noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (like `os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if these actions exist),  `Validate` & `Formatter` will be mentioned below
+>
+> also, the Default value can only be one `String` , if you want an Array arguments, you can only have one element Array as default value
+
+#### 4. RequiredArgument
+
+if the argument must be input, set `Required` to be `true`, [eg](examples/yt-download/main.go)
+
+```go
+parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", Required: true})
+```
+
+> Flag argument can not be `Required` , you should know the reason, Flag argument has more restrictions, you will be noticed when using it
+
+#### 5. PositionanArgument
+
+if the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
+
+```go
+parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", Positional: true})
+```
+
+> the position of the PositionalArgument is quit flex, with not much restrictions, it's ok to be
+>
+> 1. in the middle of arguments, `--play-list 2 xxxxxxxx --update`, if the argument before it is not an Array argument, won't parse `url` in this case: `--user-ids id1 id2 url --update` 
+> 2. after another single value PositionalArgument, `--mode login username password` , the last `password` will be parsed as second PositionalArgument
+>
+> so, use it carefully
+
+#### 6. ArgumentValidate
+
+provide `Validate` function to check each passed-in argument
+
+```go
+parser.Strings("", "url", &argparse.Option{Help: "youtube links", 
+     Validate: func(arg string) error {
+				if !strings.HasPrefix(arg, "https://") {
+					return fmt.Errorf("url should be start with 'https://'")
+				}
+				return nil
+			}})
+```
+
+> `Validate` function has high priority, executed just after `Default` value is set, which means, the default value has to go through `Validate` check
+
+#### 7. ArgumentFormatter
+
+format input argument to most basic types you want
+
+```go
+parser.String("", "b", &Option{Formatter: func(arg string) (i interface{}, err error) {
+		if arg == "False" {
+			err = fmt.Errorf("no False")
+			return
+		}
+		i = fmt.Sprintf("=> %s", arg)
+		return
+	}})
+```
+
+> if `Validate` is set, `Formatter` is right after `Validate`
+>
+> if raise errors in `Formatter`, it will partly act like `Validate` 
+>
+> the return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, to by `string` as Example shows
+
+#### 8. ArgumentChoices
+
+restrict inputs to be within the given choices, using `Choices`
+
+```go
+parser.Ints("", "hours", &Option{Choices: []interface{}{1, 2, 3, 4}})
+```
+
+> if `Formatter` is set, Choice check is right after `Formatter`
+>
+> when it's single value, the value must be one of the `Choices`
+>
+> when it's value array, each value must be one of of `Choices`
+
+#### Argument Process Map
+
+```
+                        ┌──────┐
+ --date 20210102 --list │ arg1 │ arg2   arg3
+                        └───┬──┘
+                            │
+                            │
+                            ▼
+                       ApplyDefault?
+                            │
+                            │
+                      ┌─────▼──────┐
+                      │  Validate  │
+                      └─────┬──────┘
+                            │
+                      ┌─────▼──────┐
+                      │  Formatter │
+                      └─────┬──────┘
+                            │
+                      ┌─────▼───────┐
+                      │ ChoiceCheck │
+                      └─────────────┘
+```
+
+
 
 ## Config
 
-### 1. parser config
+### 1. ParserConfig
 
 relative struct: 
 
@@ -205,7 +344,7 @@ more detail please visit https://github.com/hellflame/argparse  # <=== EpiLog
 
 except the comment above, `ContinueOnHelp` is only affective on your program process, which give you possibility to do something when default `help` is shown
 
-### 2. argument options
+### 2. ArgumentOptions
 
 related struct:
 
