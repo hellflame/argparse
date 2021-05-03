@@ -34,7 +34,9 @@ import (
 
 func main() {
     parser := argparse.NewParser("basic", "this is a basic program", nil)
+  
     name := parser.String("n", "name", nil)
+  
     if e := parser.Parse(nil); e != nil {
         fmt.Println(e.Error())
       	return
@@ -63,12 +65,19 @@ hello hellflame
 
 a few point:
 
+about object __parser__ :
+
 1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be you executable file's name when you release the code. It can be convinient where the release name is uncertain
 2. `help` function is auto injected, but you can disable it when `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
-3. the argument `name` is only usable __after__  `parser.Parse` , or there might be errors happening
-4. when passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source, so notice to __only pass arguments__ to `parser.Parse` , or the program name may be `unrecognized`
-5. the short name of your agument can be __more than one character__
-6. when `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to by `true`, or just use your own help function instead
+3. when `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to by `true`, or just use your own help function instead
+
+about __parse__ action:
+
+1. the argument `name` is only usable __after__  `parser.Parse` , or there might be errors happening
+2. when passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source, so notice to __only pass arguments__ to `parser.Parse` , or the program name may be `unrecognized`
+3. the short name of your agument can be __more than one character__
+
+---
 
 based on these points, the code can be like this:
 
@@ -77,8 +86,10 @@ func main() {
     parser := argparse.NewParser("", "this is a basic program", &argparse.ParserConfig{
         DisableHelp:true,
         DisableDefaultShowHelp: true})
+  
     name := parser.String("n", "name", nil)
     help := parser.Flag("help", "help-me", nil)
+  
     if e := parser.Parse(os.Args[1:]); e != nil {
         fmt.Println(e.Error())
         return
@@ -153,8 +164,10 @@ func main() {
 			ContinueOnHelp:         true,
 			DisableDefaultShowHelp: true,
 		})
+  
 	name := parser.String("n", "name", nil)
 	help := parser.Flag("help", "help-me", nil)
+  
 	if e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
