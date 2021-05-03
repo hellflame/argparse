@@ -291,7 +291,7 @@ func TestParser_Required(t *testing.T) {
 	}
 
 	p := NewParser("", "", nil)
-	a = p.String("", "a", &Option{Required: true, Positional: true})
+	p.String("", "a", &Option{Required: true, Positional: true})
 	p.String("", "b", nil)
 	if e := p.Parse([]string{"--b", "x"}); e != nil {
 		if e.Error() != "A is required" {

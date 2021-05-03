@@ -92,7 +92,7 @@ func (p *Parser) registerParser(parser *Parser) error {
 	return nil
 }
 
-// print help message
+// show help message
 func (p *Parser) PrintHelp() {
 	fmt.Println(p.FormatHelp())
 }

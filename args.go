@@ -17,6 +17,7 @@ type arg struct {
 	Option
 }
 
+// argument options
 type Option struct {
 	Meta       string                                // meta value for help/usage generate
 	multi      bool                                  // take more than one argument

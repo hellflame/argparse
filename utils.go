@@ -11,21 +11,17 @@ import (
 const fallbackWidth = 80
 
 func getTerminalWidth() int {
-	width, _ := strconv.Atoi(os.Getenv("COLUMNS"))
-	if width <= 0 {
-		cmd := exec.Command("stty", "size")
-		cmd.Stdin = os.Stdin // this is important
-		result, err := cmd.Output()
-		if err == nil {
-			parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
-			w, e := strconv.Atoi(parse[1])
-			if e == nil {
-				return w
-			}
+	cmd := exec.Command("stty", "size")
+	cmd.Stdin = os.Stdin // this is important
+	result, err := cmd.Output()
+	if err == nil {
+		parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
+		w, e := strconv.Atoi(parse[1])
+		if e == nil {
+			return w
 		}
-		return fallbackWidth
 	}
-	return width
+	return fallbackWidth
 }
 
 func formatHelpRow(head, content string, maxHeadLength int) string {
@@ -44,7 +40,7 @@ func formatHelpRow(head, content string, maxHeadLength int) string {
 		if len(lastOne) < terminalWidth {
 			break
 		}
-		rows[lastIndex] = rows[lastIndex][0: terminalWidth]
+		rows[lastIndex] = rows[lastIndex][0:terminalWidth]
 		rows = append(rows, contentPadding+lastOne[terminalWidth:])
 	}
 	return strings.Join(rows, "\n")

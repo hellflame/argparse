@@ -1,5 +1,7 @@
 # argparse
 
+[![GoDoc](https://godoc.org/github.com/hellflame/argparse?status.svg)](https://godoc.org/github.com/hellflame/argparse) [![Go Report Card](https://goreportcard.com/badge/github.com/hellflame/argparse)](https://goreportcard.com/report/github.com/hellflame/argparse) [![Build Status](https://travis-ci.com/hellflame/argparse.svg?branch=master)](https://travis-ci.com/hellflame/argparse) [![Coverage Status](https://coveralls.io/repos/github/hellflame/argparse/badge.svg?branch=master)](https://coveralls.io/github/hellflame/argparse?branch=master)
+
 argparser inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
 
 provide not just simple parse args, but :
@@ -248,7 +250,54 @@ parser.Ints("", "hours", &Option{Choices: []interface{}{1, 2, 3, 4}})
 >
 > when it's value array, each value must be one of of `Choices`
 
-#### Argument Process Map
+#### 9. SubCommands
+
+create new parser realm, within the sub command parser, arguments won't interrupt each other
+
+```go
+func main() {
+	parser := argparse.NewParser("", "Go is a tool for managing Go source code.", nil)
+	testCommand := parser.AddCommand("test", "start a bug report", nil)
+	tFlag := testCommand.Flag("f", "flag", nil)
+	otherFlag := testCommand.Flag("o", "other", nil)
+	t := parser.Flag("f", "flag", nil)
+	if e := parser.Parse(nil); e != nil {
+		fmt.Println(e.Error())
+		return
+	}
+	println(*tFlag, *otherFlag, *t)
+}
+```
+
+output:
+
+```bash
+=> ./sub-command
+usage: ./sub-command <cmd> [-h] [-f]
+
+Go is a tool for managing Go source code.
+
+available commands:
+  test        start a bug report
+
+optional arguments:
+  -h, --help  show this help message
+  -f, --flag
+  
+=> ./sub-command test
+usage: test [-h] [-f] [-o]
+
+start a bug report
+
+optional arguments:
+  -h, --help   show this help message
+  -f, --flag
+  -o, --other
+```
+
+the two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag it `test` parser and `main` parser
+
+##### Argument Process Map
 
 ```
                         ┌──────┐
@@ -394,7 +443,5 @@ type Option struct {
                                  done
 ```
 
-
-
-## Examples
+## [Examples](examples)
 
