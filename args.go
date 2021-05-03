@@ -34,40 +34,40 @@ type Option struct {
 // validate args setting before parsing args, right after adding to parser
 // for conflict check & correction & restriction
 func (a *arg) validate() error {
-	if a.full == "" {
+	if a.full == "" { // argument must has a name
 		return fmt.Errorf("arg name is empty")
 	}
-	if strings.Contains(a.full, " ") || strings.Contains(a.short, " ") {
+	if strings.Contains(a.full, " ") || strings.Contains(a.short, " ") { // space will interrupt
 		return fmt.Errorf("arg name with space")
 	}
-	if strings.HasPrefix(a.full, shortPrefix) || strings.HasPrefix(a.full, fullPrefix) {
+	if strings.HasPrefix(a.full, shortPrefix) || strings.HasPrefix(a.full, fullPrefix) { // argument sign with be auto prefixed
 		return fmt.Errorf("arg full name with extra prefix '%s'/'%s'", shortPrefix, fullPrefix)
 	}
-	if strings.HasPrefix(a.short, shortPrefix) {
+	if strings.HasPrefix(a.short, shortPrefix) { // argument will be auto prefixed
 		return fmt.Errorf("arg short name with extra prefix '%s'", shortPrefix)
 	}
-	if a.short == a.full {
+	if a.short == a.full { // this will cause register conflict
 		return fmt.Errorf("arg short is full")
 	}
 	if a.Positional {
-		if a.isFlag {
+		if a.isFlag { // positional argument can't be a flag, use flag instead
 			return fmt.Errorf("positional is a flag")
 		}
 	}
 	if a.isFlag {
-		if a.Meta != "" {
+		if a.Meta != "" { // flag has no meta info to show
 			return fmt.Errorf("flag with meta")
 		}
-		if len(a.Choices) != 0 {
+		if len(a.Choices) != 0 { // if argument has a flag, it only has true as a choice
 			return fmt.Errorf("flag has choices")
 		}
-		if a.Required {
+		if a.Required { // if flag is a must, the result must be true
 			return fmt.Errorf("flag with required")
 		}
-		if a.Formatter != nil {
-			return fmt.Errorf("flag with formmater")
+		if a.Formatter != nil { // flag has no need to reformat
+			return fmt.Errorf("flag with formatter")
 		}
-		if a.Validate != nil {
+		if a.Validate != nil { // flag has no need to be validated
 			return fmt.Errorf("flag with validate")
 		}
 	}
@@ -91,7 +91,7 @@ func (a *arg) getMetaName() string {
 	if a.Meta != "" {
 		return a.Meta
 	}
-	return strings.ToUpper(a.full)
+	return strings.ToUpper(a.full) // it's upper case in python
 }
 
 func (a *arg) formatHelpHeader() string {
@@ -110,6 +110,7 @@ func (a *arg) formatHelpHeader() string {
 	return strings.Join(signedWatchers, ", ")
 }
 
+// parse input & bind (default) value to target
 func (a *arg) parseValue(values []string) error {
 	a.assigned = true
 	if a.isFlag {
