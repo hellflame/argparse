@@ -286,7 +286,9 @@ there is a little problem if Argument return a `*File` in go. the `*File` might 
 argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so, [eg](examples/yt-download/main.go)
 
 ```go
-parser.Flag("", "version", &argparse.Option{Help: "Print program version and exit", Group: "GeneralOptions"})
+parser.Flag("", "version", &argparse.Option{
+  Help: "Print program version and exit", 
+  Group: "GeneralOptions"})
 ```
 
 #### 2. DisplayMeta
@@ -294,7 +296,9 @@ parser.Flag("", "version", &argparse.Option{Help: "Print program version and exi
 when the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help, [eg](examples/yt-download/main.go)
 
 ```go
-parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start at (default is 1)", Meta: "NUMBER"})
+parser.Int("", "playlist-start", &argparse.Option{
+  Help: "Playlist video to start at (default is 1)", 
+  Meta: "NUMBER"})
 ```
 
 looks like:
@@ -308,7 +312,9 @@ looks like:
 if the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue, [eg](examples/yt-download/main.go)
 
 ```go
-parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start at (default is 1)", Default: "1"})
+parser.Int("", "playlist-start", &argparse.Option{
+  Help: "Playlist video to start at (default is 1)", 
+  Default: "1"})
 ```
 
 > noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (like `os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if these actions exist),  `Validate` & `Formatter` will be mentioned below
@@ -320,7 +326,9 @@ parser.Int("", "playlist-start", &argparse.Option{Help: "Playlist video to start
 if the argument must be input, set `Required` to be `true`, [eg](examples/yt-download/main.go)
 
 ```go
-parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", Required: true})
+parser.Strings("", "url", &argparse.Option{
+  Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", 
+  Required: true})
 ```
 
 > Flag argument can not be `Required` , you should know the reason, Flag argument has more restrictions, you will be noticed when using it
@@ -330,7 +338,9 @@ parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://w
 if the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
 
 ```go
-parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", Positional: true})
+parser.Strings("", "url", &argparse.Option{
+  Help: "youtube links, like 'https://www.youtube.com/watch?v=xxxxxxxx'", 
+  Positional: true})
 ```
 
 > the position of the PositionalArgument is quit flex, with not much restrictions, it's ok to be
@@ -345,7 +355,8 @@ parser.Strings("", "url", &argparse.Option{Help: "youtube links, like 'https://w
 provide `Validate` function to check each passed-in argument
 
 ```go
-parser.Strings("", "url", &argparse.Option{Help: "youtube links", 
+parser.Strings("", "url", &argparse.Option{
+  Help: "youtube links", 
      Validate: func(arg string) error {
 				if !strings.HasPrefix(arg, "https://") {
 					return fmt.Errorf("url should be start with 'https://'")
@@ -361,7 +372,8 @@ parser.Strings("", "url", &argparse.Option{Help: "youtube links",
 format input argument to most basic types you want, the limitation is that, the return type of `Formatter` should be the same as your argument type
 
 ```go
-parser.String("", "b", &Option{Formatter: func(arg string) (i interface{}, err error) {
+parser.String("", "b", &Option{
+  Formatter: func(arg string) (i interface{}, err error) {
 		if arg == "False" {
 			err = fmt.Errorf("no False")
 			return
@@ -382,7 +394,8 @@ parser.String("", "b", &Option{Formatter: func(arg string) (i interface{}, err e
 restrict inputs to be within the given choices, using `Choices`
 
 ```go
-parser.Ints("", "hours", &Option{Choices: []interface{}{1, 2, 3, 4}})
+parser.Ints("", "hours", &Option{
+  Choices: []interface{}{1, 2, 3, 4}})
 ```
 
 > if `Formatter` is set, Choice check is right after `Formatter`
@@ -442,7 +455,7 @@ the two `--flag` will parse seperately, so you can use `tFlag` & `t` to referenc
 
 ```
                         ┌──────┐
- --date 20210102 --list │ arg1 │ arg2   arg3
+ --date 20210102 --list │ arg1 │ arg2  arg3
                         └───┬──┘
                             │
                             │
