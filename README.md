@@ -138,6 +138,147 @@ a few points:
 3. after the manual call of `parser.PrintHelp()` , program goes on
 4. notice the order of usage array, it's mostly the order of creating arguments
 
+### Supported Arguments
+
+#### 1. Flag
+
+```go
+parser.Flag("short", "full", nil)
+```
+
+Flag create flag argument, Return a `*bool` point to the parse result
+
+python version is like `add_argument("-s", "--full", action="store_true")`
+
+Flag Argument can only be used as an OptionalArguments
+
+#### 2. String
+
+```go
+parser.String("short", "full", nil)
+```
+
+String create string argument, return a `*string` point to the parse result
+
+String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
+
+set `Option.Positional = true` to use as Positional Argument, then it's like `add_argument("s", "full")` in python
+
+#### 3. StringList
+
+```go
+parser.Strings("short", "full", nil)
+```
+
+Strings create string list argument, return a `*[]string` point to the parse result
+
+mostly like `*Parser.String()`
+
+python version is like `add_argument("-s", "--full", nargs="*")` or `add_argument("s", "full", nargs="*")`
+
+#### 4. Int
+
+```go
+parser.Int("short", "full", nil)
+```
+
+Int create int argument, return a `*int` point to the parse result
+
+mostly like `*Parser.String()`, except the return type
+
+python version is like `add_argument("s", "full", type=int)` or `add_argument("-s", "--full", type=int)`
+
+#### 5. IntList
+
+```go
+parser.Ints("short", "full", nil)
+```
+
+Ints create int list argument, return a `*[]int` point to the parse result
+
+mostly like `*Parser.Int()`
+
+python version is like `add_argument("s", "full", type=int, nargs="*")` or `add_argument("-s", "--full", type=int, nargs="*")`
+
+#### 6. Float
+
+```go
+parser.Float("short", "full", nil)
+```
+
+Float create float argument, return a `*float64` point to the parse result
+
+mostly like `*Parser.String()`, except the return type
+
+python version is like `add_argument("-s", "--full", type=double)` or `add_argument("s", "full", type=double)`
+
+#### 7. FloatList
+
+```go
+parser.Floats("short", "full", nil)
+```
+
+Floats create float list argument, return a `*[]float64` point to the parse result
+
+mostly like `*Parser.Float()`
+
+python version is like `add_argument("-s", "--full", type=double, nargs="*")` or `add_argument("s", "full", type=double, nargs="*")`
+
+### Other Types
+
+above types are the only types supported, they are basic types in go, including `bool`, `string`, `int`, `float64`
+
+for complex type or even customized types are __not directly supported__ , but it doesn't mean you can't do anything before parsing to your own type, here shows some cases:
+
+#### 1. File type
+
+you can check file's existence before read it, and tell if it's a valid file, etc. [eg is here](examples/customzed-types/main.go)
+
+though the return type is still a `string` , but it's more garanteed to use the argument as what you wanted
+
+```go
+path := parser.String("f", "file", &argparse.Option{
+  Validate: func(arg string) error {
+    if _, e := os.Stat(arg); e != nil {
+      return fmt.Errorf("unable to access '%s'", arg)
+    }
+    return nil
+  },
+})
+
+if e := parser.Parse(nil); e != nil {
+  fmt.Println(e.Error())
+  return
+}
+
+if *path != "" {
+  if read, e := ioutil.ReadFile(*path); e == nil {
+    fmt.Println(string(read))
+  }
+}
+```
+
+it used `Validate` to do the magic, we'll talk about it later in more detail
+
+python code is like:
+
+```python
+function valid_type(arg) {
+  if !os.path.exist(arg) {
+    raise Exception("can't access {}".format(arg))
+  }
+  return arg
+}
+
+parser.add_argument("-s", "--full", type=valid_type)
+```
+
+it's just python can return any type from the type function `valid_type` , and you can just return a `File` type in there
+
+there is a little problem if Argument return a `*File` in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak
+
+
+
 ### Advanced
 
 #### 1. ArgumentGroup
@@ -217,7 +358,7 @@ parser.Strings("", "url", &argparse.Option{Help: "youtube links",
 
 #### 7. ArgumentFormatter
 
-format input argument to most basic types you want
+format input argument to most basic types you want, the limitation is that, the return type of `Formatter` should be the same as your argument type
 
 ```go
 parser.String("", "b", &Option{Formatter: func(arg string) (i interface{}, err error) {

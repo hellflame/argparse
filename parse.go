@@ -356,7 +356,9 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 	return parser
 }
 
-// Flag create flag argument
+// Flag create flag argument, Return a `*bool` point to the parse result
+// python version is like `add_argument("-s", "--full", action="store_true")`
+// Flag Argument can only be used as an OptionalArguments
 func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	var result bool
 	if opts == nil {
@@ -374,7 +376,9 @@ func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	return &result
 }
 
-// String create string argument
+// String create string argument, return a `*string` point to the parse result
+// String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
+// set `Option.Positional = true` to use as Positional Argument, then it's like `add_argument("s", "full")` in python
 func (p *Parser) String(short, full string, opts *Option) *string {
 	var result string
 	if opts == nil {
@@ -391,7 +395,9 @@ func (p *Parser) String(short, full string, opts *Option) *string {
 	return &result
 }
 
-// Strings create string list argument
+// Strings create string list argument, return a `*[]string` point to the parse result
+// mostly like `*Parser.String()`
+// python version is like `add_argument("-s", "--full", nargs="*")` or `add_argument("s", "full", nargs="*")`
 func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	var result []string
 	if opts == nil {
@@ -409,7 +415,9 @@ func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	return &result
 }
 
-// Int create int argument
+// Int create int argument, return a `*int` point to the parse result
+// mostly like `*Parser.String()`, except the return type
+// python version is like `add_argument("s", "full", type=int)` or `add_argument("-s", "--full", type=int)`
 func (p *Parser) Int(short, full string, opts *Option) *int {
 	var result int
 	if opts == nil {
@@ -426,7 +434,9 @@ func (p *Parser) Int(short, full string, opts *Option) *int {
 	return &result
 }
 
-// Ints create int list argument
+// Ints create int list argument, return a `*[]int` point to the parse result
+// mostly like `*Parser.Int()`
+// python version is like `add_argument("s", "full", type=int, nargs="*")` or `add_argument("-s", "--full", type=int, nargs="*")`
 func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	var result []int
 	if opts == nil {
@@ -444,7 +454,9 @@ func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	return &result
 }
 
-// Float create float argument
+// Float create float argument, return a `*float64` point to the parse result
+// mostly like `*Parser.String()`, except the return type
+// python version is like `add_argument("-s", "--full", type=double)` or `add_argument("s", "full", type=double)`
 func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	var result float64
 	if opts == nil {
@@ -461,7 +473,9 @@ func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	return &result
 }
 
-// Floats create float list argument
+// Floats create float list argument, return a `*[]float64` point to the parse result
+// mostly like `*Parser.Float()`
+// python version is like `add_argument("-s", "--full", type=double, nargs="*")` or `add_argument("s", "full", type=double, nargs="*")`
 func (p *Parser) Floats(short, full string, opts *Option) *[]float64 {
 	var result []float64
 	if opts == nil {
