@@ -2,7 +2,9 @@
 
 [![GoDoc](https://godoc.org/github.com/hellflame/argparse?status.svg)](https://godoc.org/github.com/hellflame/argparse) [![Go Report Card](https://goreportcard.com/badge/github.com/hellflame/argparse)](https://goreportcard.com/report/github.com/hellflame/argparse) [![Build Status](https://travis-ci.com/hellflame/argparse.svg?branch=master)](https://travis-ci.com/hellflame/argparse) [![Coverage Status](https://coveralls.io/repos/github/hellflame/argparse/badge.svg?branch=master)](https://coveralls.io/github/hellflame/argparse?branch=master)
 
-argparser inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
+argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
+
+it's small (less than 700 row of code) but fully functional & powerful
 
 provide not just simple parse args, but :
 
