@@ -27,6 +27,7 @@ type Option struct {
 	Positional bool                                  // is positional argument
 	Help       string                                // help message
 	Group      string                                // argument group info, default to be no group
+	Action     func(args []string) error             // bind actions when the match is found, 'args' can be nil to be a flag
 	Choices    []interface{}                         // input argument must be one/some of the choice
 	Validate   func(arg string) error                // customize function to check argument validation
 	Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
@@ -113,6 +114,9 @@ func (a *arg) formatHelpHeader() string {
 // parse input & bind (default) value to target
 func (a *arg) parseValue(values []string) error {
 	a.assigned = true
+	if a.Action != nil {
+		return a.Action(values)
+	}
 	if a.isFlag {
 		*a.target.(*bool) = true
 		return nil

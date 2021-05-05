@@ -306,3 +306,78 @@ func TestParser_Required(t *testing.T) {
 		}
 	}
 }
+
+func TestParse_Actions(t *testing.T) {
+	p := NewParser("", "", nil)
+	sum := 0
+	p.Strings("", "a", &Option{Positional: true, Action: func(args []string) error {
+		for _, a := range args {
+			if i, e := strconv.Atoi(a); e != nil {
+				return fmt.Errorf("invalid int value %s", a)
+			} else {
+				sum += i
+			}
+		}
+		return nil
+	}})
+	if e := p.Parse([]string{"1", "2", "3"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if sum != 6 {
+		t.Error("fail to sum up")
+		return
+	}
+
+	p = NewParser("", "", nil)
+
+	buttonColor := "gray"
+	p.Flag("", "a", &Option{Action: func(args []string) error {
+		buttonColor = "RED"
+		return nil
+	}})
+	if e := p.Parse([]string{"--a"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if buttonColor != "RED" {
+		t.Error("failed to do the action")
+		return
+	}
+}
+
+func TestParser_Fail(t *testing.T) {
+	p := NewParser("", "", nil)
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Errorf("failed to panic")
+			}
+		}()
+		p.String("", "", nil)
+	}()
+
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p.String("a", "aa", nil)
+		p.Int("", "aa", nil)
+	}()
+
+	p = NewParser("", "", nil)
+	p.Int("", "a", nil)
+	p.Float("", "b", nil)
+	if e := p.Parse([]string{"--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
+		t.Error("failed to check invalid int")
+		return
+	}
+	if e := p.Parse([]string{"--b", "x"}); e == nil || e.Error() != "invalid float value: x" {
+		t.Error("failed to check invalid float")
+		return
+	}
+}
