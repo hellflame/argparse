@@ -4,7 +4,7 @@
 
 Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
 
-It's small (less than 700 rows of code) but fully Functional & Powerful, the same project build size can reduce at least `2.7M` compare to `Cobar` 
+It's small (less than 700 rows of code) but fully Functional & Powerful
 
 Provide not just simple parse args, but :
 
@@ -129,7 +129,6 @@ optional arguments:
   -n NAME, --name NAME
   -help, --help-me
 
-# still functional
 => go run main.go --name hellflame
 hello hellflame
 ```
@@ -466,7 +465,7 @@ The two `--flag` will parse seperately, so you can use `tFlag` & `t` to referenc
 
 #### 10. Argument Action √
 
-Argument Action allows you to anything with the argument when there is a match, this enables infinite possibility when parsing arguments
+Argument Action allows you to anything with the argument when there is a match, this enables infinite possibility when parsing arguments, [eg](examples/any-type-action/main.go)
 
 ```go
 p := NewParser("action", "test action", nil)
@@ -531,8 +530,14 @@ A few points to be noted:
 
 The return value of last process will be the input of next process, if shows it in code, it's like
 
-```go
-ChoiceCheck(Formatter(Validate(arg1)))
+```python
+with MatchFound:
+  if MatchFound.BindAction:
+    return MatchFound.BindAction(*args)
+  else:
+    for arg in args:
+      if Validate(arg):
+        yield ChoiceCheck(Formatter(arg))
 ```
 
 ## Config
