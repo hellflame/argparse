@@ -23,6 +23,7 @@ type Parser struct {
 
 	subParser    []*Parser
 	subParserMap map[string]*Parser
+	parentList   []string
 }
 
 // ParserConfig is the only type to config `Parser`, programmers only need to use this type to control `Parser` action
@@ -177,6 +178,9 @@ func (p *Parser) formatUsage() string {
 	if p.config.Usage != "" {
 		return usage + p.config.Usage
 	}
+	for _, parent := range p.parentList {
+		usage += parent + " "
+	}
 	usage += p.name + " "
 	if len(p.subParser) > 0 {
 		usage += "<cmd> "
@@ -231,6 +235,10 @@ func (p *Parser) Parse(args []string) error {
 	if args == nil {
 		args = os.Args[1:]
 	}
+	matchSub := false
+	if len(p.subParser) > 0 && len(args) > 0 {
+		_, matchSub = p.subParserMap[args[0]]
+	}
 	var subParser *Parser
 	if len(args) == 0 {
 		if !p.config.DisableDefaultShowHelp {
@@ -238,13 +246,11 @@ func (p *Parser) Parse(args []string) error {
 			p.showHelp = &help
 		}
 	} else {
-		if len(p.subParser) > 0 {
-			if sub, ok := p.subParserMap[args[0]]; ok {
-				subParser = sub
-				e := sub.Parse(args[1:])
-				if e != nil {
-					return e
-				}
+		if matchSub {
+			subParser = p.subParserMap[args[0]]
+			e := subParser.Parse(args[1:])
+			if e != nil {
+				return e
 			}
 		} else {
 			lastPositionArgIndex := 0
@@ -354,6 +360,7 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 		panic("sub command name has space")
 	}
 	parser := NewParser(name, description, config)
+	parser.parentList = append(p.parentList, p.name)
 	if e := p.registerParser(parser); e != nil {
 		panic(e.Error())
 	}

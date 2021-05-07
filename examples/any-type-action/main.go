@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-
 // run like: go run main.go 2 3 4 --b main.go
 func main() {
 	parser := argparse.NewParser("basic", "this is a basic program", nil)

@@ -7,11 +7,11 @@ import (
 
 func main() {
 	parser := argparse.NewParser("", "Go is a tool for managing Go source code.", nil)
+	t := parser.Flag("f", "flag", nil)
 	testCommand := parser.AddCommand("test", "start a bug report", nil)
 	tFlag := testCommand.Flag("f", "flag", nil)
 	otherFlag := testCommand.Flag("o", "other", nil)
 	defaultInt := testCommand.Int("i", "int", &argparse.Option{Default: "1"})
-	t := parser.Flag("f", "flag", nil)
 	if e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return

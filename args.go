@@ -166,8 +166,7 @@ func (a *arg) parseValue(values []string) error {
 		}
 	}
 	if len(result) == 0 {
-		// normally you can't reach this area
-		return fmt.Errorf("no value to parse")
+		return fmt.Errorf("no value to parse") // normally you can't reach this area
 	}
 	if len(a.Choices) > 0 {
 		for _, r := range result {
