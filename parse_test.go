@@ -466,6 +466,14 @@ func TestParser_Fail(t *testing.T) {
 		t.Error("failed to check invalid value in sub command")
 		return
 	}
+
+	p = NewParser("", "", nil)
+	p.Float("", "a", &Option{Default: "x"})
+	p.Int("", "b", nil)
+	if e := p.Parse([]string{"--b", "1"}); e == nil || e.Error() != "invalid float value: x" {
+		t.Error("failed to check invalid value with default")
+		return
+	}
 }
 
 func TestParser_WithSubCommand(t *testing.T) {
@@ -484,5 +492,13 @@ func TestParser_WithSubCommand(t *testing.T) {
 	if *x != 1 {
 		t.Error("failed to parse default value for sub command")
 		return
+	}
+}
+
+func TestParser_usage(t *testing.T) {
+	p := NewParser("a", "", &ParserConfig{ContinueOnHelp: true})
+	test := p.AddCommand("test", "", nil)
+	if !strings.HasPrefix(test.formatUsage(), "usage: a test") {
+		t.Error("failed to generate sub usage")
 	}
 }
