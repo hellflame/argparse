@@ -324,7 +324,11 @@ func (p *Parser) Parse(args []string) error {
 			os.Exit(1)
 		}
 	}
-	for _, arg := range append(targetParser.entries, targetParser.positionArgs...) {
+	entries := append(p.entries, p.positionArgs...)
+	for _, _p := range p.subParser {
+		entries = append(entries, append(_p.entries, _p.positionArgs...)...)
+	}
+	for _, arg := range entries {
 		if !arg.assigned && arg.Default != "" {
 			if e := arg.parseValue(nil); e != nil {
 				return e

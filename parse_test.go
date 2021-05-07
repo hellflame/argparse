@@ -29,8 +29,10 @@ func TestParser_help(t *testing.T) {
 	parser.Strings("", "test4", nil)
 	parser.Strings("", "t5", &Option{Required: true})
 	parser.Flag("ok", "ok2", nil)
+	parser.Int("this-is-very-long-short", "this-is-very-long-full", &Option{Positional: true})
 	sub := parser.AddCommand("sub", "this is a sub-command", nil)
 	sub.Int("x", "no-show", nil)
+	parser.AddCommand("this-is-long", "this is a sub-command", nil)
 	if len(parser.FormatHelp()) == 0 {
 		t.Error("failed to format help")
 		return
@@ -88,6 +90,8 @@ func TestParser_Default(t *testing.T) {
 	parser := NewParser("", "", &ParserConfig{ContinueOnHelp: true})
 	a := parser.String("", "a", &Option{Default: "default value"})
 	b := parser.Int("", "b", &Option{Default: "1", Positional: true})
+	sub := parser.AddCommand("test", "", nil)
+	c := sub.Int("", "a", &Option{Default: "2"})
 	if e := parser.Parse([]string{}); e != nil {
 		t.Errorf(e.Error())
 		return
@@ -98,6 +102,10 @@ func TestParser_Default(t *testing.T) {
 	}
 	if *b != 1 {
 		t.Error("failed to set default positional value")
+		return
+	}
+	if *c != 2 {
+		t.Error("failed to set default value in sub command")
 		return
 	}
 }
@@ -369,15 +377,97 @@ func TestParser_Fail(t *testing.T) {
 		p.Int("", "aa", nil)
 	}()
 
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p := NewParser("", "", nil)
+		p.String("a", "aa", nil)
+		p.Ints("", "aa", nil)
+	}()
+
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p := NewParser("", "", nil)
+		p.String("a", "aa", nil)
+		p.Float("", "aa", nil)
+	}()
+
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p := NewParser("", "", nil)
+		p.String("a", "aa", nil)
+		p.Floats("", "aa", nil)
+	}()
+
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p := NewParser("", "", nil)
+		p.String("a", "aa", nil)
+		p.Strings("", "aa", nil)
+	}()
+
+	func() {
+		defer func() {
+			e := recover()
+			if e == nil {
+				t.Error("failed to panic")
+			}
+		}()
+		p := NewParser("", "", nil)
+		p.String("a", "aa", nil)
+		p.Flag("", "aa", nil)
+	}()
+
 	p = NewParser("", "", nil)
 	p.Int("", "a", nil)
 	p.Float("", "b", nil)
+	p.Floats("", "c", &Option{Positional: true})
 	if e := p.Parse([]string{"--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
 		t.Error("failed to check invalid int")
 		return
 	}
 	if e := p.Parse([]string{"--b", "x"}); e == nil || e.Error() != "invalid float value: x" {
 		t.Error("failed to check invalid float")
+		return
+	}
+	if e := p.Parse([]string{"a", "b", "c"}); e == nil || e.Error() != "invalid float value: a" {
+		t.Error("failed to check invalid value in multi positional")
+		return
+	}
+	p = NewParser("", "", nil)
+	p.Int("", "a", &Option{Positional: true})
+	if e := p.Parse([]string{"a"}); e == nil || e.Error() != "invalid int value: a" {
+		t.Error("failed to check invalid value in positional")
+		return
+	}
+	test := p.AddCommand("test", "", nil)
+	test.Int("", "a", nil)
+	test.Float("", "b", &Option{Default: "x"})
+	if e := p.Parse([]string{"test", "--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
+		t.Error("failed to check invalid value in sub command")
+		return
+	}
+	if e := p.Parse([]string{"--a", "1"}); e == nil || e.Error() != "invalid float value: x" {
+		t.Error("failed to check invalid default in sub command")
 		return
 	}
 }
