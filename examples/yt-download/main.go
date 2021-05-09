@@ -1,3 +1,8 @@
+// this show case is for Argument Groups
+// group arguments in different group in help message
+// but if there is too many argument, it's better to change ParserConfig.Usage to a simpler string
+// Argument Group is for user to better understand your program group by group
+// you should also checkout SubCommand for reference, they are quit like each other
 package main
 
 import (

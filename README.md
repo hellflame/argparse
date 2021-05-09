@@ -4,7 +4,7 @@
 
 Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
 
-It's small (less than 700 rows of code) but fully Functional & Powerful
+It's small (about 700 rows of code) but fully Functional & Powerful
 
 Provide not just simple parse args, but :
 
@@ -422,16 +422,17 @@ Create new parser scope, within the sub command parser, arguments won't interrup
 
 ```go
 func main() {
-	parser := argparse.NewParser("", "Go is a tool for managing Go source code.", nil)
+	parser := argparse.NewParser("sub-command", "Go is a tool for managing Go source code.", nil)
+	t := parser.Flag("f", "flag", &argparse.Option{Help: "from main parser"})
 	testCommand := parser.AddCommand("test", "start a bug report", nil)
-	tFlag := testCommand.Flag("f", "flag", nil)
+	tFlag := testCommand.Flag("f", "flag", &argparse.Option{Help: "from test parser"})
 	otherFlag := testCommand.Flag("o", "other", nil)
-	t := parser.Flag("f", "flag", nil)
+	defaultInt := testCommand.Int("i", "int", &argparse.Option{Default: "1"})
 	if e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}
-	println(*tFlag, *otherFlag, *t)
+	println(*tFlag, *otherFlag, *t, *defaultInt)
 }
 ```
 
@@ -439,7 +440,7 @@ Output:
 
 ```bash
 => ./sub-command
-usage: ./sub-command <cmd> [-h] [-f]
+usage: sub-command <cmd> [-h] [-f]
 
 Go is a tool for managing Go source code.
 
@@ -448,20 +449,27 @@ available commands:
 
 optional arguments:
   -h, --help  show this help message
-  -f, --flag
-  
+  -f, --flag  from main parser
+
+# when using sub command, it's a total different context
 => ./sub-command test
-usage: test [-h] [-f] [-o]
+usage: sub-command test [-h] [-f] [-o] [-i INT]
 
 start a bug report
 
 optional arguments:
-  -h, --help   show this help message
-  -f, --flag
+  -h, --help         show this help message
+  -f, --flag         from test parser
   -o, --other
+  -i INT, --int INT
 ```
 
-The two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag it `test` parser and `main` parser
+The two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag in `test` parser and `main` parser.
+
+As you can see, though main parser & test parser has different context, but they do parse user input at the same time, it's quite like `Argument Group` , except:
+
+1. sub command has different context, so you can have two `--flag`, and different help message output
+2. sub command show help message seperately, it's better for user to understand your program step by step. While `Group Argument` help user to understand your program group by group
 
 #### 10. Argument Action √
 
@@ -662,3 +670,6 @@ type Option struct {
 
 ## [Examples](examples)
 
+there are some useful use cases to help program build there own command
+
+feel free to add different use cases
