@@ -15,6 +15,7 @@ Provide not just simple parse args, but :
 - [x] Customize Validate checker
 - [x] Argument Choice support
 - [x] Argument Action support (infinite possible)
+- [ ] Shell Completion support
 - [ ] ......
 
 ## Installation
