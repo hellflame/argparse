@@ -11,8 +11,10 @@ import (
 type Parser struct {
 	name        string
 	description string
-	showHelp    *bool
 	config      *ParserConfig
+
+	showHelp            *bool // flag to decide show help message
+	showShellCompletion *bool // flag to  decide show shell completion
 
 	entries      []*arg
 	entryMap     map[string]*arg
@@ -33,6 +35,7 @@ type ParserConfig struct {
 	DisableHelp            bool   // disable help entry register [-h/--help]
 	ContinueOnHelp         bool   // set true to: continue program after default help is printed
 	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
+	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
 }
 
 // NewParser create the parser object with optional name & description & ParserConfig
@@ -58,6 +61,10 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 	if !config.DisableHelp {
 		parser.showHelp = parser.Flag("h", "help",
 			&Option{Help: "show this help message"})
+	}
+	if config.AddShellCompletion {
+		parser.showShellCompletion = parser.Flag("", "completion",
+			&Option{Help: "show command completion script"})
 	}
 	return parser
 }
