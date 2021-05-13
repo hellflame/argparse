@@ -546,3 +546,24 @@ func TestDefaultAction(t *testing.T) {
 	}
 
 }
+
+func TestParse_Completion(t *testing.T) {
+	p := NewParser("cp.sh", "this is test", nil)
+	p.Strings("a", "aa", nil)
+	p.Int("", "bb", nil)
+	p.Float("c", "cc", &Option{Positional: true})
+	test := p.AddCommand("test", "", nil)
+	test.String("a", "aa", nil)
+	test.Int("", "bb", nil)
+	install := p.AddCommand("install", "", nil)
+	install.Strings("i", "in", nil)
+	if p.FormatCompletionScript() == "" {
+		t.Error("failed to generate completion script")
+		return
+	}
+}
+
+func TestParse_AddCompletion(t *testing.T) {
+	p := NewParser("", "", &ParserConfig{AddShellCompletion: true})
+	p.Int("", "a", nil)
+}

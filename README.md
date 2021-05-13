@@ -15,7 +15,7 @@ Provide not just simple parse args, but :
 - [x] Customize Validate checker
 - [x] Argument Choice support
 - [x] Argument Action support (infinite possible)
-- [ ] Shell Completion support
+- [x] Shell Completion support
 - [ ] ......
 
 ## Installation
@@ -527,6 +527,37 @@ if e := parser.Parse(nil); e != nil {
 When `DefaultAction` is set, default show help message will be ignored.
 
 `DefaultAction` is effective on sub-command, and if sub parser's `ParserConfig` is `nil`, `DefaultAction` from main parser will be inherited.
+
+#### 12. Shell Completion Support [ >= v0.4 ]
+
+Set `ParserConfig.AddShellCompletion` to `true` will register `--completion` to the parser, [eg](examples/shell-completion/main.go)
+
+```go
+p := argparse.NewParser("start", "this is test", &argparse.ParserConfig{AddShellCompletion: true})
+p.Strings("a", "aa", nil)
+p.Int("", "bb", nil)
+p.Float("c", "cc", &argparse.Option{Positional: true})
+test := p.AddCommand("test", "", nil)
+test.String("a", "aa", nil)
+test.Int("", "bb", nil)
+install := p.AddCommand("install", "", nil)
+install.Strings("i", "in", nil)
+if e := p.Parse(nil); e != nil {
+  fmt.Println(e.Error())
+  return
+}
+```
+
+Though, if you didn't set `ParserConfig.AddShellCompletion` to `true` , shell complete script is still available via `parser.FormatCompletionScript` , which will generate the script.
+
+__Note__: 
+
+1. the completion script only support `bash` & `zsh` presently
+2. and it only generate simple complete code for basic use, it should be better than nothing.
+
+Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` , then restart the shell or `source ~/.bashrc` will enable the completion. 
+
+Completion will register to your shell by your program name, so, it's best to give your program a fix name
 
 ##### Argument Process Flow Map
 

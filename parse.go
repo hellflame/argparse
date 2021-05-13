@@ -45,7 +45,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		config = &ParserConfig{}
 	}
 	if name == "" && len(os.Args) > 0 {
-		name = os.Args[0]
+		name = strings.ReplaceAll(os.Args[0], " ", "")
 	}
 	parser := &Parser{
 		name:            name,
@@ -237,6 +237,123 @@ func (p *Parser) formatUsage() string {
 	return usage
 }
 
+func (p *Parser) formatBashCompletionScript() string {
+	completionName := fmt.Sprintf("_%s_completion", p.name)
+	var topLevel []string
+	subLevelMap := make(map[string]string)
+	for entry := range p.entryMap {
+		topLevel = append(topLevel, entry)
+	}
+	for entry, subParser := range p.subParserMap {
+		topLevel = append(topLevel, entry)
+		var subOptions []string
+		for subOption := range subParser.entryMap {
+			subOptions = append(subOptions, subOption)
+		}
+		subLevelMap[entry] = strings.Join(subOptions, " ")
+	}
+	var subCompletions []string
+	for entry, candidates := range subLevelMap {
+		subCompletions = append(subCompletions,
+			fmt.Sprintf("    %s) COMPREPLY=( $(compgen -W \"%s\" -- $cur ) ) ;;", entry, candidates))
+	}
+	subCompletionsScript := ""
+	if len(subCompletions) > 0 {
+		subCompletionsScript = fmt.Sprintf(`
+    case "$cmd" in
+  %s
+    esac`, strings.Join(subCompletions, "\n"))
+	}
+
+	return fmt.Sprintf(`
+  %s() {
+    local i=1 cur="${COMP_WORDS[COMP_CWORD]}" cmd
+
+    while [[ "$i" -lt "$COMP_CWORD" ]]
+    do
+      local s="${COMP_WORDS[i]}"
+      case "$s" in
+        %s*)
+          cmd="$s"
+          ;;
+        *)
+          cmd="$s"
+          break
+          ;;
+      esac
+      (( i++ ))
+    done
+
+    if [[ "$i" -eq "$COMP_CWORD" ]]
+    then
+      COMPREPLY=($(compgen -W "%s" -- $cur))
+      return
+    fi
+  %s
+  }
+
+  complete -o bashdefault -o default -F %s %s
+`, completionName, shortPrefix, strings.Join(topLevel, " "), subCompletionsScript, completionName, p.name)
+}
+
+func (p *Parser) formatZshCompletionScript() string {
+	completionName := fmt.Sprintf("_%s_completion", p.name)
+	var positional []string
+	var positionalFirstSection []string
+	for entry := range p.entryMap {
+		positional = append(positional, entry)
+		positionalFirstSection = append(positionalFirstSection,
+			fmt.Sprintf("\"%s\"", entry))
+	}
+
+	subLevelPosition := ""
+	subLevelMap := make(map[string]string)
+	for entry, subParser := range p.subParserMap {
+		var subOptions []string
+		for subOption := range subParser.entryMap {
+			subOptions = append(subOptions, fmt.Sprintf("\"%s\"", subOption))
+		}
+		subLevelPosition += entry + " "
+		subLevelMap[entry] = strings.Join(subOptions, " ")
+	}
+	var subCompletions []string
+	for entry, candidates := range subLevelMap {
+		subCompletions = append(subCompletions,
+			fmt.Sprintf("    %s) _arguments %s ;;", entry, candidates))
+	}
+	subCompletionsScript := ""
+	if len(subCompletions) > 0 {
+		subCompletionsScript = fmt.Sprintf(`
+    case $line[1] in
+  %s
+    esac`, strings.Join(subCompletions, "\n"))
+	}
+
+	return fmt.Sprintf(`
+  function %s {
+    local line
+    _arguments -C %s "1: :(%s %s)" "*::arg:->args"
+    %s
+  }
+  compdef %s %s
+`, completionName, strings.Join(positionalFirstSection, " "), subLevelPosition, strings.Join(positional, " "), subCompletionsScript, completionName, p.name)
+}
+
+// FormatCompletionScript generate simple shell complete script, which support bash & zsh for completion
+func (p *Parser) FormatCompletionScript() string {
+	return fmt.Sprintf(`
+###-begin-completion-###
+# save the output to ~/.bashrc (or ~/.zshrc)
+# or save file to your completion path like /usr/local/etc/bash_completion.d/ or /etc/bash_completion.d/
+if type complete &>/dev/null; then
+%s
+elif type compctl &>/dev/null; then
+%s
+fi
+###-end-completion-###
+`, p.formatBashCompletionScript(), p.formatZshCompletionScript())
+}
+
 // Parse will parse given args to bind to any registered arguments
 // args: set nil to use os.Args[1:] by default
 func (p *Parser) Parse(args []string) error {
@@ -339,6 +456,10 @@ func (p *Parser) Parse(args []string) error {
 		if !targetParser.config.ContinueOnHelp {
 			os.Exit(1)
 		}
+	}
+	if p.showShellCompletion != nil && *p.showShellCompletion {
+		fmt.Println(p.FormatCompletionScript())
+		os.Exit(0)
 	}
 	entries := append(p.entries, p.positionArgs...)
 	for _, _p := range p.subParser {
