@@ -518,7 +518,7 @@ func TestDefaultAction(t *testing.T) {
 	}
 
 	test := false
-	p = NewParser("", "", &ParserConfig{ContinueOnHelp:true, DisableDefaultShowHelp: true})
+	p = NewParser("", "", &ParserConfig{ContinueOnHelp: true, DisableDefaultShowHelp: true})
 	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
 		test = true
 	}})
@@ -532,7 +532,7 @@ func TestDefaultAction(t *testing.T) {
 	}
 
 	test = false
-	p = NewParser("", "", &ParserConfig{ContinueOnHelp:true})
+	p = NewParser("", "", &ParserConfig{ContinueOnHelp: true})
 	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
 		test = true
 	}})

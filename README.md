@@ -507,6 +507,27 @@ A few points to be noted:
    * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
 2. Errors can be returned if necessary, it can be normally captured
 
+#### 11. Default Parse Action [ >= v0.4 ]
+
+Instead of showing help message as default, you now can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
+
+```go
+parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
+  fmt.Println("hi ~\ntell me what to do?")
+}})
+parser.AddCommand("test", "testing", &argparse.ParserConfig{DefaultAction: func() {
+  fmt.Println("ok, now you know you are testing")
+}})
+if e := parser.Parse(nil); e != nil {
+  fmt.Println(e.Error())
+  return
+}
+```
+
+When `DefaultAction` is set, default show help message will be ignored.
+
+`DefaultAction` is effective on sub-command, and if sub parser's `ParserConfig` is `nil`, `DefaultAction` from main parser will be inherited.
+
 ##### Argument Process Flow Map
 
 ```
