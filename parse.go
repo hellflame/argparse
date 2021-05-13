@@ -35,6 +35,7 @@ type ParserConfig struct {
 	DisableHelp            bool   // disable help entry register [-h/--help]
 	ContinueOnHelp         bool   // set true to: continue program after default help is printed
 	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
+	DefaultAction	func()
 	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
 }
 
@@ -248,7 +249,9 @@ func (p *Parser) Parse(args []string) error {
 	}
 	var subParser *Parser
 	if len(args) == 0 {
-		if !p.config.DisableDefaultShowHelp {
+		if p.config.DefaultAction != nil {
+			p.config.DefaultAction()
+		} else if !p.config.DisableDefaultShowHelp {
 			help := true
 			p.showHelp = &help
 		}

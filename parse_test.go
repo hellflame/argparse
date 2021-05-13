@@ -502,3 +502,47 @@ func TestParser_usage(t *testing.T) {
 		t.Error("failed to generate sub usage")
 	}
 }
+
+func TestDefaultAction(t *testing.T) {
+	d := false
+	p := NewParser("", "", &ParserConfig{DefaultAction: func() {
+		d = true
+	}})
+	if e := p.Parse([]string{}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if !d {
+		t.Error("failed to do default action")
+		return
+	}
+
+	test := false
+	p = NewParser("", "", &ParserConfig{ContinueOnHelp:true, DisableDefaultShowHelp: true})
+	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
+		test = true
+	}})
+	if e := p.Parse([]string{}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if test {
+		t.Error("test should not run default action when it's not hit")
+		return
+	}
+
+	test = false
+	p = NewParser("", "", &ParserConfig{ContinueOnHelp:true})
+	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
+		test = true
+	}})
+	if e := p.Parse([]string{"test"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if !test {
+		t.Error("default action should be ran")
+		return
+	}
+
+}
