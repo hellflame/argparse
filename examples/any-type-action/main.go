@@ -1,3 +1,6 @@
+// this is show case for argument action
+//
+// argument action will be executed when user input has a match to the binding argument
 package main
 
 import (

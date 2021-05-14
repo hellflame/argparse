@@ -1,6 +1,9 @@
 // this is show case for some advanced use
+//
 // use Option.Validate to check if the user input is valid
+//
 // use Option.Formatter to pre-format the user input, before binding to the variable 'host'
+//
 // if there's more free-type argument need, check out another example 'any-type-action'
 package main
 

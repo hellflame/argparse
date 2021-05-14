@@ -1,4 +1,5 @@
 // this is show case for default parse action when no user input is given, also has effect on sub command
+//
 // run code like "go run main.go" or "go run main.go test"
 package main
 

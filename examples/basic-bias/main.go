@@ -1,6 +1,9 @@
 // this is show case for a little bit complex than 'basic'
+//
 // which disabled the default help menu entry '-h' or '--help',
+//
 // instead, it use '-help' and '--help-me' as help menu entry and handle help print manually
+//
 // also, it pass 'os.Args[1:]' manually to 'Parse' method, which is the same as pass 'nil'
 package main
 

@@ -1,6 +1,9 @@
 // this show case is for sub command
+//
 // sub command is created by AddCommand, which returns a *Parser for programmer to bind arguments
+//
 // sub command has different parse context from main parser (created by NewParser)
+//
 // mainly use sub command to help user understand your program step by step
 package main
 

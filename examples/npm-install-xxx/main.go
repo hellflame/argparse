@@ -1,6 +1,6 @@
 // this is show case like npm install xxx xx
-// with sub-command and its positional argument
-// run the code like go run main.go install express vue
+//
+// with sub-command and its positional argument, you can run the code like "go run main.go install express vue"
 package main
 
 import (
