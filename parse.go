@@ -7,6 +7,7 @@ import (
 )
 
 // Parser is the top level struct
+//
 // it's the only interface to interact with user input, parse & bind each `arg` value
 type Parser struct {
 	name        string
@@ -14,7 +15,7 @@ type Parser struct {
 	config      *ParserConfig
 
 	showHelp            *bool // flag to decide show help message
-	showShellCompletion *bool // flag to  decide show shell completion
+	showShellCompletion *bool // flag to decide show shell completion
 
 	entries      []*arg
 	entryMap     map[string]*arg
@@ -45,7 +46,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		config = &ParserConfig{}
 	}
 	if name == "" && len(os.Args) > 0 {
-		name = strings.ReplaceAll(os.Args[0], " ", "")
+		name = strings.ReplaceAll(os.Args[0], " ", "") // do this for shell complete code generate
 	}
 	parser := &Parser{
 		name:            name,
@@ -84,7 +85,7 @@ func (p *Parser) registerArgument(a *arg) error {
 		}
 		p.entryGroup[a.Group] = append(p.entryGroup[a.Group], a)
 	}
-	for _, watcher := range a.getWatchers() {
+	for _, watcher := range a.getWatchers() { // register optional arguments to 'entryMap'
 		if match, exist := p.entryMap[watcher]; exist {
 			return fmt.Errorf("conflict entry for '%s', say: '%s'", watcher, match.Help)
 		}
@@ -115,7 +116,7 @@ func (p *Parser) FormatHelp() string {
 	if p.description != "" {
 		result += "\n\n" + p.description + "\n"
 	}
-	headerLength := 10
+	headerLength := 10 // here set minimum header length, the code after will find the max length of headers
 	for _, parser := range p.subParser {
 		l := len(parser.name)
 		if l > headerLength {
@@ -134,7 +135,7 @@ func (p *Parser) FormatHelp() string {
 			headerLength = l
 		}
 	}
-	headerLength += 4
+	headerLength += 4 // 2 space padding around header, before & after
 	if len(p.subParser) > 0 {
 		section := "\navailable commands:\n"
 		for _, parser := range p.subParser {
@@ -142,7 +143,7 @@ func (p *Parser) FormatHelp() string {
 		}
 		result += section
 	}
-	if len(p.positionArgs) > 0 {
+	if len(p.positionArgs) > 0 { // dealing positional arguments present
 		section := "\npositional arguments:\n"
 		for _, arg := range p.positionArgs {
 			if arg.Group != "" {
@@ -152,7 +153,7 @@ func (p *Parser) FormatHelp() string {
 		}
 		result += section
 	}
-	if len(p.entries) > 0 {
+	if len(p.entries) > 0 { // dealing optional arguments present
 		parsed := make(map[string]bool)
 		section := "\noptional arguments:\n"
 		for _, arg := range p.entries {
@@ -167,7 +168,7 @@ func (p *Parser) FormatHelp() string {
 		}
 		result += section
 	}
-	for _, group := range p.entryGroupOrder {
+	for _, group := range p.entryGroupOrder { // dealing arguments group present
 		section := fmt.Sprintf("\n%s:\n", group)
 		for _, arg := range p.entryGroup[group] {
 			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
@@ -186,7 +187,7 @@ func (p *Parser) formatUsage() string {
 	if p.config.Usage != "" {
 		return usage + p.config.Usage
 	}
-	for _, parent := range p.parentList {
+	for _, parent := range p.parentList { // sub command usage
 		usage += parent + " "
 	}
 	usage += p.name + " "
@@ -237,6 +238,7 @@ func (p *Parser) formatUsage() string {
 	return usage
 }
 
+// formatBashCompletionScript will generate bash shell script
 func (p *Parser) formatBashCompletionScript() string {
 	completionName := fmt.Sprintf("_%s_completion", p.name)
 	var topLevel []string
@@ -296,6 +298,7 @@ func (p *Parser) formatBashCompletionScript() string {
 `, completionName, shortPrefix, strings.Join(topLevel, " "), subCompletionsScript, completionName, p.name)
 }
 
+// formatZshCompletionScript will generate zsh shell script
 func (p *Parser) formatZshCompletionScript() string {
 	completionName := fmt.Sprintf("_%s_completion", p.name)
 	var positional []string
@@ -355,6 +358,7 @@ fi
 }
 
 // Parse will parse given args to bind to any registered arguments
+//
 // args: set nil to use os.Args[1:] by default
 func (p *Parser) Parse(args []string) error {
 	if args == nil {
@@ -389,7 +393,7 @@ func (p *Parser) Parse(args []string) error {
 						_ = arg.parseValue(nil)
 						args = args[1:]
 					} else {
-						var tillNext []string
+						var tillNext []string // find user inputs before next registered optional argument
 						for _, a := range args[1:] {
 							if _, isEntry := p.entryMap[a]; !isEntry {
 								tillNext = append(tillNext, a)
@@ -397,17 +401,17 @@ func (p *Parser) Parse(args []string) error {
 								break
 							}
 						}
-						if len(tillNext) == 0 {
+						if len(tillNext) == 0 { // argument takes at least one input as argument, but there is 0
 							return fmt.Errorf("argument %s expect argument",
 								strings.Join(arg.getWatchers(), "/"))
 						}
-						if arg.multi {
+						if arg.multi { // if argument takes more than one arguments, it will take all user input before next registered argument, and proceed 'args' parsing to next registered argument
 							e := arg.parseValue(tillNext)
 							if e != nil {
 								return e
 							}
 							args = args[len(tillNext)+1:]
-						} else {
+						} else { // then the argument takes only one argument, and proceed the left arguments for positional argument parsing
 							e := arg.parseValue(tillNext[0:1])
 							if e != nil {
 								return e
@@ -416,10 +420,10 @@ func (p *Parser) Parse(args []string) error {
 						}
 					}
 				} else {
-					if registeredPositionsLength > lastPositionArgIndex {
+					if registeredPositionsLength > lastPositionArgIndex { // while there is unparsed positional argument
 						arg := p.positionArgs[lastPositionArgIndex]
 						lastPositionArgIndex += 1
-						var tillNext []string
+						var tillNext []string // find user inputs before next registered optional argument
 						for _, a := range args {
 							if _, isEntry := p.entryMap[a]; !isEntry {
 								tillNext = append(tillNext, a)
@@ -459,9 +463,9 @@ func (p *Parser) Parse(args []string) error {
 	}
 	if p.showShellCompletion != nil && *p.showShellCompletion {
 		fmt.Println(p.FormatCompletionScript())
-		os.Exit(0)
+		os.Exit(1)
 	}
-	entries := append(p.entries, p.positionArgs...)
+	entries := append(p.entries, p.positionArgs...) // ready for Required checking & Default parsing
 	for _, _p := range p.subParser {
 		entries = append(entries, append(_p.entries, _p.positionArgs...)...)
 	}
@@ -479,6 +483,7 @@ func (p *Parser) Parse(args []string) error {
 }
 
 // AddCommand will add sub command entry parser
+//
 // Return a new pointer to sub command parser
 func (p *Parser) AddCommand(name string, description string, config *ParserConfig) *Parser {
 	if config == nil {
@@ -498,8 +503,10 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 	return parser
 }
 
-// Flag create flag argument, Return a `*bool` point to the parse result
-// python version is like `add_argument("-s", "--full", action="store_true")`
+// Flag create flag argument, Return a "*bool" point to the parse result
+//
+// python version is like add_argument("-s", "--full", action="store_true")
+//
 // Flag Argument can only be used as an OptionalArguments
 func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	var result bool
@@ -518,9 +525,11 @@ func (p *Parser) Flag(short, full string, opts *Option) *bool {
 	return &result
 }
 
-// String create string argument, return a `*string` point to the parse result
-// String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
-// set `Option.Positional = true` to use as Positional Argument, then it's like `add_argument("s", "full")` in python
+// String create string argument, return a "*string" point to the parse result
+//
+// String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like add_argument("-s", "--full") in python
+//
+// set Option.Positional = true to use as Positional Argument, then it's like add_argument("s", "full") in python
 func (p *Parser) String(short, full string, opts *Option) *string {
 	var result string
 	if opts == nil {
@@ -537,9 +546,11 @@ func (p *Parser) String(short, full string, opts *Option) *string {
 	return &result
 }
 
-// Strings create string list argument, return a `*[]string` point to the parse result
-// mostly like `*Parser.String()`
-// python version is like `add_argument("-s", "--full", nargs="*")` or `add_argument("s", "full", nargs="*")`
+// Strings create string list argument, return a "*[]string" point to the parse result
+//
+// mostly like "*Parser.String()"
+//
+// python version is like add_argument("-s", "--full", nargs="*") or add_argument("s", "full", nargs="*")
 func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	var result []string
 	if opts == nil {
@@ -557,9 +568,11 @@ func (p *Parser) Strings(short, full string, opts *Option) *[]string {
 	return &result
 }
 
-// Int create int argument, return a `*int` point to the parse result
-// mostly like `*Parser.String()`, except the return type
-// python version is like `add_argument("s", "full", type=int)` or `add_argument("-s", "--full", type=int)`
+// Int create int argument, return a *int point to the parse result
+//
+// mostly like *Parser.String(), except the return type
+//
+// python version is like add_argument("s", "full", type=int) or add_argument("-s", "--full", type=int)
 func (p *Parser) Int(short, full string, opts *Option) *int {
 	var result int
 	if opts == nil {
@@ -576,9 +589,11 @@ func (p *Parser) Int(short, full string, opts *Option) *int {
 	return &result
 }
 
-// Ints create int list argument, return a `*[]int` point to the parse result
-// mostly like `*Parser.Int()`
-// python version is like `add_argument("s", "full", type=int, nargs="*")` or `add_argument("-s", "--full", type=int, nargs="*")`
+// Ints create int list argument, return a *[]int point to the parse result
+//
+// mostly like *Parser.Int()
+//
+// python version is like add_argument("s", "full", type=int, nargs="*") or add_argument("-s", "--full", type=int, nargs="*")
 func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	var result []int
 	if opts == nil {
@@ -596,9 +611,11 @@ func (p *Parser) Ints(short, full string, opts *Option) *[]int {
 	return &result
 }
 
-// Float create float argument, return a `*float64` point to the parse result
-// mostly like `*Parser.String()`, except the return type
-// python version is like `add_argument("-s", "--full", type=double)` or `add_argument("s", "full", type=double)`
+// Float create float argument, return a *float64 point to the parse result
+//
+// mostly like *Parser.String(), except the return type
+//
+// python version is like add_argument("-s", "--full", type=double) or add_argument("s", "full", type=double)
 func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	var result float64
 	if opts == nil {
@@ -615,9 +632,11 @@ func (p *Parser) Float(short, full string, opts *Option) *float64 {
 	return &result
 }
 
-// Floats create float list argument, return a `*[]float64` point to the parse result
-// mostly like `*Parser.Float()`
-// python version is like `add_argument("-s", "--full", type=double, nargs="*")` or `add_argument("s", "full", type=double, nargs="*")`
+// Floats create float list argument, return a *[]float64 point to the parse result
+//
+// mostly like *Parser.Float()
+//
+// python version is like add_argument("-s", "--full", type=double, nargs="*") or add_argument("s", "full", type=double, nargs="*")
 func (p *Parser) Floats(short, full string, opts *Option) *[]float64 {
 	var result []float64
 	if opts == nil {
