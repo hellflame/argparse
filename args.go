@@ -78,11 +78,11 @@ func (a *arg) validate() error {
 
 // get argument watch list for parser use
 func (a *arg) getWatchers() []string {
-	if a.Positional {
+	if a.Positional { // positional argument has nothing to watch, only positions
 		return []string{}
 	}
 	result := []string{fmt.Sprintf("%s%s", fullPrefix, a.full)}
-	if a.short != "" && a.short != a.full {
+	if a.short != "" && a.short != a.full { // actually it's a little much to check "short != full"
 		result = append([]string{fmt.Sprintf("%s%s", shortPrefix, a.short)}, result...)
 	}
 	return result
@@ -90,7 +90,7 @@ func (a *arg) getWatchers() []string {
 
 func (a *arg) getMetaName() string {
 	if a.Meta != "" {
-		return a.Meta
+		return a.Meta // Meta variable given by programmer
 	}
 	return strings.ToUpper(a.full) // it's upper case in python
 }
@@ -122,9 +122,9 @@ func (a *arg) parseValue(values []string) error {
 		return nil
 	}
 	if len(values) == 0 && a.Default != "" {
-		values = append(values, a.Default)
+		values = append(values, a.Default) // add default value in the parse flow
 	}
-	if a.Validate != nil {
+	if a.Validate != nil { // execute user given Validate function for each input
 		for _, v := range values {
 			e := a.Validate(v)
 			if e != nil {
@@ -133,7 +133,7 @@ func (a *arg) parseValue(values []string) error {
 		}
 	}
 	var result []interface{}
-	if a.Formatter != nil {
+	if a.Formatter != nil { // format each input
 		for _, v := range values {
 			f, e := a.Formatter(v)
 			if e != nil {
@@ -168,7 +168,7 @@ func (a *arg) parseValue(values []string) error {
 	if len(result) == 0 {
 		return fmt.Errorf("no value to parse") // normally you can't reach this area
 	}
-	if len(a.Choices) > 0 {
+	if len(a.Choices) > 0 { // check if user input is among given Choices
 		for _, r := range result {
 			found := false
 			for _, c := range a.Choices {
@@ -181,7 +181,7 @@ func (a *arg) parseValue(values []string) error {
 			}
 		}
 	}
-	switch a.target.(type) {
+	switch a.target.(type) { // bind different types
 	case *string:
 		*a.target.(*string) = result[0].(string)
 	case *int:
