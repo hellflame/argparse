@@ -495,6 +495,7 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 	if strings.Contains(name, " ") {
 		panic("sub command name has space")
 	}
+	config.AddShellCompletion = false // disable sub command completion
 	parser := NewParser(name, description, config)
 	parser.parentList = append(p.parentList, p.name)
 	if e := p.registerParser(parser); e != nil {

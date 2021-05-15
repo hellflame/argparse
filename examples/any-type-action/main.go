@@ -17,11 +17,11 @@ func main() {
 	content := ""
 	parser.Strings("", "a", &argparse.Option{Positional: true, Action: func(args []string) error {
 		for _, arg := range args {
-			if i, e := strconv.Atoi(arg); e == nil {
-				sum += i
-			} else {
+			i, e := strconv.Atoi(arg)
+			if e != nil {
 				return e
 			}
+			sum += i
 		}
 		return nil
 	}})

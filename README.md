@@ -73,19 +73,19 @@ A few points
 
 About object __parser__ :
 
-1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be you executable file's name when you release the code. It can be convinient where the release name is uncertain
-2. `help` function is auto injected, but you can disable it when `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
-3. When `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to by `true`, or just use your own help function instead
+1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient where the release name is uncertain
+2. `help` function is auto injected, but you can disable it when using `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
+3. When `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
 
 About __parse__ action:
 
-1. The argument `name` is only usable __after__  `parser.Parse` , or there might be errors happening
-2. When passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source, so notice to __only pass arguments__ to `parser.Parse` , or the program name may be `unrecognized`
-3. The short name of your agument can be __more than one character__
+1. The argument `name` is only usable __after__  `parser.Parse` 
+2. When passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source
+3. The short name of your argument can be __more than one character__
 
 ---
 
-Based on these points, the code can be like this:
+Based on those points above, the code can be like this:
 
 ```go
 func main() {
@@ -115,7 +115,7 @@ func main() {
 Check output:
 
 ```bash
-=> go run main.go
+=> go run main.go  # there will be no output
 
 => go run main.go -h
 unrecognized arguments: -h
@@ -136,10 +136,10 @@ hello hellflame
 
 A few points:
 
-1. `DisableHelp` only avoid `-h/--help` flag to register to parser, but the `help` is still fully functional
-2. If keep `DisableDefaultShowHelp` to be false, where there is no argument, the `help` function will still show up
-3. After the manual call of `parser.PrintHelp()` , program goes on
-4. Notice the order of usage array, it's mostly the order of creating arguments
+1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available
+2. If keep `DisableDefaultShowHelp` to be false, where there is no argument, the `help` message will still show up as Default Action
+3. After the manually call of `parser.PrintHelp()` , `return` will put an end to `main`
+4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way
 
 ### Supported Arguments
 
@@ -149,7 +149,7 @@ A few points:
 parser.Flag("short", "full", nil)
 ```
 
-Flag create flag argument, Return a `*bool` point to the parse result
+`Flag` create flag argument, Return a `*bool` point to the parse result
 
 Python version is like `add_argument("-s", "--full", action="store_true")`
 
@@ -161,7 +161,7 @@ Flag Argument can only be used as an OptionalArguments
 parser.String("short", "full", nil)
 ```
 
-String create string argument, return a `*string` point to the parse result
+`String` create string argument, return a `*string` point to the parse result
 
 String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
 
@@ -173,11 +173,11 @@ Set `Option.Positional = true` to use as Positional Argument, then it's like `ad
 parser.Strings("short", "full", nil)
 ```
 
-Strings create string list argument, return a `*[]string` point to the parse result
+`Strings` create string list argument, return a `*[]string` point to the parse result
 
 Mostly like `*Parser.String()`
 
-Python version is like `add_argument("-s", "--full", nargs="*")` or `add_argument("s", "full", nargs="*")`
+Python version is like `add_argument("-s", "--full", nargs="*")` 
 
 #### 4. Int
 
@@ -185,11 +185,11 @@ Python version is like `add_argument("-s", "--full", nargs="*")` or `add_argumen
 parser.Int("short", "full", nil)
 ```
 
-Int create int argument, return a `*int` point to the parse result
+`Int` create int argument, return a `*int` point to the parse result
 
 Mostly like `*Parser.String()`, except the return type
 
-Python version is like `add_argument("s", "full", type=int)` or `add_argument("-s", "--full", type=int)`
+Python version is like `add_argument("-s", "--full", type=int)`
 
 #### 5. IntList
 
@@ -197,11 +197,11 @@ Python version is like `add_argument("s", "full", type=int)` or `add_argument("-
 parser.Ints("short", "full", nil)
 ```
 
-Ints create int list argument, return a `*[]int` point to the parse result
+`Ints` create int list argument, return a `*[]int` point to the parse result
 
 Mostly like `*Parser.Int()`
 
-Python version is like `add_argument("s", "full", type=int, nargs="*")` or `add_argument("-s", "--full", type=int, nargs="*")`
+Python version is like `add_argument("-s", "--full", type=int, nargs="*")`
 
 #### 6. Float
 
@@ -209,11 +209,11 @@ Python version is like `add_argument("s", "full", type=int, nargs="*")` or `add_
 parser.Float("short", "full", nil)
 ```
 
-Float create float argument, return a `*float64` point to the parse result
+`Float` create float argument, return a `*float64` point to the parse result
 
 Mostly like `*Parser.String()`, except the return type
 
-Python version is like `add_argument("-s", "--full", type=double)` or `add_argument("s", "full", type=double)`
+Python version is like `add_argument("-s", "--full", type=double)` 
 
 #### 7. FloatList
 
@@ -221,15 +221,13 @@ Python version is like `add_argument("-s", "--full", type=double)` or `add_argum
 parser.Floats("short", "full", nil)
 ```
 
-Floats create float list argument, return a `*[]float64` point to the parse result
+`Floats` create float list argument, return a `*[]float64` point to the parse result
 
 Mostly like `*Parser.Float()`
 
-Python version is like `add_argument("-s", "--full", type=double, nargs="*")` or `add_argument("s", "full", type=double, nargs="*")`
+Python version is like `add_argument("-s", "--full", type=double, nargs="*")` 
 
 ### Other Types
-
-Above types are the only types supported, they are basic types in go, including `bool`, `string`, `int`, `float64`
 
 For complex type or even customized types are __not directly supported__ , but it doesn't mean you can't do anything before parsing to your own type, here shows some cases:
 
@@ -276,9 +274,21 @@ function valid_type(arg) {
 parser.add_argument("-s", "--full", type=valid_type)
 ```
 
-It's just python can return any type from the type function `valid_type` , and you can just return a `File` type in there
+The difference is that, python can return any type from the type function `valid_type` , and you can just return a `File` type in there
 
-There is a little problem if Argument return a `*File` in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak
+There is a little problem if Argument return a `*File` in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak. Instead of a `*File` to use with danger, you can manage the resouce much safer:
+
+```go
+func dealFile(path) {
+  f, e := os.Open("")
+  if e != nil {
+    fmt.Println(e.Error())
+    return
+  }
+  defer f.Close()  // close file
+  io.ReadAll(f)
+}
+```
 
 #### 2. Any Type
 
@@ -293,7 +303,7 @@ Argument group is useful to present argument help infos in group, only affects h
 ```go
 parser.Flag("", "version", &argparse.Option{
   Help: "Print program version and exit", 
-  Group: "GeneralOptions",
+  Group: "General Options",
 })
 ```
 
@@ -308,7 +318,7 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-Looks like:
+It will looks like this in help message:
 
 ```bash
   --playlist-start NUMBER  Playlist video to start at (default is 1)
@@ -342,7 +352,7 @@ parser.Strings("", "url", &argparse.Option{
 
 Flag argument can not be `Required` , you should know the reason, Flag argument has more restrictions, you will be noticed when using it
 
-#### 5. PositionanArgument
+#### 5. PositionalArgument
 
 If the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
 
@@ -397,9 +407,9 @@ parser.String("", "b", &Option{
 
 If `Validate` is set, `Formatter` is right after `Validate`
 
-If raise errors in `Formatter`, it will partly act like `Validate` 
+If raise errors in `Formatter`, it will do some job like `Validate` 
 
-The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, to by `string` as Example shows
+The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, here,  to be `string` as Example shows
 
 #### 8. ArgumentChoices
 
@@ -419,7 +429,7 @@ When it's value array, each value must be one of of `Choices`
 
 #### 9. SubCommands
 
-Create new parser scope, within the sub command parser, arguments won't interrupt each other
+Create new parser scope, within the sub command parser, arguments won't interrupt main parser
 
 ```go
 func main() {
@@ -470,11 +480,11 @@ The two `--flag` will parse seperately, so you can use `tFlag` & `t` to referenc
 As you can see, though main parser & test parser has different context, but they do parse user input at the same time, it's quite like `Argument Group` , except:
 
 1. sub command has different context, so you can have two `--flag`, and different help message output
-2. sub command show help message seperately, it's better for user to understand your program step by step. While `Group Argument` help user to understand your program group by group
+2. sub command show help message seperately, it's for user to understand your program step by step. While `Group Argument` helps user to understand your program group by group
 
 #### 10. Argument Action √
 
-Argument Action allows you to anything with the argument when there is a match, this enables infinite possibility when parsing arguments, [eg](examples/any-type-action/main.go)
+Argument Action allows you to do anything with the argument when there is any match, this enables infinite possibility when parsing arguments, [eg](examples/any-type-action/main.go)
 
 ```go
 p := NewParser("action", "test action", nil)
@@ -509,7 +519,7 @@ A few points to be noted:
 
 #### 11. Default Parse Action [ >= v0.4 ]
 
-Instead of showing help message as default, you now can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
+Instead of showing help message as default, now you can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
 
 ```go
 parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
@@ -552,10 +562,11 @@ Though, if you didn't set `ParserConfig.AddShellCompletion` to `true` , shell co
 
 __Note__: 
 
-1. the completion script only support `bash` & `zsh` presently
+1. the completion script only support `bash` & `zsh` for now
 2. and it only generate simple complete code for basic use, it should be better than nothing.
+3. sub command has no completion entry
 
-Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` , then restart the shell or `source ~/.bashrc` will enable the completion. 
+Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. 
 
 Completion will register to your shell by your program name, so, it's best to give your program a fix name
 
