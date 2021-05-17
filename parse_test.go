@@ -320,11 +320,11 @@ func TestParse_Actions(t *testing.T) {
 	sum := 0
 	p.Strings("", "a", &Option{Positional: true, Action: func(args []string) error {
 		for _, a := range args {
-			if i, e := strconv.Atoi(a); e != nil {
+			i, e := strconv.Atoi(a)
+			if e != nil {
 				return fmt.Errorf("invalid int value %s", a)
-			} else {
-				sum += i
 			}
+			sum += i
 		}
 		return nil
 	}})
