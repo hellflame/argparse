@@ -567,3 +567,19 @@ func TestParse_AddCompletion(t *testing.T) {
 	p := NewParser("", "", &ParserConfig{AddShellCompletion: true})
 	p.Int("", "a", nil)
 }
+
+func TestParse_AllowShort(t *testing.T) {
+	p := NewParser("", "", nil)
+	x := p.Int("x", "", nil)
+	if e := p.Parse([]string{"-x", "1"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if *x != 1 {
+		t.Error("failed to parse only short arg")
+	}
+	if p.FormatHelp() == "" {
+		t.Error("failed to generate help")
+		return
+	}
+}

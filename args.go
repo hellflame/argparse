@@ -36,7 +36,7 @@ type Option struct {
 // validate args setting before parsing args, right after adding to parser
 // for conflict check & correction & restriction
 func (a *arg) validate() error {
-	if a.full == "" { // argument must has a name
+	if a.full == "" && a.short == "" { // argument must has a name
 		return fmt.Errorf("arg name is empty")
 	}
 	if strings.Contains(a.full, " ") || strings.Contains(a.short, " ") { // space will interrupt
@@ -81,9 +81,12 @@ func (a *arg) getWatchers() []string {
 	if a.Positional { // positional argument has nothing to watch, only positions
 		return []string{}
 	}
-	result := []string{fmt.Sprintf("%s%s", fullPrefix, a.full)}
-	if a.short != "" && a.short != a.full { // actually it's a little much to check "short != full"
-		result = append([]string{fmt.Sprintf("%s%s", shortPrefix, a.short)}, result...)
+	var result []string
+	if a.full != "" {
+		result = append(result, fmt.Sprintf("%s%s", fullPrefix, a.full))
+	}
+	if a.short != "" {
+		result = append(result, fmt.Sprintf("%s%s", shortPrefix, a.short))
 	}
 	return result
 }
@@ -92,7 +95,10 @@ func (a *arg) getMetaName() string {
 	if a.Meta != "" {
 		return a.Meta // Meta variable given by programmer
 	}
-	return strings.ToUpper(a.full) // it's upper case in python
+	if a.full != "" {
+		return strings.ToUpper(a.full) // it's upper case in python
+	}
+	return strings.ToUpper(a.short) // as backup choice
 }
 
 func (a *arg) formatHelpHeader() string {

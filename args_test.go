@@ -3,7 +3,7 @@ package argparse
 import "testing"
 
 func TestArgs(t *testing.T) {
-	if e := (&arg{full: ""}).validate(); e != nil {
+	if e := (&arg{}).validate(); e != nil {
 		if e.Error() != "arg name is empty" {
 			t.Error("arg name is empty")
 			return
