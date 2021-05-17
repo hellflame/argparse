@@ -395,13 +395,13 @@ Format input argument to most basic types you want, the limitation is that, the 
 ```go
 parser.String("", "b", &Option{
   Formatter: func(arg string) (i interface{}, err error) {
-		if arg == "False" {
-			err = fmt.Errorf("no False")
-			return
-		}
-		i = fmt.Sprintf("=> %s", arg)
-		return
-	},
+    if arg == "False" {
+      err = fmt.Errorf("no False")
+      return
+    }
+    i = fmt.Sprintf("=> %s", arg)
+    return
+  },
 })
 ```
 
@@ -433,17 +433,17 @@ Create new parser scope, within the sub command parser, arguments won't interrup
 
 ```go
 func main() {
-	parser := argparse.NewParser("sub-command", "Go is a tool for managing Go source code.", nil)
-	t := parser.Flag("f", "flag", &argparse.Option{Help: "from main parser"})
-	testCommand := parser.AddCommand("test", "start a bug report", nil)
-	tFlag := testCommand.Flag("f", "flag", &argparse.Option{Help: "from test parser"})
-	otherFlag := testCommand.Flag("o", "other", nil)
-	defaultInt := testCommand.Int("i", "int", &argparse.Option{Default: "1"})
-	if e := parser.Parse(nil); e != nil {
-		fmt.Println(e.Error())
-		return
-	}
-	println(*tFlag, *otherFlag, *t, *defaultInt)
+  parser := argparse.NewParser("sub-command", "Go is a tool for managing Go source code.", nil)
+  t := parser.Flag("f", "flag", &argparse.Option{Help: "from main parser"})
+  testCommand := parser.AddCommand("test", "start a bug report", nil)
+  tFlag := testCommand.Flag("f", "flag", &argparse.Option{Help: "from test parser"})
+  otherFlag := testCommand.Flag("o", "other", nil)
+  defaultInt := testCommand.Int("i", "int", &argparse.Option{Default: "1"})
+  if e := parser.Parse(nil); e != nil {
+    fmt.Println(e.Error())
+    return
+  }
+  println(*tFlag, *otherFlag, *t, *defaultInt)
 }
 ```
 
@@ -620,13 +620,13 @@ Relative struct:
 
 ```go
 type ParserConfig struct {
-	Usage                  string // manual usage display
-	EpiLog                 string // message after help
-	DisableHelp            bool   // disable help entry register [-h/--help]
-	ContinueOnHelp         bool   // set true to: continue program after default help is printed
-	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
-	DefaultAction          func() // set default action to replace default help action
-	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
+  Usage                  string // manual usage display
+  EpiLog                 string // message after help
+  DisableHelp            bool   // disable help entry register [-h/--help]
+  ContinueOnHelp         bool   // set true to: continue program after default help is printed
+  DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
+  DefaultAction          func() // set default action to replace default help action
+  AddShellCompletion     bool   // set true to register shell completion entry [--completion]
 }
 ```
 
@@ -634,29 +634,29 @@ eg:
 
 ```go
 func main() {
-	parser := argparse.NewParser("basic", "this is a basic program",
-		&argparse.ParserConfig{
-			Usage:                  "basic xxx",
-			EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
-			DisableHelp:            true,
-			ContinueOnHelp:         true,
-			DisableDefaultShowHelp: true,
-		})
-  
-	name := parser.String("n", "name", nil)
-	help := parser.Flag("help", "help-me", nil)
-  
-	if e := parser.Parse(nil); e != nil {
-		fmt.Println(e.Error())
-		return
-	}
-	if *help {
-		parser.PrintHelp()
-		return
-	}
-	if *name != "" {
-		fmt.Printf("hello %s\n", *name)
-	}
+  parser := argparse.NewParser("basic", "this is a basic program",
+                               &argparse.ParserConfig{
+                                 Usage:                  "basic xxx",
+                                 EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
+                                 DisableHelp:            true,
+                                 ContinueOnHelp:         true,
+                                 DisableDefaultShowHelp: true,
+                               })
+
+  name := parser.String("n", "name", nil)
+  help := parser.Flag("help", "help-me", nil)
+
+  if e := parser.Parse(nil); e != nil {
+    fmt.Println(e.Error())
+    return
+  }
+  if *help {
+    parser.PrintHelp()
+    return
+  }
+  if *name != "" {
+    fmt.Printf("hello %s\n", *name)
+  }
 }
 ```
 
@@ -689,18 +689,18 @@ Related struct:
 
 ```go
 type Option struct {
-	Meta       string // meta value for help/usage generate
-	multi      bool   // take more than one argument
-	Default    string // default argument value if not given
-	isFlag     bool   // use as flag
-	Required   bool   // require to be set
-	Positional bool   // is positional argument
-	Help       string // help message
-	Group      string // argument group info, default to be no group
+  Meta       string // meta value for help/usage generate
+  multi      bool   // take more than one argument
+  Default    string // default argument value if not given
+  isFlag     bool   // use as flag
+  Required   bool   // require to be set
+  Positional bool   // is positional argument
+  Help       string // help message
+  Group      string // argument group info, default to be no group
   Action     func(args []string) error // bind actions when the match is found, 'args' can be nil to be a flag
-	Choices    []interface{}  // input argument must be one/some of the choice
-	Validate   func(arg string) error  // customize function to check argument validation
-	Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
+  Choices    []interface{}  // input argument must be one/some of the choice
+  Validate   func(arg string) error  // customize function to check argument validation
+  Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
 }
 ```
 
