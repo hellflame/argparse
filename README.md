@@ -16,6 +16,7 @@ Provide not just simple parse args, but :
 - [x] Argument Choice support
 - [x] Argument Action support (infinite possible)
 - [x] Shell Completion support
+- [x] Levenshtein Error Correction
 - [ ] ......
 
 ## Installation
