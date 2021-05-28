@@ -120,6 +120,7 @@ Check output:
 
 => go run main.go -h
 unrecognized arguments: -h
+do you mean: -n
 
 # the real help entry is -help / --help-me
 => go run main.go -help
@@ -538,6 +539,7 @@ A few points to be noted:
    * `nil` : which means it's a `Flag` argument
    * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
 2. Errors can be returned if necessary, it can be normally captured
+3. The return type of the argument is not of much important, use `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
 
 #### 11. Default Parse Action [ >= v0.4 ]
 
