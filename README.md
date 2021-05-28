@@ -147,7 +147,7 @@ A few points:
 
 some show case
 
-#### 1. Levenshtein error correct ( >= v1.2.0)
+#### 1. Levenshtein error correct [ >= v1.2.0 ]
 
 the `Parser` will try to match __flag arguments__ when there is no match
 
@@ -592,7 +592,7 @@ __Note__:
 
 Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. 
 
-Completion will register to your shell by your program name, so, you have to give your program a fix name
+Completion will register to your shell by your program name, so you have to give your program a fix name
 
 ##### Argument Process Flow Map
 
@@ -760,6 +760,6 @@ type Option struct {
 
 ## [Examples](examples)
 
-there are some useful use cases to help program build there own command
+there are some useful use cases to help you build your own command line program
 
 feel free to add different use cases
