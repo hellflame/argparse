@@ -142,6 +142,27 @@ A few points:
 3. After the manually call of `parser.PrintHelp()` , `return` will put an end to `main`
 4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way
 
+### Features
+
+some show case
+
+#### 1. levenshtein error correct ( >= v1.2.0)
+
+the `Parser` will try to match __flag arguments__ when there is no match
+
+```go
+parser := NewParser("", "", nil)
+parser.String("a", "aa", nil)
+if e := parser.Parse([]string{"--ax"}); e != nil {
+  if e.Error() != "unrecognized arguments: --ax\ndo you mean: --aa" {
+    t.Error("failed to guess input")
+    return
+  }
+}
+// when user input '--ax', Parser will try to find best matches with smallest levenshtein-distance
+// here for eg is: --aa
+```
+
 ### Supported Arguments
 
 #### 1. Flag
