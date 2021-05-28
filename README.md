@@ -539,7 +539,7 @@ A few points to be noted:
    * `nil` : which means it's a `Flag` argument
    * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
 2. Errors can be returned if necessary, it can be normally captured
-3. The return type of the argument is not of much important, use `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
+3. The return type of the argument is not of much importance, using the `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
 
 #### 11. Default Parse Action [ >= v0.4 ]
 
@@ -592,7 +592,7 @@ __Note__:
 
 Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. 
 
-Completion will register to your shell by your program name, so, it's best to give your program a fix name
+Completion will register to your shell by your program name, so, you have to give your program a fix name
 
 ##### Argument Process Flow Map
 
