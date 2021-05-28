@@ -1,22 +1,22 @@
 package argparse
 
 
-func decideMatch(target string, candidates []string) string {
+func decideMatch(target string, candidates []string) []string {
 	ldArray := make([]int, len(candidates))
 	for i, c := range candidates {
 		ldArray[i] = levDistance(target, c)
 	}
 	match := min(ldArray...)
 	if match >= len(target) {  // too many diff
-		return ""
+		return []string{""}
 	}
-	matchCandidates := make(map[int]string)
+	matchCandidates := make(map[int][]string)
 	var matchKeys []int
 	for i, ld := range ldArray {
 		if ld == match {
 			wordL := len(candidates[i])
 			matchKeys = append(matchKeys, wordL)
-			matchCandidates[wordL] = candidates[i]
+			matchCandidates[wordL] = append(matchCandidates[wordL], candidates[i])
 		}
 	}
 	shortest := min(matchKeys...)

@@ -445,6 +445,16 @@ func (p *Parser) Parse(args []string) error {
 							args = args[1:]
 						}
 					} else {
+						if strings.HasPrefix(sign, shortPrefix) {
+							var candidates []string
+							for k := range p.entryMap {
+								candidates = append(candidates, k)
+							}
+							match := strings.Join(decideMatch(sign, candidates), " or ")
+							if match != "" {
+								return fmt.Errorf("unrecognized arguments: %s\ndo you mean: %s", sign, match)
+							}
+						}
 						return fmt.Errorf("unrecognized arguments: %s", sign)
 					}
 				}

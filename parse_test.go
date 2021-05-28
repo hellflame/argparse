@@ -126,6 +126,12 @@ func TestParser_unrec(t *testing.T) {
 			return
 		}
 	}
+	if e := parser.Parse([]string{"cover-bb", "--ax"}); e != nil {
+		if e.Error() != "unrecognized arguments: --ax\ndo you mean: --aa" {
+			t.Error("failed to guess input")
+			return
+		}
+	}
 }
 
 func TestParser_Parse(t *testing.T) {
