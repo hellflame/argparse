@@ -4,9 +4,9 @@
 
 Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
 
-It's small (about 700 rows of code) but fully Functional & Powerful
+It's small but fully Functional & Powerful
 
-Provide not just simple parse args, but :
+Provide not just simple parsing args, but :
 
 - [x] Sub Command
 - [x] Argument Groups
@@ -22,7 +22,7 @@ Provide not just simple parse args, but :
 ## Installation
 
 ```bash
-go get github.com/hellflame/argparse
+go get -u github.com/hellflame/argparse
 ```
 
 > no dependence needed
@@ -54,7 +54,7 @@ func main() {
 
 [example](examples/basic)
 
-Checkout output:
+Check output:
 
 ```bash
 => go run main.go
@@ -146,7 +146,7 @@ A few points:
 
 some show case
 
-#### 1. levenshtein error correct ( >= v1.2.0)
+#### 1. Levenshtein error correct ( >= v1.2.0)
 
 the `Parser` will try to match __flag arguments__ when there is no match
 
