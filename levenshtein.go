@@ -7,7 +7,7 @@ func decideMatch(target string, candidates []string) []string {
 	}
 	match := min(ldArray...)
 	if match >= len(target) { // too many diff
-		return []string{""}
+		return []string{}
 	}
 	matchCandidates := make(map[int][]string)
 	var matchKeys []int

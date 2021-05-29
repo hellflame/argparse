@@ -164,6 +164,8 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 // here for eg is: --aa
 ```
 
+Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be seen as `Positional Argument` , then there will be no error correct. 
+
 ### Supported Arguments
 
 #### 1. Flag

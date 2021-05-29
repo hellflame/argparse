@@ -114,6 +114,7 @@ func TestParser_unrec(t *testing.T) {
 	parser := NewParser("", "", nil)
 	parser.String("a", "aa", nil)
 	parser.String("b", "bb", &Option{Positional: true})
+	parser.Strings("", "ab", &Option{Help: "this is abcc"})
 	if e := parser.Parse([]string{"x", "b"}); e != nil {
 		if e.Error() != "unrecognized arguments: b" {
 			t.Error("failed to un-recognize")
@@ -127,8 +128,23 @@ func TestParser_unrec(t *testing.T) {
 		}
 	}
 	if e := parser.Parse([]string{"cover-bb", "--ax"}); e != nil {
-		if e.Error() != "unrecognized arguments: --ax\ndo you mean: --aa" {
+		err := e.Error()
+		if !strings.Contains(err, "unrecognized arguments: --ax") ||
+			!strings.Contains(err, "--ab (this is abcc)") ||
+			!strings.Contains(err, "--aa") {
 			t.Error("failed to guess input")
+			return
+		}
+	}
+	if e := parser.Parse([]string{"cover-bb", "--abc"}); e != nil {
+		if e.Error() != "unrecognized arguments: --abc\ndo you mean: --ab (this is abcc)" {
+			t.Error("failed to output help msg")
+			return
+		}
+	}
+	if e := parser.Parse([]string{"cover-bb", "cd"}); e != nil {
+		if e.Error() != "unrecognized arguments: cd" {
+			t.Error("failed to tell")
 			return
 		}
 	}

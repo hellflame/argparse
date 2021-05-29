@@ -34,7 +34,7 @@ func TestLevDecide(t *testing.T) {
 		t.Error("failed to choose shorter one")
 		return
 	}
-	if decideMatch("linux", []string{"bilibili", "ok", "z"})[0] != "" {
+	if len(decideMatch("linux", []string{"bilibili", "ok", "z"})) != 0 {
 		t.Error("failed to stop match")
 		return
 	}

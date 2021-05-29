@@ -450,7 +450,15 @@ func (p *Parser) Parse(args []string) error {
 							for k := range p.entryMap {
 								candidates = append(candidates, k)
 							}
-							match := strings.Join(decideMatch(sign, candidates), " or ")
+							var tips []string
+							for _, m := range decideMatch(sign, candidates) {
+								helpInfo := p.entryMap[m].Help
+								if helpInfo != "" {
+									helpInfo = fmt.Sprintf(" (%s)", helpInfo)
+								}
+								tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
+							}
+							match := strings.Join(tips, "\nor ")
 							if match != "" {
 								return fmt.Errorf("unrecognized arguments: %s\ndo you mean: %s", sign, match)
 							}
