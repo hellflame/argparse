@@ -760,6 +760,17 @@ type Option struct {
                                  done
 ```
 
+## Error & Panic
+
+The principle of returning `error` or just panic is that, __no panic for production use__ 
+
+Cases where `argparse` will panic:
+
+1. failed to add subcommand
+2. failed to add argument entry, `Strings`, `Flag`, etc.
+
+Those failures is not allowed, and you will notice when you develop your program. The rest errors will be returned in `Parse`, which you should be able to tell users what to do.
+
 ## [Examples](examples)
 
 there are some useful use cases to help you build your own command line program

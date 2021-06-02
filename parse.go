@@ -460,7 +460,7 @@ func (p *Parser) Parse(args []string) error {
 							}
 							match := strings.Join(tips, "\nor ")
 							if match != "" {
-								return fmt.Errorf("unrecognized arguments: %s\ndo you mean: %s", sign, match)
+								return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
 							}
 						}
 						return fmt.Errorf("unrecognized arguments: %s", sign)

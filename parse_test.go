@@ -137,7 +137,7 @@ func TestParser_unrec(t *testing.T) {
 		}
 	}
 	if e := parser.Parse([]string{"cover-bb", "--abc"}); e != nil {
-		if e.Error() != "unrecognized arguments: --abc\ndo you mean: --ab (this is abcc)" {
+		if e.Error() != "unrecognized arguments: --abc\ndo you mean?: --ab (this is abcc)" {
 			t.Error("failed to output help msg")
 			return
 		}
