@@ -19,6 +19,10 @@ Provide not just simple parsing args, but :
 - [x] Levenshtein Error Correction
 - [ ] ......
 
+## Aim
+
+The aim of the package is to better serve programers to build better command line programs.
+
 ## Installation
 
 ```bash
