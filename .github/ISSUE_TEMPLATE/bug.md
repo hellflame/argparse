@@ -1,15 +1,14 @@
 ---
-name: Bug report
+name: Bug
 about: Create a report to help us improve
 title: ''
-
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Fully functional code to reproduce the behavior
+Fully functional code or test case to reproduce the behavior
 
 You can use the code as a template
 
@@ -38,10 +37,11 @@ A clear and concise description of what you expected to happen.
 **Terminal Output**
 If applicable, add terminal output to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Environment:**
 
  - OS: [e.g. MacOS]
- - Version [e.g. v0.1.0]
+ - Go Version: [e.g. 1.13]
+ - Package Version: [e.g. v0.1.0]
 
 **Additional context**
 Add any other context about the problem here.
