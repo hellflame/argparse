@@ -35,11 +35,11 @@ func main() {
 A clear and concise description of what you expected to happen.
 
 **Terminal Output**
-If applicable, add terminal output to help explain your problem.
+If executable, add terminal output to help explain your problem.
 
 **Environment:**
 
- - OS: [e.g. MacOS]
+ - OS: [e.g. MacOS 10.15]
  - Go Version: [e.g. 1.13]
  - Package Version: [e.g. v0.1.0]
 
