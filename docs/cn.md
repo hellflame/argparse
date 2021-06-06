@@ -543,7 +543,7 @@ fmt.Println(sum)  // this is a 6 if everything goes on fine
 
 #### 11. 默认解析行为 [ >= v0.4 ]
 
-Instead of showing help message as default, now you can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
+如果不想默认显示帮助信息, 现在如果用户没有任何输入，你可以设置自己的默认行为, [eg](../examples/parse-action/main.go)
 
 ```go
 parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
@@ -558,13 +558,13 @@ if e := parser.Parse(nil); e != nil {
 }
 ```
 
-When `DefaultAction` is set, default show help message will be ignored.
+如果设置了 `DefaultAction`, 默认显示帮助信息会被忽略
 
-`DefaultAction` is effective on sub-command, and if sub parser's `ParserConfig` is `nil`, `DefaultAction` from main parser will be inherited.
+`DefaultAction` 对子命令同样起作用, 并且如果子命令的 `ParserConfig` 为 `nil`, `DefaultAction` 会被继承
 
-#### 12. Shell Completion Support [ >= v0.4 ]
+#### 12. 命令行补全支持 [ >= v0.4 ]
 
-Set `ParserConfig.AddShellCompletion` to `true` will register `--completion` to the parser, [eg](examples/shell-completion/main.go)
+设置 `ParserConfig.AddShellCompletion` 为 `true` 将注册 `--completion` 参数, [eg](../examples/shell-completion/main.go)
 
 ```go
 p := argparse.NewParser("start", "this is test", &argparse.ParserConfig{AddShellCompletion: true})
@@ -582,19 +582,19 @@ if e := p.Parse(nil); e != nil {
 }
 ```
 
-Though, if you didn't set `ParserConfig.AddShellCompletion` to `true` , shell complete script is still available via `parser.FormatCompletionScript` , which will generate the script.
+即使没有设置 `ParserConfig.AddShellCompletion` 为 `true` , 命令行补全脚本依然可以通过 `parser.FormatCompletionScript` 获取
 
-__Note__: 
+__注意__: 
 
-1. the completion script only support `bash` & `zsh` for now
-2. and it only generate simple complete code for basic use, it should be better than nothing.
-3. sub command has no completion entry
+1. 命令行补全现在仅支持 `bash` & `zsh` 
+2. 它只会生成简单的补全模式，总比没有好
+3. 子命令不会注册该方法
 
-Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. 
+保存输出脚本到 `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , 然后重启脚本环境 或 `source ~/.bashrc` 会使脚本生效 
 
-Completion will register to your shell by your program name, so you have to give your program a fix name
+命令补全会将命令的名字作为注册入口注册到脚本环境，所以你最好给你的程序一个固定的名字
 
-#### 13. Hide Entry [ >= 1.3.0 ]
+#### 13. 隐藏入口 [ >= 1.3.0 ]
 
 Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
 
