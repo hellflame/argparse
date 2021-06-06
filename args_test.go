@@ -75,3 +75,10 @@ func TestArgs(t *testing.T) {
 		}
 	}
 }
+
+func TestArgs_HideEntry(t *testing.T) {
+	if (&arg{full: "a", Option: Option{HideEntry: true}}).formatUsage() != "" {
+		t.Error("failed to hide usage entry")
+		return
+	}
+}

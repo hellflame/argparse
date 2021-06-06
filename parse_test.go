@@ -42,6 +42,18 @@ func TestParser_help(t *testing.T) {
 		t.Error("failed to format simple help")
 		return
 	}
+
+	p := NewParser("no-entry", "", nil)
+	p.String("a", "", &Option{HideEntry: true, Help: "won't show"})
+	p.Strings("b", "", &Option{HideEntry: true, Help: "won't show"})
+	p.Int("c", "", &Option{HideEntry: true, Help: "won't show"})
+	p.Ints("d", "", &Option{HideEntry: true, Help: "won't show"})
+	p.Flag("e", "", &Option{HideEntry: true, Help: "won't show"})
+	p.Strings("f", "", &Option{HideEntry: true, Help: "won't show", Group: "no-entry"})
+	if len(strings.Split(p.FormatHelp(), "\n")) != 4 {
+		t.Error("failed to hide help entry")
+		return
+	}
 }
 
 func TestParser_AddCommand(t *testing.T) {
@@ -574,11 +586,14 @@ func TestParse_Completion(t *testing.T) {
 	p.Strings("a", "aa", nil)
 	p.Int("", "bb", nil)
 	p.Float("c", "cc", &Option{Positional: true})
+	p.String("d", "", &Option{HideEntry: true})
 	test := p.AddCommand("test", "", nil)
 	test.String("a", "aa", nil)
 	test.Int("", "bb", nil)
 	install := p.AddCommand("install", "", nil)
 	install.Strings("i", "in", nil)
+	install.Strings("a", "", &Option{HideEntry: true})
+	install.Flag("b", "", &Option{HideEntry: true})
 	if p.FormatCompletionScript() == "" {
 		t.Error("failed to generate completion script")
 		return

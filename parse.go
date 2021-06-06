@@ -146,7 +146,7 @@ func (p *Parser) FormatHelp() string {
 	if len(p.positionArgs) > 0 { // dealing positional arguments present
 		section := "\npositional arguments:\n"
 		for _, arg := range p.positionArgs {
-			if arg.Group != "" {
+			if arg.Group != "" || arg.HideEntry {
 				continue
 			}
 			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
@@ -164,16 +164,25 @@ func (p *Parser) FormatHelp() string {
 				continue
 			}
 			parsed[arg.full] = true
+			if arg.HideEntry {
+				continue
+			}
 			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
 		}
 		result += section
 	}
 	for _, group := range p.entryGroupOrder { // dealing arguments group present
 		section := fmt.Sprintf("\n%s:\n", group)
+		content := ""
 		for _, arg := range p.entryGroup[group] {
-			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
+			if arg.HideEntry {
+				continue
+			}
+			content += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
 		}
-		result += section
+		if content != "" {
+			result += section + content
+		}
 	}
 	if p.config.EpiLog != "" {
 		result += "\n" + p.config.EpiLog
@@ -200,39 +209,15 @@ func (p *Parser) formatUsage() string {
 			continue
 		}
 		parsed[arg.full] = true
-		sign := arg.getWatchers()[0]
-		if arg.isFlag {
-			usage += fmt.Sprintf("[%s] ", sign)
-		} else {
-			meta := arg.getMetaName()
-			u := fmt.Sprintf("%s %s", sign, meta)
-			if arg.Required {
-				usage += u + " "
-				if arg.multi {
-					usage += fmt.Sprintf("[%s ...] ", meta)
-				}
-			} else {
-				if arg.multi {
-					usage += fmt.Sprintf("[%s [%s ...]] ", u, meta)
-				} else {
-					usage += fmt.Sprintf("[%s] ", u)
-				}
-			}
+		argUsage := arg.formatUsage()
+		if argUsage != "" {
+			usage += argUsage
 		}
 	}
 	for _, arg := range p.positionArgs {
-		meta := arg.getMetaName()
-		if arg.Required {
-			usage += meta + " "
-			if arg.multi {
-				usage += fmt.Sprintf("[%s ...] ", meta)
-			}
-		} else {
-			if arg.multi {
-				usage += fmt.Sprintf("[%s [%s ...]] ", meta, meta)
-			} else {
-				usage += fmt.Sprintf("[%s] ", meta)
-			}
+		argUsage := arg.formatUsage()
+		if argUsage != "" {
+			usage += argUsage
 		}
 	}
 	return usage
@@ -243,13 +228,19 @@ func (p *Parser) formatBashCompletionScript() string {
 	completionName := fmt.Sprintf("_%s_completion", p.name)
 	var topLevel []string
 	subLevelMap := make(map[string]string)
-	for entry := range p.entryMap {
+	for entry, arg := range p.entryMap {
+		if arg.HideEntry {
+			continue
+		}
 		topLevel = append(topLevel, entry)
 	}
 	for entry, subParser := range p.subParserMap {
 		topLevel = append(topLevel, entry)
 		var subOptions []string
-		for subOption := range subParser.entryMap {
+		for subOption, arg := range subParser.entryMap {
+			if arg.HideEntry {
+				continue
+			}
 			subOptions = append(subOptions, subOption)
 		}
 		subLevelMap[entry] = strings.Join(subOptions, " ")
@@ -303,7 +294,10 @@ func (p *Parser) formatZshCompletionScript() string {
 	completionName := fmt.Sprintf("_%s_completion", p.name)
 	var positional []string
 	var positionalFirstSection []string
-	for entry := range p.entryMap {
+	for entry, arg := range p.entryMap {
+		if arg.HideEntry {
+			continue
+		}
 		positional = append(positional, entry)
 		positionalFirstSection = append(positionalFirstSection,
 			fmt.Sprintf("\"%s\"", entry))
@@ -313,7 +307,10 @@ func (p *Parser) formatZshCompletionScript() string {
 	subLevelMap := make(map[string]string)
 	for entry, subParser := range p.subParserMap {
 		var subOptions []string
-		for subOption := range subParser.entryMap {
+		for subOption, arg := range subParser.entryMap {
+			if arg.HideEntry {
+				continue
+			}
 			subOptions = append(subOptions, fmt.Sprintf("\"%s\"", subOption))
 		}
 		subLevelPosition += entry + " "
@@ -481,7 +478,7 @@ func (p *Parser) Parse(args []string) error {
 	}
 	if p.showShellCompletion != nil && *p.showShellCompletion {
 		fmt.Println(p.FormatCompletionScript())
-		os.Exit(1)
+		os.Exit(0)
 	}
 	entries := append(p.entries, p.positionArgs...) // ready for Required checking & Default parsing
 	for _, _p := range p.subParser {

@@ -600,6 +600,48 @@ Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some fi
 
 Completion will register to your shell by your program name, so you have to give your program a fix name
 
+#### 13. Hide Entry [ >= 1.3.0 ]
+
+Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
+
+1. the entry is to help generate completion candidates (which has mess and not much meaningful output)
+2. secret back door that user should not know (you can use `os.Getenv` instead, but `argparse` has type convert)
+
+You only need to set `Option{HideEntry: true}`
+
+```go
+func main() {
+  parser := argparse.NewParser("basic", "this is a basic program", nil)
+  name := parser.String("n", "name", nil)
+  greet := parser.String("g", "greet", &argparse.Option{HideEntry: true})
+  if e := parser.Parse(nil); e != nil {
+    fmt.Println(e.Error())
+    return
+  }
+  greetWord := "hello"
+  if *greet != "" {
+    greetWord = *greet
+  }
+  fmt.Printf("%s %s\n", greetWord, *name)
+}
+```
+
+check ouput:
+
+```bash
+usage: basic [--help] [--name NAME]
+
+this is a basic program
+
+optional arguments:
+  --help, -h               show this help message
+  --name NAME, -n NAME
+```
+
+Which will have effect on `Shell Completion Script`
+
+[full eg](examples/hide-help-entry/main.go)
+
 ##### Argument Process Flow Map
 
 ```
@@ -665,13 +707,13 @@ eg:
 ```go
 func main() {
   parser := argparse.NewParser("basic", "this is a basic program",
-                               &argparse.ParserConfig{
-                                 Usage:                  "basic xxx",
-                                 EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
-                                 DisableHelp:            true,
-                                 ContinueOnHelp:         true,
-                                 DisableDefaultShowHelp: true,
-                               })
+		&argparse.ParserConfig{
+      Usage:                  "basic xxx",
+      EpiLog:                 "more detail please visit https://github.com/hellflame/argparse",
+      DisableHelp:            true,
+      ContinueOnHelp:         true,
+      DisableDefaultShowHelp: true,
+    })
 
   name := parser.String("n", "name", nil)
   help := parser.Flag("help", "help-me", nil)
@@ -725,6 +767,7 @@ type Option struct {
   isFlag     bool   // use as flag
   Required   bool   // require to be set
   Positional bool   // is positional argument
+  HideEntry  bool   // hide usage & help display
   Help       string // help message
   Group      string // argument group info, default to be no group
   Action     func(args []string) error // bind actions when the match is found, 'args' can be nil to be a flag

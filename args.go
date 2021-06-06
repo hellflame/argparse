@@ -25,6 +25,7 @@ type Option struct {
 	isFlag     bool                                  // use as flag
 	Required   bool                                  // require to be set
 	Positional bool                                  // is positional argument
+	HideEntry  bool                                  // hide usage & help display
 	Help       string                                // help message
 	Group      string                                // argument group info, default to be no group
 	Action     func(args []string) error             // bind actions when the match is found, 'args' can be nil to be a flag
@@ -101,6 +102,41 @@ func (a *arg) getMetaName() string {
 	return strings.ToUpper(a.short) // as backup choice
 }
 
+func (a *arg) formatUsage() string {
+	if a.HideEntry {
+		return ""
+	}
+
+	meta := a.getMetaName()
+	if a.Positional { // positional usage
+		if a.Required {
+			if a.multi {
+				return fmt.Sprintf("[%s ...] ", meta)
+			}
+		}
+		if a.multi {
+			return fmt.Sprintf("[%s [%s ...]] ", meta, meta)
+		}
+		return fmt.Sprintf("[%s] ", meta)
+	}
+
+	// other optional usage
+	sign := a.getWatchers()[0]
+	if a.isFlag {
+		return fmt.Sprintf("[%s] ", sign)
+	}
+	u := fmt.Sprintf("%s %s", sign, meta)
+	if a.Required {
+		if a.multi {
+			return fmt.Sprintf("[%s ...] ", meta)
+		}
+	}
+	if a.multi {
+		return fmt.Sprintf("[%s [%s ...]] ", u, meta)
+	}
+	return fmt.Sprintf("[%s] ", u)
+}
+
 func (a *arg) formatHelpHeader() string {
 	metaName := a.getMetaName()
 	if a.Positional {
@@ -171,9 +207,9 @@ func (a *arg) parseValue(values []string) error {
 			}
 		}
 	}
-	if len(result) == 0 {
-		return fmt.Errorf("no value to parse") // normally you can't reach this area
-	}
+	//if len(result) == 0 {
+	//	return fmt.Errorf("no value to parse") // normally you can't reach this area
+	//}
 	if len(a.Choices) > 0 { // check if user input is among given Choices
 		for _, r := range result {
 			found := false
