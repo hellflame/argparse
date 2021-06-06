@@ -379,7 +379,7 @@ parser.Strings("", "url", &argparse.Option{
 
 #### 5. 位置参数
 
-If the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
+如果用户输入即为想要获取的参数, 设置 `Positional` 为 true 即可, [eg](../examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -388,16 +388,16 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-The position of the PositionalArgument is quit flex, with not much restrictions, it's ok to be
+位置参数的位置限制很少，以下情况皆可:
 
-1. in the middle of arguments, `--play-list 2 xxxxxxxx --update`, if the argument before it is not an Array argument, won't parse `url` in this case: `--user-ids id1 id2 url --update` 
-2. after another single value PositionalArgument, `--mode login username password` , the last `password` will be parsed as second PositionalArgument
+1. 在各种参数中间, `--play-list 2 xxxxxxxx --update`, 如果这个参数的前面是数组类型的参数，那么后面可选参数前的参数都会认为是该位置参数的值，如这里的 `url`: `--user-ids id1 id2 url --update` ，会被当作 `user-ids` 的参数之一
+2. 在另一个单个位置参数之后, `--mode login username password` , 最后一个 `password` 会作为第二个位置参数的值
 
-So, use it carefully, it cause fusion sometime, which is the same as Python Version of argparse
+所以请小心使用，有时候会比较容易搞混，和python版本的命令行解析一样
 
-#### 6. ArgumentValidate
+#### 6. 参数检查
 
-Provide `Validate` function to check each passed-in argument
+提供 `Validate` 方法来检查每一个输入参数
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -411,7 +411,7 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-`Validate` function has high priority, executed just after `Default` value is set, which means, the default value has to go through `Validate` check
+`Validate` 有比较高的优先级, 会在默认值设置之后即执行, 这意味着默认值比如要通过 `Validate` 的检查
 
 #### 7. ArgumentFormatter
 
