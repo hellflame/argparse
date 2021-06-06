@@ -413,9 +413,9 @@ parser.Strings("", "url", &argparse.Option{
 
 `Validate` 有比较高的优先级, 会在默认值设置之后即执行, 这意味着默认值比如要通过 `Validate` 的检查
 
-#### 7. ArgumentFormatter
+#### 7. 参数格式化
 
-Format input argument to most basic types you want, the limitation is that, the return type of `Formatter` should be the same as your argument type
+将你想要的参数进行格式化, 限制就是 `Formatter` 返回类型需要和参数类型保持一致
 
 ```go
 parser.String("", "b", &Option{
@@ -430,15 +430,15 @@ parser.String("", "b", &Option{
 })
 ```
 
-If `Validate` is set, `Formatter` is right after `Validate`
+如果给了 `Validate`, `Formatter` 将在 `Validate` 之后执行
 
-If raise errors in `Formatter`, it will do some job like `Validate` 
+如果 `Formatter` 返回错误类型, 就会表现的和 `Validate` 一样
 
-The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, here,  to be `string` as Example shows
+返回类型 `interface{}` 应该和参数类型一致, 或与数组元素类型一致, 栗子里返回的是 `string` 类型
 
-#### 8. ArgumentChoices
+#### 8. 参数可选范围
 
-Restrict inputs to be within the given choices, using `Choices`
+限制输入参数是所给范围，设置 `Choices` 即可
 
 ```go
 parser.Ints("", "hours", &Option{
@@ -446,15 +446,15 @@ parser.Ints("", "hours", &Option{
 })
 ```
 
-If `Formatter` is set, Choice check is right after `Formatter`
+如果给了 `Formatter` , 可选范围在 `Formatter` 之后检查
 
-When it's single value, the value must be one of the `Choices`
+如果参数仅接受单个值, 那么这个值必须在 `Choices` 范围内
 
-When it's value array, each value must be one of of `Choices`
+如果参数接受数组, 那么每一个数组元素必须在 `Choices` 范围内
 
-#### 9. SubCommands
+#### 9. 子命令
 
-Create new parser scope, within the sub command parser, arguments won't interrupt main parser
+创建新的命令行解析域, 子命令的参数解析不会影响主命令解析
 
 ```go
 func main() {
@@ -472,7 +472,7 @@ func main() {
 }
 ```
 
-Output:
+输出:
 
 ```bash
 => ./sub-command
@@ -500,16 +500,14 @@ optional arguments:
   -i INT, --int INT
 ```
 
-The two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag in `test` parser and `main` parser.
+两个 `--flag` 会分开解析, 所以 `tFlag` & `t` 分别指向 `test` 和 `main` 中的两个标志参数
 
-As you can see, though main parser & test parser has different context, but they do parse user input at the same time, it's quite like `Argument Group` , except:
+1. 子命令拥有不同的解析域, 所以你可以有两个 `--flag`, 以及不同的帮助输出
+2. 子命令也会单独显示帮助信息, 可以让用户分布理解你的命令.  `Group Argument` 则会分组让用户理解你的命令
 
-1. sub command has different context, so you can have two `--flag`, and different help message output
-2. sub command show help message seperately, it's for user to understand your program step by step. While `Group Argument` helps user to understand your program group by group
+#### 10. 参数行为 √
 
-#### 10. Argument Action √
-
-Argument Action allows you to do anything with the argument when there is any match, this enables infinite possibility when parsing arguments, [eg](examples/any-type-action/main.go)
+参数行为在当出现匹配时允许你做任何操作, 这将开启无限的可能性, [eg](../examples/any-type-action/main.go)
 
 ```go
 p := NewParser("action", "test action", nil)
@@ -535,15 +533,15 @@ if e := p.Parse([]string{"1", "2", "3"}); e != nil {
 fmt.Println(sum)  // this is a 6 if everything goes on fine
 ```
 
-A few points to be noted:
+有几点需要提一提:
 
-1. `Action` takes function with `args []string` as input，the `args` has two kind of input
-   * `nil` : which means it's a `Flag` argument
-   * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
-2. Errors can be returned if necessary, it can be normally captured
-3. The return type of the argument is not of much importance, using the `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
+1. `Action` 接受输入参数 `args []string` ， `args` 有两种可能
+   * `nil` : 意味着这是一个标志参数
+   * `[]string{"a1", "a2"}` : 意味着这是一个数组类型参数
+2. 可以返回错误类型, 并且会被正常的捕捉到
+3. 返回值的类型不重要, 使用 `p.Strings` 和 `p.Ints` 是一样的, 因为 `arg.Action` 会在 __绑定参数__ 前执行, 这意味着 `Action` 拥有 __最高的执行权限__
 
-#### 11. Default Parse Action [ >= v0.4 ]
+#### 11. 默认解析行为 [ >= v0.4 ]
 
 Instead of showing help message as default, now you can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
 

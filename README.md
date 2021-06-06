@@ -508,8 +508,6 @@ optional arguments:
 
 The two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag in `test` parser and `main` parser.
 
-As you can see, though main parser & test parser has different context, but they do parse user input at the same time, it's quite like `Argument Group` , except:
-
 1. sub command has different context, so you can have two `--flag`, and different help message output
 2. sub command show help message seperately, it's for user to understand your program step by step. While `Group Argument` helps user to understand your program group by group
 
