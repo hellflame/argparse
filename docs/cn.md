@@ -596,12 +596,14 @@ __注意__:
 
 #### 13. 隐藏入口 [ >= 1.3.0 ]
 
-Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
+有时候, 你可能想要对用户隐藏一些入口, 因为用户不应该知道这些入口或不需要知道，但你依然需要使用这些入口
 
-1. the entry is to help generate completion candidates (which has mess and not much meaningful output)
-2. secret back door that user should not know (you can use `os.Getenv` instead, but `argparse` has type convert)
+比如:
 
-You only need to set `Option{HideEntry: true}`
+1. 这是一个用来动态生成补全脚本候选的入口 (输出可能会很乱，没有意义)
+2. 秘密的后门 (当然可以用 `os.Getenv` , 只是 `argparse` 可以帮你进行转换)
+
+仅需要设置 `Option{HideEntry: true}` 即可
 
 ```go
 func main() {
@@ -620,7 +622,7 @@ func main() {
 }
 ```
 
-check ouput:
+检查输出:
 
 ```bash
 usage: basic [--help] [--name NAME]
@@ -632,9 +634,9 @@ optional arguments:
   --name NAME, -n NAME
 ```
 
-Which will have effect on `Shell Completion Script`
+对 `Shell Completion Script` 同样起作用
 
-[full eg](examples/hide-help-entry/main.go)
+[full eg](../examples/hide-help-entry/main.go)
 
 ##### Argument Process Flow Map
 
@@ -801,19 +803,17 @@ type Option struct {
                                  done
 ```
 
-## Error & Panic
+## 错误 & 宕机
 
-The principle of returning `error` or just panic is that, __no panic for production use__ 
+原则是, __生产环境不产生宕机__ 
 
-Cases where `argparse` will panic:
+以下场景 `argparse` 将宕机:
 
-1. failed to add subcommand
-2. failed to add argument entry, `Strings`, `Flag`, etc.
+1. 添加子命令失败
+2. 添加参数失败
 
-Those failures is not allowed, and you will notice when you develop your program. The rest errors will be returned in `Parse`, which you should be able to tell users what to do.
+这些失误是不允许的, 你也会在开发过程中发现这些问题. 剩下的被 `Parse` 返回的错误将指导你如何提示用户正确的输入
 
-## [Examples](examples)
+## [栗子](../examples)
 
-there are some useful use cases to help you build your own command line program
-
-feel free to add different use cases
+这里有一些有用的栗子来帮助你搭建自己的命令行，可以帮忙添加一些特别的栗子
