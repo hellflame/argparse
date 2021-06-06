@@ -2,40 +2,34 @@
 
 [![GoDoc](https://godoc.org/github.com/hellflame/argparse?status.svg)](https://godoc.org/github.com/hellflame/argparse) [![Go Report Card](https://goreportcard.com/badge/github.com/hellflame/argparse)](https://goreportcard.com/report/github.com/hellflame/argparse) [![Coverage Status](https://coveralls.io/repos/github/hellflame/argparse/badge.svg?branch=master)](https://coveralls.io/github/hellflame/argparse?branch=master)
 
-[中文文档](docs/cn.md)
+Argparser 项目是受 [python argparse](https://docs.python.org/3.9/library/argparse.html) 启发所开发的 golang 命令行解析包，麻雀虽小五脏俱全。除了简单的解析命令行外，提供了如下特性：
 
-Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
-
-It's small but fully Functional & Powerful
-
-Provide not just simple parsing args, but :
-
-- [x] Sub Command
-- [x] Argument Groups
-- [x] Positional Arguments
-- [x] Customize Parse Formatter
-- [x] Customize Validate checker
-- [x] Argument Choice support
-- [x] Argument Action support (infinite possible)
-- [x] Shell Completion support
-- [x] Levenshtein Error Correction
+- [x] 子命令
+- [x] 命令行分组
+- [x] 位置参数支持
+- [x] 自定义解析函数
+- [x] 自定义参数检查器
+- [x] 参数范围限定支持
+- [x] 参数行为支持 (释放无限可能性)
+- [x] 命令行自动补全脚本支持
+- [x] 根据编辑距离的纠错
 - [ ] ......
 
-## Aim
+## 目标
 
-The aim of the package is to better serve programers to build better command line programs.
+帮助程序员开发更好的命令行程序
 
-## Installation
+## 安装
 
 ```bash
 go get -u github.com/hellflame/argparse
 ```
 
-> no dependence needed
+> 无额外依赖
 
-## Usage
+## 使用
 
-Just go:
+栗子：
 
 ```go
 package main
@@ -60,7 +54,7 @@ func main() {
 
 [example](examples/basic)
 
-Check output:
+检查输出:
 
 ```bash
 => go run main.go
@@ -76,23 +70,23 @@ optional arguments:
 hello hellflame
 ```
 
-A few points
+几点说明
 
-About object __parser__ :
+关于 __parser__ 结构体 :
 
-1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient where the release name is uncertain
-2. `help` function is auto injected, but you can disable it when using `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
-3. When `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
+1. `NewParser` 第一个参数是程序的名字, 但__可以为空__ , 如果程序名为空, 则会使用 `os.Args[0]` 作为程序名 , 只是用 `go run` 时会有点怪怪的，但当发布为可执行文件，在运行时就会是可执行文件的名字(通过 `go build` 生成)，所以在发布名称不确定的时候会比较方便
+2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数
+3. 帮助信息显示后，程序会以状态码 1 退出程序。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
 
-About __parse__ action:
+关于 __parse__ 动作执行:
 
-1. The argument `name` is only usable __after__  `parser.Parse` 
-2. When passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source
-3. The short name of your argument can be __more than one character__
+1. 参数 `name` 只在 `parser.Parse` 后可用
+2. 若 `parser.Parse` 接受 `nil` 作为参数, `os.Args[1:]` 会作为解析来源
+3. 参数缩写可以 __不止一个字符__
 
 ---
 
-Based on those points above, the code can be like this:
+基于以上几点，可以写出下面的代码
 
 ```go
 func main() {
@@ -119,7 +113,7 @@ func main() {
 
 [example](examples/basic-bias)
 
-Check output:
+检查输出:
 
 ```bash
 => go run main.go  # there will be no output
@@ -142,20 +136,20 @@ optional arguments:
 hello hellflame
 ```
 
-A few points:
+几点说明:
 
-1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available
-2. If keep `DisableDefaultShowHelp` to be false, when there is no argument, the `help` message will still show up as Default Action
-3. After the manually call of `parser.PrintHelp()` , `return` will put an end to `main`
-4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way
+1. `DisableHelp` 只是阻止了  `-h/--help` 注册到解析器, 但依然可以通过其他方式得到帮助信息
+2. 如果保持 `DisableDefaultShowHelp` 为 `false`, 当没有用户输入时, 帮助信息会作为默认行为输出
+3. 在手动执行 `parser.PrintHelp()` 后, `return` 会结束 `main` 方法
+4. 注意使用信息输出的顺序, 基本和这些参数的创建顺序一致, 这是有意为之的
 
-### Features
+### 特点
 
-some show case
+用例展示
 
-#### 1. Levenshtein error correct [ >= v1.2.0 ]
+#### 1. 编辑距离纠错 [ >= v1.2.0 ]
 
-the `Parser` will try to match __optional arguments__ when there is no match
+`Parser` 会在没有匹配的情况下尽力匹配可选参数
 
 ```go
 parser := NewParser("", "", nil)
@@ -170,9 +164,9 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 // here for eg is: --aa
 ```
 
-Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be seen as `Positional Argument` , then there will be no error correct. 
+注意如果包含 `位置参数` 时 , 未知参数可能会被视为位置参数，就没有任何纠错提示了
 
-### Supported Arguments
+### 支持的参数
 
 #### 1. Flag
 
@@ -180,11 +174,11 @@ Notice that if there are multiple `Positional Argument` , the `unrecognized argu
 parser.Flag("short", "full", nil)
 ```
 
-`Flag` create flag argument, Return a `*bool` point to the parse result
+`Flag` 会创建标记参数, 返回 `*bool` 指针保存结果
 
-Python version is like `add_argument("-s", "--full", action="store_true")`
+Python代码可能像这样： `add_argument("-s", "--full", action="store_true")`
 
-Flag Argument can only be used as an OptionalArguments
+标记参数只能是可选参数
 
 #### 2. String
 
@@ -192,11 +186,11 @@ Flag Argument can only be used as an OptionalArguments
 parser.String("short", "full", nil)
 ```
 
-`String` create string argument, return a `*string` point to the parse result
+`String` 会创建字符串参数, 返回 `*string` 指针保存结果
 
-String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
+字符串参数可以作为可选或位置参数(默认为可选参数), Python代码如 `add_argument("-s", "--full")` 
 
-Set `Option.Positional = true` to use as Positional Argument, then it's like `add_argument("s", "full")` in python
+设置 `Option.Positional = true` 变为位置参数, Python代码如 `add_argument("s", "full")`
 
 #### 3. StringList
 
@@ -204,11 +198,11 @@ Set `Option.Positional = true` to use as Positional Argument, then it's like `ad
 parser.Strings("short", "full", nil)
 ```
 
-`Strings` create string list argument, return a `*[]string` point to the parse result
+`Strings` 创建字符串数组参数, 返回 `*[]string` 指针保存结果
 
-Mostly like `*Parser.String()`
+和 `*Parser.String()` 差不多
 
-Python version is like `add_argument("-s", "--full", nargs="*")` 
+Python代码如 `add_argument("-s", "--full", nargs="*")` 
 
 #### 4. Int
 
@@ -216,11 +210,11 @@ Python version is like `add_argument("-s", "--full", nargs="*")`
 parser.Int("short", "full", nil)
 ```
 
-`Int` create int argument, return a `*int` point to the parse result
+`Int` 创建整数参数, 返回 `*int` 指针保存结果
 
-Mostly like `*Parser.String()`, except the return type
+除了返回类型外，和 `*Parser.String()` 差不多
 
-Python version is like `add_argument("-s", "--full", type=int)`
+Python代码如 `add_argument("-s", "--full", type=int)`
 
 #### 5. IntList
 
@@ -228,11 +222,11 @@ Python version is like `add_argument("-s", "--full", type=int)`
 parser.Ints("short", "full", nil)
 ```
 
-`Ints` create int list argument, return a `*[]int` point to the parse result
+`Ints` 创建整数数组参数, 返回 `*[]int` 指针保存结果
 
-Mostly like `*Parser.Int()`
+和 `*Parser.Int()` 差不多
 
-Python version is like `add_argument("-s", "--full", type=int, nargs="*")`
+Python代码如 `add_argument("-s", "--full", type=int, nargs="*")`
 
 #### 6. Float
 
@@ -240,11 +234,11 @@ Python version is like `add_argument("-s", "--full", type=int, nargs="*")`
 parser.Float("short", "full", nil)
 ```
 
-`Float` create float argument, return a `*float64` point to the parse result
+`Float` 创建浮点数参数, 返回 `*float64` 指针保存结果
 
-Mostly like `*Parser.String()`, except the return type
+除了返回类型外，和 `*Parser.String()` 差不多
 
-Python version is like `add_argument("-s", "--full", type=double)` 
+Python代码如 `add_argument("-s", "--full", type=double)` 
 
 #### 7. FloatList
 
@@ -252,21 +246,21 @@ Python version is like `add_argument("-s", "--full", type=double)`
 parser.Floats("short", "full", nil)
 ```
 
-`Floats` create float list argument, return a `*[]float64` point to the parse result
+`Floats` 创建浮点数数组参数, 返回 `*[]float64` 指针保存结果
 
-Mostly like `*Parser.Float()`
+和 `*Parser.Float()` 差不多
 
-Python version is like `add_argument("-s", "--full", type=double, nargs="*")` 
+Python代码如 `add_argument("-s", "--full", type=double, nargs="*")` 
 
-### Other Types
+### 其他类型
 
-For complex type or even customized types are __not directly supported__ , but it doesn't mean you can't do anything before parsing to your own type, here shows some cases:
+这个项目对复杂类型甚至自定义类型是__没有直接支持__的，但这并不妨碍你在解析自己的类型前做点什么
 
-#### 1. File type
+#### 1. 文件类型
 
-You can check file's existence before read it, and tell if it's a valid file, etc. [eg is here](examples/customzed-types/main.go)
+你可以在读文件前检查文件是否存在. [eg is here](examples/customzed-types/main.go)
 
-Though the return type is still a `string` , but it's more garanteed to use the argument as what you wanted
+虽然返回类型依然是字符串，但在用这个参数的时候会更有保障
 
 ```go
 path := parser.String("f", "file", &argparse.Option{
@@ -290,9 +284,9 @@ if *path != "" {
 }
 ```
 
-It used `Validate` to do the magic, we'll talk about it later in more detail
+主要是 `Validate` 在起作用, 之后会详细讨论它
 
-Python code is like:
+Python代码如:
 
 ```python
 function valid_type(arg) {
@@ -305,9 +299,9 @@ function valid_type(arg) {
 parser.add_argument("-s", "--full", type=valid_type)
 ```
 
-The difference is that, python can return any type from the type function `valid_type` , and you can just return a `File` type in there
+和golang版本不一样的是，python可以用过`valid_type`返回任意类型, 比如文件类型
 
-There is a little problem if Argument return a `*File` in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak. Instead of a `*File` to use with danger, you can manage the resouce much safer:
+在go中返回`*File` 类型也会有一些问题. 文件句柄可能已经在前面使用过，导致它多次使用的结果不一致，并且你也需要管理文件句柄，比如关闭它，以免发生内存泄漏。所以除了使用危险的 `*File`, 你可以更安全的使用这个资源
 
 ```go
 func dealFile(path) {
@@ -321,15 +315,15 @@ func dealFile(path) {
 }
 ```
 
-#### 2. Any Type
+#### 2. 任意类型
 
-Checkout `Action` for example, then you can handle any type when parsing arguments !
+看看 `Action` 的栗子, 然后你就可以解析任意类型了
 
-### Advanced
+### 高级用法
 
-#### 1. ArgumentGroup
+#### 1. 命令行组
 
-Argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so, [eg](examples/yt-download/main.go)
+命令行组适合在帮助信息里讲参数分组。这只会影响帮助信息的显示，没别的作用。使用配置里的 `Group` 来实现[eg](examples/yt-download/main.go)
 
 ```go
 parser.Flag("", "version", &argparse.Option{
@@ -338,9 +332,9 @@ parser.Flag("", "version", &argparse.Option{
 })
 ```
 
-#### 2. DisplayMeta
+#### 2. 元信息
 
-When the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help, [eg](examples/yt-download/main.go)
+当参数的完整名称太长或者丑丑的，修改元信息可以改变帮助信息里的展示内容[eg](../examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -349,15 +343,15 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-It will looks like this in help message:
+帮助信息里看起来像这样：
 
 ```bash
   --playlist-start NUMBER  Playlist video to start at (default is 1)
 ```
 
-#### 3.DefaultValue
+#### 3.默认值
 
-If the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue, [eg](examples/yt-download/main.go)
+如果参数没有给，那么就会使用默认参数，[eg](../examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -366,13 +360,13 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-Noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (like `os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if these actions exist),  `Validate` & `Formatter` will be mentioned below
+注意默认参数的类型不是想要的 `Int` 类型，因为这个值是作为输入的命令行参数来使用的，它还必须通过 `Validate` & `Formatter` & `parse` 这些方法的处理,  `Validate` & `Formatter` 会在之后提到
 
-Also, the Default value can only be one `String` , if you want an Array arguments, you can only have one element Array as default value
+并且默认值的类型只能是 `String`，如果想要给数组类型的参数赋默认值，只能得到只有一个参数的数组
 
-#### 4. RequiredArgument
+#### 4. 必选参数
 
-If the argument must be input, set `Required` to be `true`, [eg](examples/yt-download/main.go)
+如果参数必须给出, 设 `Required` 为 `true` 即可, [eg](../examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -381,9 +375,9 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-Flag argument can not be `Required` , you should know the reason, Flag argument has more restrictions, you will be noticed when using it
+标志类参数不能为 `Required` , 你应该知道为什么。当然，标志参数会有更多限制，在使用的过程中会发现的
 
-#### 5. PositionalArgument
+#### 5. 位置参数
 
 If the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
 
