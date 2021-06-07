@@ -361,6 +361,11 @@ fi
 //
 // args: set nil to use os.Args[1:] by default
 func (p *Parser) Parse(args []string) error {
+	p.Invoked = false
+	for _, s := range p.subParser {
+		s.Invoked = false
+	}
+
 	if args == nil {
 		args = os.Args[1:]
 	}
@@ -370,6 +375,8 @@ func (p *Parser) Parse(args []string) error {
 	}
 	var subParser *Parser
 	if len(args) == 0 {
+		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
+
 		if p.config.DefaultAction != nil {
 			p.config.DefaultAction()
 		} else if !p.config.DisableDefaultShowHelp {
@@ -377,7 +384,6 @@ func (p *Parser) Parse(args []string) error {
 			p.showHelp = &help
 		}
 	} else {
-		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 		if matchSub {
 			subParser = p.subParserMap[args[0]]
 			e := subParser.Parse(args[1:])
@@ -385,6 +391,7 @@ func (p *Parser) Parse(args []string) error {
 				return e
 			}
 		} else {
+			p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 			lastPositionArgIndex := 0
 			registeredPositionsLength := len(p.positionArgs)
 			for len(args) > 0 {
