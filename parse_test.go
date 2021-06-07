@@ -621,47 +621,77 @@ func TestParse_AllowShort(t *testing.T) {
 	}
 }
 
-func TestParser_Invoke(t *testing.T) {
-	p := NewParser("", "", nil)
-	a := p.String("a", "", nil)
-	sub := p.AddCommand("sub", "", nil)
-	b := sub.String("b", "", nil)
-	mainParsed := false
-	subParsed := false
-	No2Parsed := false
-	p.InvokeAction = func() {
-		mainParsed = true
-		if *a != "" {
-			t.Error("error!")
-		}
-	}
-	sub.InvokeAction = func() {
-		subParsed = true
-		if *b != "linux" {
-			t.Error("failed to bind")
-			return
-		}
-	}
-	subNo2 := p.AddCommand("sub2", "", nil)
-	subNo2.Int("a", "", nil)
-	subNo2.InvokeAction = func() {
-		No2Parsed = true
+func TestParser_InvokeDisableDefaultHelp(t *testing.T) {
+	o := &ParserConfig{
+		DisableDefaultShowHelp: true,
 	}
 
-	if e := p.Parse([]string{"sub", "-b", "linux"}); e != nil {
-		t.Error(e.Error())
-		return
-	}
-	if !p.Invoked || !mainParsed {
-		t.Error("main parse state error")
-		return
-	}
-	if !sub.Invoked || !subParsed {
-		t.Error("sub parse state error")
-		return
-	}
-	if subNo2.Invoked || No2Parsed {
-		t.Error("irrelevant parse state error")
-		return
+	mainInvoked := false
+	subInvoked := false
+
+	p := NewParser("test", "test desc", o)
+	p.Flag("t", "test", nil)
+
+	sub := p.AddCommand("sub", "sub cmd", nil)
+	sub.Flag("t", "test", nil)
+
+	for _, info := range []struct {
+		args        []string
+		mainInvoked bool
+	}{
+		{[]string{}, true},
+		{[]string{"-t"}, true},
+		{[]string{"sub"}, false},
+		{[]string{"sub", "-t"}, false},
+	} {
+		for _, doInvokeFunc := range []bool{true, false} {
+			mainInvoked = false
+			subInvoked = false
+
+			if doInvokeFunc {
+				p.InvokeAction = func() { mainInvoked = true }
+				sub.InvokeAction = func() { subInvoked = true }
+			} else {
+				p.InvokeAction = func() {}
+				sub.InvokeAction = func() {}
+			}
+
+			if err := p.Parse(info.args); err != nil {
+				t.Error(err)
+			} else {
+				pi := p.Invoked
+				si := sub.Invoked
+
+				if info.mainInvoked {
+					if !pi {
+						t.Error("main not invoked")
+					}
+					if mainInvoked != doInvokeFunc {
+						t.Error("main invoke func bool not changed")
+					}
+
+					if si {
+						t.Error("sub invoked")
+					}
+					if subInvoked {
+						t.Error("sub invoked ran")
+					}
+				} else {
+					if pi {
+						t.Error("main invoked")
+					}
+					if mainInvoked {
+						t.Error("main invoked ran")
+					}
+
+					if !si {
+						t.Error("sub not invoked")
+					}
+					if subInvoked != doInvokeFunc {
+						t.Error("sub invoke func bool not changed")
+					}
+				}
+			}
+		}
 	}
 }
