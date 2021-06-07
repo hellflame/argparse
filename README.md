@@ -642,6 +642,37 @@ Which will have effect on `Shell Completion Script`
 
 [full eg](examples/hide-help-entry/main.go)
 
+#### 14. Invoked & InvokeAction [ >= 1.4.0 ]
+
+When there is valid match for main parser or sub parser, `Parser.Invoked` will be set true and `Parser.InvokeAction` will be executed
+
+```go
+p := NewParser("", "", nil)
+a := p.String("a", "", nil)
+sub := p.AddCommand("sub", "", nil)
+b := sub.String("b", "", nil)
+p.InvokeAction = func() {
+  // do things when main parser has any match
+}
+sub.InvokeAction = func() {
+  // do things when sub parser has any match
+}
+subNo2 := p.AddCommand("sub2", "", nil)
+subNo2.Int("a", "", nil)
+subNo2.InvokeAction = func() {
+  // do things when sub2 parser has any match
+}
+
+if e := p.Parse(nil); e != nil {
+  t.Error(e.Error())
+  return
+}
+
+// check parser Invoked
+
+fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
+```
+
 ##### Argument Process Flow Map
 
 ```

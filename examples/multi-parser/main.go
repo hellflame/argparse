@@ -15,7 +15,7 @@ func main() {
 	testParser := argparse.NewParser("test", "test command", nil)
 	isOk := testParser.Flag("", "ok", nil)
 
-	parser.Strings("t", "test", &argparse.Option{Action: func(args []string) error {
+	parser.Strings("", "test", &argparse.Option{Action: func(args []string) error {
 		if e := testParser.Parse(args); e != nil {
 			return e
 		}
@@ -26,7 +26,7 @@ func main() {
 	buildParser := argparse.NewParser("build", "build command", nil)
 	count := buildParser.Int("c", "count", nil)
 
-	parser.Strings("b", "build", &argparse.Option{Action: func(args []string) error {
+	parser.Strings("", "build", &argparse.Option{Action: func(args []string) error {
 		if e := buildParser.Parse(args); e != nil {
 			return e
 		}

@@ -14,6 +14,9 @@ type Parser struct {
 	description string
 	config      *ParserConfig
 
+	Invoked      bool   // whether the parser is invoked
+	InvokeAction func() // execute when the parser is invoked
+
 	showHelp            *bool // flag to decide show help message
 	showShellCompletion *bool // flag to decide show shell completion
 
@@ -374,6 +377,7 @@ func (p *Parser) Parse(args []string) error {
 			p.showHelp = &help
 		}
 	} else {
+		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 		if matchSub {
 			subParser = p.subParserMap[args[0]]
 			e := subParser.Parse(args[1:])
@@ -493,6 +497,9 @@ func (p *Parser) Parse(args []string) error {
 		if arg.Required && !arg.assigned {
 			return fmt.Errorf("%s is required", arg.getMetaName())
 		}
+	}
+	if p.Invoked && p.InvokeAction != nil {
+		p.InvokeAction()
 	}
 	return nil
 }
