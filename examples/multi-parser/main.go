@@ -19,7 +19,7 @@ func main() {
 		if e := testParser.Parse(args); e != nil {
 			return e
 		}
-		fmt.Println("is it ok? ", *isOk)
+		fmt.Println("is it ok?", *isOk)
 		return nil
 	}})
 
