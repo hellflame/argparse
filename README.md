@@ -644,7 +644,7 @@ Which will have effect on `Shell Completion Script`
 
 #### 14. Invoked & InvokeAction [ >= 1.4.0 ]
 
-When there is valid match for main parser or sub parser, `Parser.Invoked` will be set true and `Parser.InvokeAction` will be executed
+When there is valid match for main parser or sub parser,  `Parser.Invoked` will be set true. If `Parser.InvokeAction` is set, it will be executed with the state `Parser.Invoked`. 
 
 ```go
 p := NewParser("", "", nil)

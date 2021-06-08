@@ -638,9 +638,9 @@ optional arguments:
 
 [full eg](../examples/hide-help-entry/main.go)
 
-#### 14. 匹配状态与匹配动作
+#### 14. 匹配状态与匹配动作 [ >= 1.4.0 ]
 
-当主解析或子命令解析被匹配到时，`Parser.Invoked` 会设置为 true 并且 `Parser.InvokeAction` 也会被执行
+当主解析或子命令解析被匹配到时，`Parser.Invoked` 会设置为 true ，如果设置了 `Parser.InvokeAction` ，那么它会接受`Parser.Invoked` 作为参数被执行
 
 ```go
 p := NewParser("", "", nil)
