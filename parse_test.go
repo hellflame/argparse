@@ -717,3 +717,46 @@ func TestParser_InvokeDisableDefaultHelp(t *testing.T) {
 		t.Error("sub invoked false")
 	}
 }
+
+func TestParser_CombinedShort(t *testing.T) {
+	p := NewParser("combine short", "tests combined short flags", nil)
+
+	f1 := p.Flag("a", "", nil)
+	f2 := p.Flag("b", "", nil)
+
+	sub := p.AddCommand("sub", "combined short on sub", nil)
+	sf1 := sub.Flag("a", "", nil)
+	sf2 := sub.Flag("b", "", nil)
+
+	f1_set := false
+	f2_set := false
+
+	p.InvokeAction = func() {
+		f1_set = *f1
+		f2_set = *f2
+	}
+
+	sub.InvokeAction = func() {
+		f1_set = *sf1
+		f2_set = *sf2
+	}
+
+	for _, base := range [][]string{{}, {"sub"}} {
+		if err := p.Parse(append(base, "-ab")); err != nil {
+			t.Error(err)
+		} else {
+			if !*f1 {
+				t.Error("f1 not set")
+			}
+			if !*f2 {
+				t.Error("f2 not set")
+			}
+			if !f1_set {
+				t.Error("f1 not set")
+			}
+			if !f2_set {
+				t.Error("f2 not set")
+			}
+		}
+	}
+}

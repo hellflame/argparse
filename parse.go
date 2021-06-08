@@ -20,9 +20,10 @@ type Parser struct {
 	showHelp            *bool // flag to decide show help message
 	showShellCompletion *bool // flag to decide show shell completion
 
-	entries      []*arg
-	entryMap     map[string]*arg
-	positionArgs []*arg
+	entries       []*arg
+	entryMap      map[string]*arg
+	shortEntryMap map[rune]*arg
+	positionArgs  []*arg
 
 	entryGroupOrder []string
 	entryGroup      map[string][]*arg
@@ -58,6 +59,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		entries:         []*arg{},
 		entryMap:        make(map[string]*arg),
 		entryGroup:      make(map[string][]*arg),
+		shortEntryMap:   make(map[rune]*arg),
 		entryGroupOrder: []string{},
 		positionArgs:    []*arg{},
 		subParser:       []*Parser{},
@@ -94,6 +96,12 @@ func (p *Parser) registerArgument(a *arg) error {
 		}
 		p.entryMap[watcher] = a
 		p.entries = append(p.entries, a)
+	}
+	if a.isFlag && a.short != "" {
+		rs := []rune(a.short)
+		if len(rs) == 1 {
+			p.shortEntryMap[rs[0]] = a
+		}
 	}
 	return nil
 }
@@ -394,6 +402,7 @@ func (p *Parser) Parse(args []string) error {
 			p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 			lastPositionArgIndex := 0
 			registeredPositionsLength := len(p.positionArgs)
+
 			for len(args) > 0 {
 				sign := args[0]
 				if arg, ok := p.entryMap[sign]; ok {
@@ -454,24 +463,54 @@ func (p *Parser) Parse(args []string) error {
 						}
 					} else {
 						if strings.HasPrefix(sign, shortPrefix) {
-							var candidates []string
-							for k := range p.entryMap {
-								candidates = append(candidates, k)
-							}
-							var tips []string
-							for _, m := range decideMatch(sign, candidates) {
-								helpInfo := p.entryMap[m].Help
-								if helpInfo != "" {
-									helpInfo = fmt.Sprintf(" (%s)", helpInfo)
+							if !strings.HasPrefix(sign, fullPrefix) {
+								runes := []rune(sign[1:])
+								for _, r := range runes {
+									if a, ok := p.shortEntryMap[r]; ok {
+										_ = a.parseValue(nil)
+									} else {
+										var candidates []string
+										for k := range p.entryMap {
+											candidates = append(candidates, k)
+										}
+										var tips []string
+										for _, m := range decideMatch(sign, candidates) {
+											helpInfo := p.entryMap[m].Help
+											if helpInfo != "" {
+												helpInfo = fmt.Sprintf(" (%s)", helpInfo)
+											}
+											tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
+										}
+										match := strings.Join(tips, "\nor ")
+										if match != "" {
+											return fmt.Errorf("unrecognized short flag %v in %s\ndo you mean?: %s", r, sign, match)
+										} else {
+											return fmt.Errorf("unrecognized short flag %v in %s", r, sign)
+										}
+									}
 								}
-								tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
+								args = args[1:]
+							} else {
+								var candidates []string
+								for k := range p.entryMap {
+									candidates = append(candidates, k)
+								}
+								var tips []string
+								for _, m := range decideMatch(sign, candidates) {
+									helpInfo := p.entryMap[m].Help
+									if helpInfo != "" {
+										helpInfo = fmt.Sprintf(" (%s)", helpInfo)
+									}
+									tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
+								}
+								match := strings.Join(tips, "\nor ")
+								if match != "" {
+									return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
+								}
 							}
-							match := strings.Join(tips, "\nor ")
-							if match != "" {
-								return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
-							}
+						} else {
+							return fmt.Errorf("unrecognized arguments: %s", sign)
 						}
-						return fmt.Errorf("unrecognized arguments: %s", sign)
 					}
 				}
 			}
