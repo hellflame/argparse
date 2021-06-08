@@ -14,8 +14,8 @@ type Parser struct {
 	description string
 	config      *ParserConfig
 
-	Invoked      bool   // whether the parser is invoked
-	InvokeAction func() // execute when the parser is invoked
+	Invoked      bool       // whether the parser is invoked
+	InvokeAction func(bool) // execute after parse
 
 	showHelp            *bool // flag to decide show help message
 	showShellCompletion *bool // flag to decide show shell completion
@@ -498,8 +498,8 @@ func (p *Parser) Parse(args []string) error {
 			return fmt.Errorf("%s is required", arg.getMetaName())
 		}
 	}
-	if p.Invoked && p.InvokeAction != nil {
-		p.InvokeAction()
+	if p.InvokeAction != nil {
+		p.InvokeAction(p.Invoked)
 	}
 	return nil
 }

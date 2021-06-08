@@ -629,14 +629,14 @@ func TestParser_Invoke(t *testing.T) {
 	mainParsed := false
 	subParsed := false
 	No2Parsed := false
-	p.InvokeAction = func() {
+	p.InvokeAction = func(invoked bool) {
 		mainParsed = true
 		if *a != "" {
 			t.Error("error!")
 		}
 	}
-	sub.InvokeAction = func() {
-		subParsed = true
+	sub.InvokeAction = func(invoked bool) {
+		subParsed = invoked
 		if *b != "linux" {
 			t.Error("failed to bind")
 			return
@@ -644,8 +644,8 @@ func TestParser_Invoke(t *testing.T) {
 	}
 	subNo2 := p.AddCommand("sub2", "", nil)
 	subNo2.Int("a", "", nil)
-	subNo2.InvokeAction = func() {
-		No2Parsed = true
+	subNo2.InvokeAction = func(invoked bool) {
+		No2Parsed = invoked
 	}
 
 	if e := p.Parse([]string{"sub", "-b", "linux"}); e != nil {

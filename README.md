@@ -651,15 +651,15 @@ p := NewParser("", "", nil)
 a := p.String("a", "", nil)
 sub := p.AddCommand("sub", "", nil)
 b := sub.String("b", "", nil)
-p.InvokeAction = func() {
+p.InvokeAction = func(invoked bool) {
   // do things when main parser has any match
 }
-sub.InvokeAction = func() {
+sub.InvokeAction = func(invoked bool) {
   // do things when sub parser has any match
 }
 subNo2 := p.AddCommand("sub2", "", nil)
 subNo2.Int("a", "", nil)
-subNo2.InvokeAction = func() {
+subNo2.InvokeAction = func(invoked bool) {
   // do things when sub2 parser has any match
 }
 
