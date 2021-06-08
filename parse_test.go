@@ -630,7 +630,7 @@ func TestParser_Invoke(t *testing.T) {
 	subParsed := false
 	No2Parsed := false
 	p.InvokeAction = func(invoked bool) {
-		mainParsed = true
+		mainParsed = invoked
 		if *a != "" {
 			t.Error("error!")
 		}
