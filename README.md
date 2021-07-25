@@ -82,7 +82,7 @@ About object __parser__ :
 
 1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient where the release name is uncertain
 2. `help` function is auto injected, but you can disable it when using `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
-3. When `help` showed up, the program will default __exit with code 1__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
+3. When `help` showed up, the program will default __exit with code 1 (version < v1.5.0)__ or __return error type BreakAfterHelp (version >= 1.5.0)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
 
 About __parse__ action:
 

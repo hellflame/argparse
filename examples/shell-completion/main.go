@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"github.com/hellflame/argparse"
+	"os"
 )
 
 func main() {
@@ -21,7 +22,13 @@ func main() {
 	install := p.AddCommand("install", "", nil)
 	install.Strings("i", "in", nil)
 	if e := p.Parse(nil); e != nil {
-		fmt.Println(e.Error())
+		switch e.(type) {
+		case argparse.BreakAfterHelp:
+			os.Exit(1)
+		case argparse.BreakAfterShellScript:
+		default:
+			fmt.Printf(e.Error())
+		}
 		return
 	}
 }

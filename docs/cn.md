@@ -76,7 +76,7 @@ hello hellflame
 
 1. `NewParser` 第一个参数是程序的名字, 但__可以为空__ , 如果程序名为空, 则会使用 `os.Args[0]` 作为程序名 , 只是用 `go run` 时会有点怪怪的，但当发布为可执行文件，在运行时就会是可执行文件的名字(通过 `go build` 生成)，所以在发布名称不确定的时候会比较方便
 2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数
-3. 帮助信息显示后，程序会以状态码 1 退出程序。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
+3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5.0)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5.0)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
 
 关于 __parse__ 动作执行:
 
