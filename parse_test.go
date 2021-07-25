@@ -665,3 +665,31 @@ func TestParser_Invoke(t *testing.T) {
 		return
 	}
 }
+
+func TestParser_Error(t *testing.T) {
+	p := NewParser("", "", nil)
+	p.Int("x", "", nil)
+	if e := p.Parse([]string{}); e != nil {
+		switch e.(type) {
+		case BreakAfterHelp:
+			if e.Error() != "" {
+				t.Error("error not empty")
+			}
+		default:
+			t.Error("not normal error")
+		}
+	}
+
+	p = NewParser("", "", &ParserConfig{AddShellCompletion: true})
+	p.Int("x", "", nil)
+	if e := p.Parse([]string{"--completion"}); e != nil {
+		switch e.(type) {
+		case BreakAfterShellScript:
+			if e.Error() != "" {
+				t.Error("error not empty")
+			}
+		default:
+			t.Error("completion is not normal error")
+		}
+	}
+}
