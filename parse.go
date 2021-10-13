@@ -41,6 +41,7 @@ type ParserConfig struct {
 	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
 	DefaultAction          func() // set default action to replace default help action
 	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
+	WithHint               bool   // argument help message with argument default value hint
 }
 
 // NewParser create the parser object with optional name & description & ParserConfig
@@ -146,13 +147,18 @@ func (p *Parser) FormatHelp() string {
 		}
 		result += section
 	}
+	withHint := p.config.WithHint
 	if len(p.positionArgs) > 0 { // dealing positional arguments present
 		section := "\npositional arguments:\n"
 		for _, arg := range p.positionArgs {
 			if arg.Group != "" || arg.HideEntry {
 				continue
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
+			help := arg.Help
+			if withHint && !arg.NoHint {
+				help = arg.formatHelpWithExtraInfo()
+			}
+			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength) + "\n"
 		}
 		result += section
 	}
@@ -170,7 +176,11 @@ func (p *Parser) FormatHelp() string {
 			if arg.HideEntry {
 				continue
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
+			help := arg.Help
+			if withHint && !arg.NoHint {
+				help = arg.formatHelpWithExtraInfo()
+			}
+			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength) + "\n"
 		}
 		result += section
 	}

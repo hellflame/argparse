@@ -27,6 +27,8 @@ type Option struct {
 	Positional bool                                  // is positional argument
 	HideEntry  bool                                  // hide usage & help display
 	Help       string                                // help message
+	NoHint     bool                                  // disable hint info for the argument (usable when ParserConfig.WithHint = true)
+	HintInfo   string                                // specified hint info suffixed after help message, when ParserConfig.WithHint = true
 	Group      string                                // argument group info, default to be no group
 	Action     func(args []string) error             // bind actions when the match is found, 'args' can be nil to be a flag
 	Choices    []interface{}                         // input argument must be one/some of the choice
@@ -153,6 +155,50 @@ func (a *arg) formatHelpHeader() string {
 	return strings.Join(signedWatchers, ", ")
 }
 
+func (a *arg) formatHelpWithExtraInfo() string {
+	help := a.Help
+	if help != "" {
+		help += " " // append a space after help info
+	}
+	if a.HintInfo != "" {
+		return fmt.Sprintf("%s(%s)", help, a.HintInfo)
+	}
+	var extraInfo []string
+	if a.Default != "" {
+		extraInfo = append(extraInfo, fmt.Sprintf("default: %s", a.Default))
+	}
+	if len(a.Choices) > 0 {
+		extraInfo = append(extraInfo, fmt.Sprintf("options: [%s]", a.dumpChoices()))
+	}
+	if a.Required {
+		extraInfo = append(extraInfo, "required")
+	}
+	if extra := strings.Join(extraInfo, ", "); extra != "" {
+		return fmt.Sprintf("%s(%s)", help, extra)
+	}
+	return help
+}
+
+func (a *arg) dumpChoices() string {
+	var choices []string
+	e := a.Choices[0]
+	switch e.(type) {
+	case string:
+		for _, e := range a.Choices {
+			choices = append(choices, e.(string))
+		}
+	case int:
+		for _, e := range a.Choices {
+			choices = append(choices, fmt.Sprintf("%d", e.(int)))
+		}
+	case float64:
+		for _, e := range a.Choices {
+			choices = append(choices, fmt.Sprintf("%f", e.(float64)))
+		}
+	}
+	return strings.Join(choices, ", ")
+}
+
 // parse input & bind (default) value to target
 func (a *arg) parseValue(values []string) error {
 	a.assigned = true
@@ -219,7 +265,7 @@ func (a *arg) parseValue(values []string) error {
 				}
 			}
 			if !found {
-				return fmt.Errorf("args must one|some of %+v", a.Choices)
+				return fmt.Errorf("args must be one|some of %+v", a.Choices)
 			}
 		}
 	}
