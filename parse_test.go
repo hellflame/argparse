@@ -229,7 +229,7 @@ func TestParser_Choices(t *testing.T) {
 	parser.Ints("", "b",
 		&Option{Choices: []interface{}{1, 2}})
 	if e := parser.Parse([]string{"--a", "y"}); e != nil {
-		if e.Error() != "args must one|some of [x]" {
+		if e.Error() != "args must be one|some of [x]" {
 			t.Error("failed to make a choice")
 			return
 		}
@@ -239,7 +239,7 @@ func TestParser_Choices(t *testing.T) {
 		return
 	}
 	if e := parser.Parse([]string{"--b", "3"}); e != nil {
-		if e.Error() != "args must one|some of [1 2]" {
+		if e.Error() != "args must be one|some of [1 2]" {
 			t.Error("failed to make choices")
 			return
 		}
