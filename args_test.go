@@ -82,3 +82,23 @@ func TestArgs_HideEntry(t *testing.T) {
 		return
 	}
 }
+
+func TestExtraInfo(t *testing.T) {
+	if (&arg{full: "a", Option: Option{HintInfo: "value: 0 -> π"}}).formatHelpWithExtraInfo() != "(value: 0 -> π)" {
+		t.Error("failed to use HintInfo")
+		return
+	}
+	if (&arg{full: "a", Option: Option{Choices: []interface{}{1, 2, 3}}}).formatHelpWithExtraInfo() != "(options: [1, 2, 3])" {
+		t.Error("failed to format extra choice")
+		return
+	}
+
+	if (&arg{full: "a", Option: Option{Choices: []interface{}{"a", "b"}, Required: true}}).formatHelpWithExtraInfo() != "(options: [a, b], required)" {
+		t.Error("failed to format Required args")
+		return
+	}
+	if (&arg{full: "a", Option: Option{Choices: []interface{}{0.25, 0.5}}}).formatHelpWithExtraInfo() != "(options: [0.250000, 0.500000])" {
+		t.Error("failed to generate choices for float")
+		return
+	}
+}

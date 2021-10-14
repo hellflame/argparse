@@ -697,7 +697,13 @@ func TestParser_Error(t *testing.T) {
 func TestWithHint(t *testing.T) {
 	p := NewParser("", "", &ParserConfig{WithHint: true})
 	p.Int("a", "", &Option{Default: "34", Help: "this is an int"})
+	p.String("b", "", &Option{Default: "a", Positional: true})
 	if !strings.Contains(p.FormatHelp(), "(default: 34)") {
 		t.Error("default value missing")
+		return
+	}
+	if !strings.Contains(p.FormatHelp(), "(default: a)") {
+		t.Error("default value missing for positional")
+		return
 	}
 }
