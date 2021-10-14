@@ -28,7 +28,6 @@ func main() {
 			fmt.Println(e.Error())
 		}
 		return
-	} else {
-		println(*tFlag, *otherFlag, *t, *defaultInt, *floatWithChoice)
 	}
+	println(*tFlag, *otherFlag, *t, *defaultInt, *floatWithChoice)
 }
