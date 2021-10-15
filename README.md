@@ -172,6 +172,32 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 
 Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be seen as `Positional Argument` , then there will be no error correct. 
 
+#### 2. Help info hint [ >= v1.6.0 ]
+
+Help message can be generated with some hint info, like default value, choice range, required mark, or even any hint message. Like:
+
+```bash
+usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
+
+start a bug report
+
+optional arguments:
+  --help, -h                  show this help message
+  --flag, -f                  from test parser
+  --other, -o                 (optional => ∫)
+  --float FLOAT               (options: [0.100000, 0.200000], required)
+  --int INT, -i INT           this is int (default: 1)
+  --string STRING, -s STRING  no hint message
+```
+
+Enable hint by setting parser config `&argparse.ParserConfig{WithHint: true}` .
+
+Disable argument hint with `&argparse.Option{NoHint: true}`
+
+Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
+
+[eg](examples/sub-command)
+
 ### Supported Arguments
 
 #### 1. Flag

@@ -166,6 +166,32 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 
 注意如果包含 `位置参数` 时 , 未知参数可能会被视为位置参数，就没有任何纠错提示了
 
+#### 2. 帮助提示信息 [ >= v1.6.0 ]
+
+帮助信息可以包含一些提示信息， 比如默认值，可选范围，必填标记，甚至任何提示信息。如：
+
+```bash
+usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
+
+start a bug report
+
+optional arguments:
+  --help, -h                  show this help message
+  --flag, -f                  from test parser
+  --other, -o                 (optional => ∫)
+  --float FLOAT               (options: [0.100000, 0.200000], required)
+  --int INT, -i INT           this is int (default: 1)
+  --string STRING, -s STRING  no hint message
+```
+
+通过设置 `&argparse.ParserConfig{WithHint: true}` 开启帮助提示信息。
+
+设置 `&argparse.Option{NoHint: true}` 禁用参数提示
+
+通过 `&argparse.Option{HintInfo: "customize info"}` 自定义参数提示
+
+[eg](examples/sub-command)
+
 ### 支持的参数
 
 #### 1. Flag
