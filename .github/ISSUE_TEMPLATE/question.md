@@ -1,6 +1,6 @@
 ---
 name: Question
-about: It's not a problem, just want to know, out of curios.
+about: It's not a problem, just want to know, just curious.
 title: ''
 ---
 
