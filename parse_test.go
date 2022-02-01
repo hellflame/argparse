@@ -707,3 +707,10 @@ func TestWithHint(t *testing.T) {
 		return
 	}
 }
+
+func TestMaxHeaderLength(t *testing.T) {
+	p := NewParser("", "", &ParserConfig{MaxHeaderLength: 20})
+	p.String("s", "short", &Option{Help: "this is short help message"})
+	p.String("l", "this-is-a-very-long-args", &Option{Help: "this is long"})
+	p.FormatHelp()
+}

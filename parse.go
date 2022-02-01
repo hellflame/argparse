@@ -42,6 +42,7 @@ type ParserConfig struct {
 	DefaultAction          func() // set default action to replace default help action
 	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
 	WithHint               bool   // argument help message with argument default value hint
+	MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
 }
 
 // NewParser create the parser object with optional name & description & ParserConfig
@@ -140,10 +141,15 @@ func (p *Parser) FormatHelp() string {
 		}
 	}
 	headerLength += 4 // 2 space padding around header, before & after
+	helpBreak := false
+	if p.config.MaxHeaderLength > 0 {
+		headerLength = p.config.MaxHeaderLength
+		helpBreak = true
+	}
 	if len(p.subParser) > 0 {
 		section := "\navailable commands:\n"
 		for _, parser := range p.subParser {
-			section += formatHelpRow(parser.name, parser.description, headerLength) + "\n"
+			section += formatHelpRow(parser.name, parser.description, headerLength, helpBreak) + "\n"
 		}
 		result += section
 	}
@@ -158,7 +164,7 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength) + "\n"
+			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak) + "\n"
 		}
 		result += section
 	}
@@ -180,7 +186,7 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength) + "\n"
+			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak) + "\n"
 		}
 		result += section
 	}
@@ -191,7 +197,7 @@ func (p *Parser) FormatHelp() string {
 			if arg.HideEntry {
 				continue
 			}
-			content += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength) + "\n"
+			content += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength, helpBreak) + "\n"
 		}
 		if content != "" {
 			result += section + content

@@ -24,16 +24,21 @@ func getTerminalWidth() int {
 	return fallbackWidth
 }
 
-func formatHelpRow(head, content string, maxHeadLength int) string {
+func formatHelpRow(head, content string, maxHeadLength int, withBreak bool) string {
 	terminalWidth := getTerminalWidth()
 	content = strings.Replace(content, "\n", "", -1)
 	result := fmt.Sprintf("  %s ", head)
 	headLeftPadding := maxHeadLength - len(result)
-	if headLeftPadding > 0 {
+	if headLeftPadding > 0 { // fill left padding
 		result += strings.Repeat(" ", headLeftPadding)
 	}
 	contentPadding := strings.Repeat(" ", maxHeadLength)
-	rows := []string{result + content}
+	var rows []string
+	if withBreak && headLeftPadding < 0 {
+		rows = append(rows, result, contentPadding+content)
+	} else {
+		rows = append(rows, result+content)
+	}
 	for len(rows[len(rows)-1]) > terminalWidth {
 		lastIndex := len(rows) - 1
 		lastOne := rows[lastIndex]
