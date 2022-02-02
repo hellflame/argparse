@@ -622,9 +622,13 @@ __Note__:
 2. and it only generate simple complete code for basic use, it should be better than nothing.
 3. sub command has no completion entry
 
-Save the output code to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. 
+Save the output code (using `start --completion`) to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. Or just save completion by appending this line in `~/.bashrc`:
 
-Completion will register to your shell by your program name, so you have to give your program a fix name
+```bash
+source `start --completion`
+```
+
+Completion will register to your shell by your program name, so you `MUST`  give your program a fix name
 
 #### 13. Hide Entry [ >= 1.3.0 ]
 
@@ -698,6 +702,38 @@ if e := p.Parse(nil); e != nil {
 
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
+
+#### 15. Limit args header length [ >= 1.7.0 ]
+
+When argument is too long, you can set `ParserConfig.MaxHeaderLength` to a reasonable length.
+
+Before setting `MaxHeaderLength` , the help info may display like (which is default to fix the longest argument length):
+
+```bash
+usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
+optional arguments:
+  --help, -h                                                                        show this help message
+  --short SHORT, -s SHORT                                                           this is a short args
+  --medium-size MEDIUM-SIZE, -m MEDIUM-SIZE                                         this is a medium size args
+  --this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS, -l THIS-IS-A-VERY-LONG-ARGS  this is a very long args
+
+```
+
+After setting `ParserConfig.MaxHeaderLength = 20`，argument's help info will display on new line with 20 space indent, if its header is too long.
+
+```bash
+usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
+optional arguments:
+  --help, -h        show this help message
+  --short SHORT, -s SHORT
+                    this is a short args
+  --medium-size MEDIUM-SIZE, -m MEDIUM-SIZE
+                    this is a medium size args
+  --this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS, -l THIS-IS-A-VERY-LONG-ARGS
+                    this is a very long args
+```
+
+[eg](examples/long-args/main.go)
 
 ##### Argument Process Flow Map
 
