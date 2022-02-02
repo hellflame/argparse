@@ -6,9 +6,9 @@
 
 Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/argparse.html)
 
-It's small but fully Functional & Powerful
+It's small but Powerful
 
-Provide not just simple parsing args, but :
+Providing not just simple parsing args, but :
 
 - [x] Sub Command
 - [x] Argument Groups
@@ -23,7 +23,7 @@ Provide not just simple parsing args, but :
 
 ## Aim
 
-The aim of the package is to better serve programers to build better command line programs.
+The aim of the package is to better serve programers to build better command line programs by `golang`.
 
 ## Installation
 
@@ -31,7 +31,7 @@ The aim of the package is to better serve programers to build better command lin
 go get -u github.com/hellflame/argparse
 ```
 
-> no dependence needed
+> no any third-party dependence needed
 
 ## Usage
 
@@ -80,7 +80,7 @@ A few points
 
 About object __parser__ :
 
-1. `NewParser` first argument is the name of your program, but it's ok __not to fill__ , when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient where the release name is uncertain
+1. `NewParser` first argument is the name of your program, but it's ok __to be empty__. when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient when the release name is not decided yet.
 2. `help` function is auto injected, but you can disable it when using `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
 3. When `help` showed up, the program will default __exit with code 1 (version < v1.5.0)__ or __return error type BreakAfterHelp (version >= 1.5.0)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
 
