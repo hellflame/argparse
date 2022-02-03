@@ -3,12 +3,13 @@ package argparse
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 )
 
-// Parser is the top level struct
+// Parser is the top level struct. Don't use it directly, use NewParser to create one
 //
-// it's the only interface to interact with user input, parse & bind each `arg` value
+// it's the only struct to interact with user input, parse & bind each `arg` value
 type Parser struct {
 	name        string
 	description string
@@ -51,7 +52,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		config = &ParserConfig{}
 	}
 	if name == "" && len(os.Args) > 0 {
-		name = strings.ReplaceAll(os.Args[0], " ", "") // do this for shell complete code generate
+		name = strings.ReplaceAll(path.Base(os.Args[0]), " ", "") // avoid space for shell complete code generate
 	}
 	parser := &Parser{
 		name:            name,
