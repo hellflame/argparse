@@ -599,7 +599,7 @@ When `DefaultAction` is set, default show help message will be ignored.
 
 #### 12. Shell Completion Support [ >= v0.4 ]
 
-Set `ParserConfig.AddShellCompletion` to `true` will register `--completion` to the parser, [eg](examples/shell-completion/main.go)
+Set `ParserConfig.AddShellCompletion` to `true` will register `--completion` to the parser. [example](examples/shell-completion/main.go)
 
 ```go
 p := argparse.NewParser("start", "this is test", &argparse.ParserConfig{AddShellCompletion: true})
@@ -623,7 +623,7 @@ __Note__:
 
 1. the completion script only support `bash` & `zsh` for now
 2. and it only generate simple complete code for basic use, it should be better than nothing.
-3. sub command has no completion entry
+3. sub command has __no__ completion entry
 
 Save the output code (using `start --completion`) to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. Or just save completion by appending this line in `~/.bashrc`:
 
@@ -637,10 +637,10 @@ Completion will register to your shell by your program name, so you `MUST`  give
 
 Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
 
-1. the entry is to help generate completion candidates (which has mess and not much meaningful output)
-2. secret back door that user should not know (you can use `os.Getenv` instead, but `argparse` has type convert)
+1. the entry is to help generate completion candidates (which has mess or not much meaningful output)
+2. secret back door that user should not know (you can use `os.Getenv` instead, but `argparse` can do more)
 
-You only need to set `Option{HideEntry: true}`
+You only need to set `Option{HideEntry: true}` 
 
 ```go
 func main() {
@@ -673,7 +673,7 @@ optional arguments:
 
 Which will have effect on `Shell Completion Script`
 
-[full eg](examples/hide-help-entry/main.go)
+[example](examples/hide-help-entry/main.go)
 
 #### 14. Invoked & InvokeAction [ >= 1.4.0 ]
 
@@ -795,6 +795,8 @@ type ParserConfig struct {
   DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
   DefaultAction          func() // set default action to replace default help action
   AddShellCompletion     bool   // set true to register shell completion entry [--completion]
+  WithHint               bool   // argument help message with argument default value hint
+	MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
 }
 ```
 
@@ -919,3 +921,4 @@ Those failures is not allowed, and you will notice when you develop your program
 there are some useful use cases to help you build your own command line program
 
 feel free to add different use cases
+
