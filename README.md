@@ -78,16 +78,16 @@ hello hellflame
 
 A few points
 
-About object __parser__ :
+About the object __parser__ :
 
-1. `NewParser` first argument is the name of your program, but it's ok __to be empty__. when it's empty string, program name will be `os.Args[0]` , which can be wired when using `go run`, but it will be the executable file's name when you release the code(using `go build`). It can be convinient when the release name is not decided yet.
-2. `help` function is auto injected, but you can disable it when using `NewParser`, with `&ParserConfig{DisableHelp: true}`. then you can use any way to define the `help` function, or whether to `help` 
-3. When `help` showed up, the program will default __exit with code 1 (version < v1.5.0)__ or __return error type BreakAfterHelp (version >= 1.5.0)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp`  to be `true`, you can use your own help function instead
+1. `NewParser`'s first argument is the name of your program, it's ok __to be empty__. when it's empty string, program name will be `path.Base(os.Args[0])` . It can be handy when the release name is not decided yet.
+2. `help` function is injected by default, you can disable it with `&ParserConfig{DisableHelp: true}` when using `NewParser`, then you can use any way to define your own `help` .
+3. When *help message* showed up, the program will default __exit with code 1 (version < v1.5.0)__ or __return error type BreakAfterHelp (version >= 1.5.0)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp = true` .
 
 About __parse__ action:
 
-1. The argument `name` is only usable __after__  `parser.Parse` 
-2. When passing `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source
+1. The argument `name` can be bond to user input only __after__  `parser.Parse` 
+2. When giving `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source
 3. The short name of your argument can be __more than one character__
 
 ---
@@ -126,11 +126,11 @@ Check output:
 
 => go run main.go -h
 unrecognized arguments: -h
-do you mean: -n
+do you mean?: -n
 
 # the real help entry is -help / --help-me
 => go run main.go -help
-usage: /var/folq1pddT/go-build42601/exe/main [-n NAME] [-help]
+usage: main [-n NAME] [-help]
 
 this is a basic program
 
@@ -144,9 +144,9 @@ hello hellflame
 
 A few points:
 
-1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available
-2. If keep `DisableDefaultShowHelp` to be false, when there is no argument, the `help` message will still show up as Default Action
-3. After the manually call of `parser.PrintHelp()` , `return` will put an end to `main`
+1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available using `PrintHelp` and `FormatHelp`.
+2. If keep `DisableDefaultShowHelp` to be false, when there is no argument, the `help` message will still show up as Default Action.
+3. After the manually call of `parser.PrintHelp()` , `return` will put an end to the `main` function.
 4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way
 
 ### Features
@@ -190,9 +190,9 @@ optional arguments:
   --string STRING, -s STRING  no hint message
 ```
 
-Enable hint by setting parser config `&argparse.ParserConfig{WithHint: true}` .
+Enable global hint by setting parser config `&argparse.ParserConfig{WithHint: true}` .
 
-Disable argument hint with `&argparse.Option{NoHint: true}`
+Disable one argument hint with `&argparse.Option{NoHint: true}`
 
 Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
 
@@ -210,7 +210,7 @@ parser.Flag("short", "full", nil)
 
 Python version is like `add_argument("-s", "--full", action="store_true")`
 
-Flag Argument can only be used as an OptionalArguments
+Flag Argument can only be used as an __OptionalArguments__
 
 #### 2. String
 
@@ -222,7 +222,7 @@ parser.String("short", "full", nil)
 
 String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
 
-Set `Option.Positional = true` to use as Positional Argument, then it's like `add_argument("s", "full")` in python
+Set `Option.Positional = true` to use as Positional Argument, it's like `add_argument("s", "full")` in python
 
 #### 3. StringList
 
@@ -316,7 +316,7 @@ if *path != "" {
 }
 ```
 
-It used `Validate` to do the magic, we'll talk about it later in more detail
+It used `Validate` to do the trick, we'll talk about it later in more detail
 
 Python code is like:
 
@@ -355,7 +355,7 @@ Checkout `Action` for example, then you can handle any type when parsing argumen
 
 #### 1. ArgumentGroup
 
-Argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so, [eg](examples/yt-download/main.go)
+Argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so. [example](examples/yt-download/main.go)
 
 ```go
 parser.Flag("", "version", &argparse.Option{
@@ -366,7 +366,7 @@ parser.Flag("", "version", &argparse.Option{
 
 #### 2. DisplayMeta
 
-When the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help, [eg](examples/yt-download/main.go)
+When the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help. see more about __MaxHeaderLength__. [example](examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -383,7 +383,7 @@ It will looks like this in help message:
 
 #### 3.DefaultValue
 
-If the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue, [eg](examples/yt-download/main.go)
+If the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue. [example](examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -392,13 +392,13 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-Noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (like `os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if these actions exist),  `Validate` & `Formatter` will be mentioned below
+Noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (`os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if exist).
 
-Also, the Default value can only be one `String` , if you want an Array arguments, you can only have one element Array as default value
+Also, the Default value can only be one `String` , if you want an Array arguments, you can only have one element Array as default value. You can apply your default array after *parse*.
 
 #### 4. RequiredArgument
 
-If the argument must be input, set `Required` to be `true`, [eg](examples/yt-download/main.go)
+If the argument must be input by user, set `Required` to be `true`. [example](examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -407,11 +407,11 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-Flag argument can not be `Required` , you should know the reason, Flag argument has more restrictions, you will be noticed when using it
+Flag argument can not be `Required` (you should know the reason and flag argument has more restrictions, you will be noticed when using it)
 
 #### 5. PositionalArgument
 
-If the input argument is the value you want, set `Positional` to be true, [eg](examples/yt-download/main.go)
+If you want users to input arguments by positions, set `Positional` to be true. [example](examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -425,7 +425,7 @@ The position of the PositionalArgument is quit flex, with not much restrictions,
 1. in the middle of arguments, `--play-list 2 xxxxxxxx --update`, if the argument before it is not an Array argument, won't parse `url` in this case: `--user-ids id1 id2 url --update` 
 2. after another single value PositionalArgument, `--mode login username password` , the last `password` will be parsed as second PositionalArgument
 
-So, use it carefully, it cause fusion sometime, which is the same as Python Version of argparse
+So, use it carefully, it may __confuse__ (for the users), which is the same as Python Version of argparse
 
 #### 6. ArgumentValidate
 
@@ -443,11 +443,11 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-`Validate` function has high priority, executed just after `Default` value is set, which means, the default value has to go through `Validate` check
+`Validate` function is executed just after when `Default` value is set, which means, the default value has to go through `Validate` check.
 
 #### 7. ArgumentFormatter
 
-Format input argument to most basic types you want, the limitation is that, the return type of `Formatter` should be the same as your argument type
+Re-format input argument, the limitation is that, the return type of `Formatter` should be the same as your argument type
 
 ```go
 parser.String("", "b", &Option{
@@ -462,9 +462,9 @@ parser.String("", "b", &Option{
 })
 ```
 
-If `Validate` is set, `Formatter` is right after `Validate`
+If `Validate` is set, `Formatter` is executed after `Validate`.
 
-If raise errors in `Formatter`, it will do some job like `Validate` 
+If error is raised in `Formatter`, it acts like `Validate`.
 
 The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, here,  to be `string` as Example shows
 
@@ -477,6 +477,8 @@ parser.Ints("", "hours", &Option{
   Choices: []interface{}{1, 2, 3, 4},
 })
 ```
+
+The element type of the choice is the same as argument, or the element of the argument.
 
 If `Formatter` is set, Choice check is right after `Formatter`
 
@@ -535,11 +537,11 @@ optional arguments:
 The two `--flag` will parse seperately, so you can use `tFlag` & `t` to reference flag in `test` parser and `main` parser.
 
 1. sub command has different context, so you can have two `--flag`, and different help message output
-2. sub command show help message seperately, it's for user to understand your program step by step. While `Group Argument` helps user to understand your program group by group
+2. sub command show help message seperately, it's for user to understand your program *step by step*. While `Group Argument` helps user to understand your program *group by group*
 
 #### 10. Argument Action √
 
-Argument Action allows you to do anything with the argument when there is any match, this enables infinite possibility when parsing arguments, [eg](examples/any-type-action/main.go)
+Argument Action allows you to do anything with the argument if there is any match, this enables infinite possibility when parsing arguments. [example](examples/any-type-action/main.go)
 
 ```go
 p := NewParser("action", "test action", nil)
@@ -562,20 +564,21 @@ if e := p.Parse([]string{"1", "2", "3"}); e != nil {
   return
 }
 
-fmt.Println(sum)  // this is a 6 if everything goes on fine
+fmt.Println(sum)  // 6
 ```
 
 A few points to be noted:
 
-1. `Action` takes function with `args []string` as input，the `args` has two kind of input
+1. `Action` is a function with `args []string` as input，the `args` has two kind of input
    * `nil` : which means it's a `Flag` argument
    * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
-2. Errors can be returned if necessary, it can be normally captured
+2. Errors can be returned if necessary, it can be normally captured in *parse*.
 3. The return type of the argument is not of much importance, using the `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
+4. After `Action` is executed,  `Validate`, `Formatter`, Choice check and value binding will be passed.
 
 #### 11. Default Parse Action [ >= v0.4 ]
 
-Instead of showing help message as default, now you can set your own default action when no user input is given, [eg](examples/parse-action/main.go)
+Instead of showing help message as default, now you can set your own default action when no user input is given, [example](examples/parse-action/main.go)
 
 ```go
 parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
