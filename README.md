@@ -161,7 +161,7 @@ the `Parser` will try to match __optional arguments__ when there is no match
 parser := NewParser("", "", nil)
 parser.String("a", "aa", nil)
 if e := parser.Parse([]string{"--ax"}); e != nil {
-  if e.Error() != "unrecognized arguments: --ax\ndo you mean: --aa" {
+  if e.Error() != "unrecognized arguments: --ax\ndo you mean?: --aa" {
     t.Error("failed to guess input")
     return
   }
@@ -196,7 +196,7 @@ Disable one argument hint with `&argparse.Option{NoHint: true}`
 
 Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
 
-[eg](examples/sub-command)
+[example](examples/sub-command)
 
 ### Supported Arguments
 
@@ -290,7 +290,7 @@ For complex type or even customized types are __not directly supported__ , but i
 
 #### 1. File type
 
-You can check file's existence before read it, and tell if it's a valid file, etc. [eg is here](examples/customzed-types/main.go)
+You can check file's existence before read it, and tell if it's a valid file, etc. [example](examples/customzed-types/main.go)
 
 Though the return type is still a `string` , but it's more garanteed to use the argument as what you wanted
 
@@ -736,7 +736,7 @@ optional arguments:
                     this is a very long args
 ```
 
-[eg](examples/long-args/main.go)
+[example](examples/long-args/main.go)
 
 ##### Argument Process Flow Map
 
@@ -921,4 +921,15 @@ Those failures is not allowed, and you will notice when you develop your program
 there are some useful use cases to help you build your own command line program
 
 feel free to add different use cases
+
+
+
+1. [more  type action](examples/any-type-action)
+2. [parse action](examples/parse-action)
+3. [shell completion](examples/shell-completion)
+4. [hide help entry](examples/hide-help-entry)
+5. [customzed types](examples/customzed-types)
+6. [sub command](examples/sub-command)
+7. [long args](examples/long-args)
+8. [multi parser](examples/multi-parser)
 
