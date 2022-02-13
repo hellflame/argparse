@@ -147,7 +147,7 @@ A few points:
 1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available using `PrintHelp` and `FormatHelp`.
 2. If keep `DisableDefaultShowHelp` to be false, when there is no argument, the `help` message will still show up as Default Action.
 3. After the manually call of `parser.PrintHelp()` , `return` will put an end to the `main` function.
-4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way
+4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way. [example](example/change-help)
 
 ### Features
 
@@ -599,6 +599,8 @@ When `DefaultAction` is set, default show help message will be ignored.
 
 #### 12. Shell Completion Support [ >= v0.4 ]
 
+Users can get terminal hint through tapping [tab]
+
 Set `ParserConfig.AddShellCompletion` to `true` will register `--completion` to the parser. [example](examples/shell-completion/main.go)
 
 ```go
@@ -722,7 +724,7 @@ optional arguments:
 
 ```
 
-After setting `ParserConfig.MaxHeaderLength = 20`，argument's help info will display on new line with 20 space indent, if its header is too long.
+After setting `ParserConfig.MaxHeaderLength = 20` (it's recommended to be around 20 ~ 30)，argument's help info will display on new line with 20 space indent, if its header is too long.
 
 ```bash
 usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
@@ -796,11 +798,11 @@ type ParserConfig struct {
   DefaultAction          func() // set default action to replace default help action
   AddShellCompletion     bool   // set true to register shell completion entry [--completion]
   WithHint               bool   // argument help message with argument default value hint
-	MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+  MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
 }
 ```
 
-eg:
+example:
 
 ```go
 func main() {
@@ -924,12 +926,13 @@ feel free to add different use cases
 
 
 
-1. [more  type action](examples/any-type-action)
-2. [parse action](examples/parse-action)
-3. [shell completion](examples/shell-completion)
+1. [more type action](examples/any-type-action)
+2. [parse action(don't help yet)](examples/parse-action)
+3. [shell completion(tabs-able)](examples/shell-completion)
 4. [hide help entry](examples/hide-help-entry)
-5. [customzed types](examples/customzed-types)
-6. [sub command](examples/sub-command)
-7. [long args](examples/long-args)
-8. [multi parser](examples/multi-parser)
+5. [customized types(it's all your call)](examples/customzed-types)
+6. [how to add sub command](examples/sub-command)
+7. [deal with long args](examples/long-args)
+8. [multiple parser in one program](examples/multi-parser)
+9. [decide help's position](example/change-help)
 

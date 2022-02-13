@@ -17,7 +17,7 @@ Argparser 项目是受 [python argparse](https://docs.python.org/3.9/library/arg
 
 ## 目标
 
-帮助程序员开发更好的命令行程序
+帮助程序员开发更好的 `golang` 命令行程序
 
 ## 安装
 
@@ -25,7 +25,7 @@ Argparser 项目是受 [python argparse](https://docs.python.org/3.9/library/arg
 go get -u github.com/hellflame/argparse
 ```
 
-> 无额外依赖
+> 无额外第三方依赖
 
 ## 使用
 
@@ -52,7 +52,7 @@ func main() {
 }
 ```
 
-[example](examples/basic)
+[example](../examples/basic)
 
 检查输出:
 
@@ -74,13 +74,13 @@ hello hellflame
 
 关于 __parser__ 结构体 :
 
-1. `NewParser` 第一个参数是程序的名字, 但__可以为空__ , 如果程序名为空, 则会使用 `os.Args[0]` 作为程序名 , 只是用 `go run` 时会有点怪怪的，但当发布为可执行文件，在运行时就会是可执行文件的名字(通过 `go build` 生成)，所以在发布名称不确定的时候会比较方便
-2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数
+1. `NewParser` 第一个参数是你的程序的名字, __可以为空__。如果程序名为空, 则会使用 `path.Base(os.Args[0])` 作为程序名。在发布名称不确定的时候会比较方便
+2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数。
 3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5.0)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5.0)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
 
 关于 __parse__ 动作执行:
 
-1. 参数 `name` 只在 `parser.Parse` 后可用
+1. 只有在 `parser.Parse` 后用户输入才会被绑定到参数 `name` 
 2. 若 `parser.Parse` 接受 `nil` 作为参数, `os.Args[1:]` 会作为解析来源
 3. 参数缩写可以 __不止一个字符__
 
@@ -111,7 +111,7 @@ func main() {
 }
 ```
 
-[example](examples/basic-bias)
+[example](../examples/basic-bias)
 
 检查输出:
 
@@ -124,7 +124,7 @@ do you mean: -n
 
 # the real help entry is -help / --help-me
 => go run main.go -help
-usage: /var/folq1pddT/go-build42601/exe/main [-n NAME] [-help]
+usage: main [-n NAME] [-help]
 
 this is a basic program
 
@@ -138,10 +138,10 @@ hello hellflame
 
 几点说明:
 
-1. `DisableHelp` 只是阻止了  `-h/--help` 注册到解析器, 但依然可以通过其他方式得到帮助信息
+1. `DisableHelp` 只是阻止了  `-h/--help` 注册到解析器, 但依然可以通过其他方式得到帮助信息（`PrintHelp` 或者 `FormatHelp`）
 2. 如果保持 `DisableDefaultShowHelp` 为 `false`, 当没有用户输入时, 帮助信息会作为默认行为输出
 3. 在手动执行 `parser.PrintHelp()` 后, `return` 会结束 `main` 方法
-4. 注意使用信息输出的顺序, 基本和这些参数的创建顺序一致, 这是有意为之的
+4. 注意使用信息输出的顺序, 基本和这些参数的创建顺序一致, 这是有意为之的 [example](../example/change-help)
 
 ### 特点
 
@@ -186,11 +186,11 @@ optional arguments:
 
 通过设置 `&argparse.ParserConfig{WithHint: true}` 开启帮助提示信息。
 
-设置 `&argparse.Option{NoHint: true}` 禁用参数提示
+设置 `&argparse.Option{NoHint: true}` 禁用某个参数提示
 
 通过 `&argparse.Option{HintInfo: "customize info"}` 自定义参数提示
 
-[eg](examples/sub-command)
+[example](../examples/sub-command)
 
 ### 支持的参数
 
@@ -204,7 +204,7 @@ parser.Flag("short", "full", nil)
 
 Python代码可能像这样： `add_argument("-s", "--full", action="store_true")`
 
-标记参数只能是可选参数
+标记参数只可能是__可选参数__
 
 #### 2. String
 
@@ -284,7 +284,7 @@ Python代码如 `add_argument("-s", "--full", type=double, nargs="*")`
 
 #### 1. 文件类型
 
-你可以在读文件前检查文件是否存在. [eg is here](examples/customzed-types/main.go)
+你可以在读文件前检查文件是否存在. [example](../examples/customzed-types/main.go)
 
 虽然返回类型依然是字符串，但在用这个参数的时候会更有保障
 
@@ -349,7 +349,7 @@ func dealFile(path) {
 
 #### 1. 命令行组
 
-命令行组适合在帮助信息里讲参数分组。这只会影响帮助信息的显示，没别的作用。使用配置里的 `Group` 来实现[eg](examples/yt-download/main.go)
+命令行组适合在帮助信息里讲参数分组。这只会影响帮助信息的显示，没别的作用。使用配置里的 `Group` 来实现[example](../examples/yt-download/main.go)
 
 ```go
 parser.Flag("", "version", &argparse.Option{
@@ -360,7 +360,7 @@ parser.Flag("", "version", &argparse.Option{
 
 #### 2. 元信息
 
-当参数的完整名称太长或者丑丑的，修改元信息可以改变帮助信息里的展示内容[eg](../examples/yt-download/main.go)
+当参数的完整名称太长或者丑丑的，修改元信息可以改变帮助信息里的展示内容[example](../examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -377,7 +377,7 @@ parser.Int("", "playlist-start", &argparse.Option{
 
 #### 3.默认值
 
-如果参数没有给，那么就会使用默认参数，[eg](../examples/yt-download/main.go)
+如果参数没有给，那么就会使用默认参数，[example](../examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -392,7 +392,7 @@ parser.Int("", "playlist-start", &argparse.Option{
 
 #### 4. 必选参数
 
-如果参数必须给出, 设 `Required` 为 `true` 即可, [eg](../examples/yt-download/main.go)
+如果参数必须给出, 设 `Required` 为 `true` 即可, [example](../examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -405,7 +405,7 @@ parser.Strings("", "url", &argparse.Option{
 
 #### 5. 位置参数
 
-如果用户输入即为想要获取的参数, 设置 `Positional` 为 true 即可, [eg](../examples/yt-download/main.go)
+如果用户输入即为想要获取的参数, 设置 `Positional` 为 true 即可, [example](../examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -533,7 +533,7 @@ optional arguments:
 
 #### 10. 参数行为 √
 
-参数行为在当出现匹配时允许你做任何操作, 这将开启无限的可能性, [eg](../examples/any-type-action/main.go)
+参数行为在当出现匹配时允许你做任何操作, 这将开启无限的可能性, [example](../examples/any-type-action/main.go)
 
 ```go
 p := NewParser("action", "test action", nil)
@@ -569,7 +569,7 @@ fmt.Println(sum)  // this is a 6 if everything goes on fine
 
 #### 11. 默认解析行为 [ >= v0.4 ]
 
-如果不想默认显示帮助信息, 现在如果用户没有任何输入，你可以设置自己的默认行为, [eg](../examples/parse-action/main.go)
+如果不想默认显示帮助信息, 现在如果用户没有任何输入，你可以设置自己的默认行为, [example](../examples/parse-action/main.go)
 
 ```go
 parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
@@ -590,7 +590,9 @@ if e := parser.Parse(nil); e != nil {
 
 #### 12. 命令行补全支持 [ >= v0.4 ]
 
-设置 `ParserConfig.AddShellCompletion` 为 `true` 将注册 `--completion` 参数, [eg](../examples/shell-completion/main.go)
+即用户可以通过输入 [tab] 来得到终端提示
+
+设置 `ParserConfig.AddShellCompletion` 为 `true` 将注册 `--completion` 参数, [example](../examples/shell-completion/main.go)
 
 ```go
 p := argparse.NewParser("start", "this is test", &argparse.ParserConfig{AddShellCompletion: true})
@@ -617,6 +619,10 @@ __注意__:
 3. 子命令不会注册该方法
 
 保存输出脚本到 `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , 然后重启脚本环境 或 `source ~/.bashrc` 会使脚本生效 
+
+```bash
+source `start --completion`
+```
 
 命令补全会将命令的名字作为注册入口注册到脚本环境，所以你最好给你的程序一个固定的名字
 
@@ -662,7 +668,7 @@ optional arguments:
 
 对 `Shell Completion Script` 同样起作用
 
-[full eg](../examples/hide-help-entry/main.go)
+[example](../examples/hide-help-entry/main.go)
 
 #### 14. 匹配状态与匹配动作 [ >= 1.4.0 ]
 
@@ -752,10 +758,12 @@ type ParserConfig struct {
   DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
   DefaultAction          func() // set default action to replace default help action
   AddShellCompletion     bool   // set true to register shell completion entry [--completion]
+  WithHint               bool   // argument help message with argument default value hint
+  MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
 }
 ```
 
-eg:
+例子:
 
 ```go
 func main() {
@@ -785,7 +793,7 @@ func main() {
 }
 ```
 
-[example](examples/parser-config)
+[example](../examples/parser-config)
 
 Output:
 
@@ -874,3 +882,15 @@ type Option struct {
 ## [栗子](../examples)
 
 这里有一些有用的栗子来帮助你搭建自己的命令行，可以帮忙添加一些特别的栗子
+
+
+
+1. [更多类型](../examples/any-type-action)
+2. [解析动作(别帮那么快)](../examples/parse-action)
+3. [终端补全(可tab)](../examples/shell-completion)
+4. [隐藏帮助入口](../examples/hide-help-entry)
+5. [自定义类型(你说了算)](../examples/customzed-types)
+6. [如何添加子命令](../examples/sub-command)
+7. [处理长参数](../examples/long-args)
+8. [一个程序，多个解析](../examples/multi-parser)
+9. [修改帮助入口的位置](../example/change-help)

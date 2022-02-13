@@ -1,3 +1,6 @@
+// example on how to deal with very long args (if it's very necessary)
+//
+// MaxHeaderLength is recommended to be around 20 ~ 30
 package main
 
 import "github.com/hellflame/argparse"
