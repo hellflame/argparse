@@ -10,6 +10,8 @@ Be sure to `make tidy` so your code style will keep the same
 
 Be sure to `make cover-report` to see if any line not covered
 
+__Don't Rebase git history__
+
 ## General steps for completing this pull request
 
 ### Checklist
