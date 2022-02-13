@@ -4,6 +4,12 @@
 
 Be sure you have the latest code in hand. Pull the `master` branch
 
+Be sure to `make test` and keep all test pass
+
+Be sure to `make tidy` so your code style will keep the same
+
+Be sure to `make cover-report` to see if any line not covered
+
 ## General steps for completing this pull request
 
 ### Checklist
@@ -30,5 +36,6 @@ Ensure that your `pull request` has followed all the steps below:
 
 - [ ] New feature
 - [ ] Bugfix
+- [ ] Improve
 - [ ] So on...
 
