@@ -132,6 +132,7 @@ func (a *arg) formatUsage() string {
 		if a.multi {
 			return fmt.Sprintf("[%s ...] ", meta)
 		}
+		return fmt.Sprintf("%s ", u)
 	}
 	if a.multi {
 		return fmt.Sprintf("[%s [%s ...]] ", u, meta)
