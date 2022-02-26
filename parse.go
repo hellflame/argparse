@@ -171,7 +171,7 @@ func (p *Parser) FormatHelp() string {
 	}
 	if len(p.entries) > 0 { // dealing optional arguments present
 		parsed := make(map[string]bool)
-		section := "\noptional arguments:\n"
+		section := "\noptions:\n"
 		for _, arg := range p.entries {
 			if arg.Group != "" {
 				continue
