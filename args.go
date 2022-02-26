@@ -130,7 +130,7 @@ func (a *arg) formatUsage() string {
 	u := fmt.Sprintf("%s %s", sign, meta)
 	if a.Required {
 		if a.multi {
-			return fmt.Sprintf("[%s ...] ", meta)
+			return fmt.Sprintf("%s [%s ...] ", u, meta)
 		}
 		return fmt.Sprintf("%s ", u)
 	}
