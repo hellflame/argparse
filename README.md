@@ -68,7 +68,7 @@ usage: basic [-h] [-n NAME]
 
 this is a basic program
 
-optional arguments:
+options:
   -h, --help            show this help message
   -n NAME, --name NAME
 
@@ -134,7 +134,7 @@ usage: main [-n NAME] [-help]
 
 this is a basic program
 
-optional arguments:
+options:
   -n NAME, --name NAME
   -help, --help-me
 
@@ -155,7 +155,7 @@ some show case
 
 #### 1. Levenshtein error correct [ >= v1.2.0 ]
 
-the `Parser` will try to match __optional arguments__ when there is no match
+the `Parser` will try to match __options__ when there is no match
 
 ```go
 parser := NewParser("", "", nil)
@@ -181,7 +181,7 @@ usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] 
 
 start a bug report
 
-optional arguments:
+options:
   --help, -h                  show this help message
   --flag, -f                  from test parser
   --other, -o                 (optional => ∫)
@@ -517,7 +517,7 @@ Go is a tool for managing Go source code.
 available commands:
   test        start a bug report
 
-optional arguments:
+options:
   -h, --help  show this help message
   -f, --flag  from main parser
 
@@ -527,7 +527,7 @@ usage: sub-command test [-h] [-f] [-o] [-i INT]
 
 start a bug report
 
-optional arguments:
+options:
   -h, --help         show this help message
   -f, --flag         from test parser
   -o, --other
@@ -668,7 +668,7 @@ usage: basic [--help] [--name NAME]
 
 this is a basic program
 
-optional arguments:
+options:
   --help, -h               show this help message
   --name NAME, -n NAME
 ```
@@ -716,7 +716,7 @@ Before setting `MaxHeaderLength` , the help info may display like (which is defa
 
 ```bash
 usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
-optional arguments:
+options:
   --help, -h                                                                        show this help message
   --short SHORT, -s SHORT                                                           this is a short args
   --medium-size MEDIUM-SIZE, -m MEDIUM-SIZE                                         this is a medium size args
@@ -728,7 +728,7 @@ After setting `ParserConfig.MaxHeaderLength = 20` (it's recommended to be around
 
 ```bash
 usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
-optional arguments:
+options:
   --help, -h        show this help message
   --short SHORT, -s SHORT
                     this is a short args
@@ -846,7 +846,7 @@ usage: basic xxx   # <=== Usage
 
 this is a basic program
 
-optional arguments: # no [-h/--help] flag is registerd, which is affected by DisableHelp
+options: # no [-h/--help] flag is registerd, which is affected by DisableHelp
   -n NAME, --name NAME
   -help, --help-me 
 

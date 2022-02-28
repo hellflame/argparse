@@ -62,7 +62,7 @@ usage: basic [-h] [-n NAME]
 
 this is a basic program
 
-optional arguments:
+options:
   -h, --help            show this help message
   -n NAME, --name NAME
 
@@ -128,7 +128,7 @@ usage: main [-n NAME] [-help]
 
 this is a basic program
 
-optional arguments:
+options:
   -n NAME, --name NAME
   -help, --help-me
 
@@ -175,7 +175,7 @@ usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] 
 
 start a bug report
 
-optional arguments:
+options:
   --help, -h                  show this help message
   --flag, -f                  from test parser
   --other, -o                 (optional => ∫)
@@ -509,7 +509,7 @@ Go is a tool for managing Go source code.
 available commands:
   test        start a bug report
 
-optional arguments:
+options:
   -h, --help  show this help message
   -f, --flag  from main parser
 
@@ -519,7 +519,7 @@ usage: sub-command test [-h] [-f] [-o] [-i INT]
 
 start a bug report
 
-optional arguments:
+options:
   -h, --help         show this help message
   -f, --flag         from test parser
   -o, --other
@@ -661,7 +661,7 @@ usage: basic [--help] [--name NAME]
 
 this is a basic program
 
-optional arguments:
+options:
   --help, -h               show this help message
   --name NAME, -n NAME
 ```
@@ -807,7 +807,7 @@ usage: basic xxx   # <=== Usage
 
 this is a basic program
 
-optional arguments: # no [-h/--help] flag is registerd, which is affected by DisableHelp
+options: # no [-h/--help] flag is registerd, which is affected by DisableHelp
   -n NAME, --name NAME
   -help, --help-me 
 
