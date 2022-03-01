@@ -377,7 +377,7 @@ fi
 // Parse will parse given args to bind to any registered arguments
 //
 // args: set nil to use os.Args[1:] by default
-func (p *Parser) Parse(args []string) error {
+func (p *Parser) Parse(args []string) (*Parser, error) {
 	if args == nil {
 		args = os.Args[1:]
 	}
@@ -397,9 +397,9 @@ func (p *Parser) Parse(args []string) error {
 		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 		if matchSub {
 			subParser = p.subParserMap[args[0]]
-			e := subParser.Parse(args[1:])
+			_, e := subParser.Parse(args[1:])
 			if e != nil {
-				return e
+				return subParser, e
 			}
 		} else {
 			lastPositionArgIndex := 0
@@ -420,19 +420,19 @@ func (p *Parser) Parse(args []string) error {
 							}
 						}
 						if len(tillNext) == 0 { // argument takes at least one input as argument, but there is 0
-							return fmt.Errorf("argument %s expect argument",
+							return p, fmt.Errorf("argument %s expect argument",
 								strings.Join(arg.getWatchers(), "/"))
 						}
 						if arg.multi { // if argument takes more than one arguments, it will take all user input before next registered argument, and proceed 'args' parsing to next registered argument
 							e := arg.parseValue(tillNext)
 							if e != nil {
-								return e
+								return p, e
 							}
 							args = args[len(tillNext)+1:]
 						} else { // then the argument takes only one argument, and proceed the left arguments for positional argument parsing
 							e := arg.parseValue(tillNext[0:1])
 							if e != nil {
-								return e
+								return p, e
 							}
 							args = args[2:]
 						}
@@ -452,13 +452,13 @@ func (p *Parser) Parse(args []string) error {
 						if arg.multi {
 							e := arg.parseValue(tillNext)
 							if e != nil {
-								return e
+								return p, e
 							}
 							args = args[len(tillNext):]
 						} else {
 							e := arg.parseValue(tillNext[0:1])
 							if e != nil {
-								return e
+								return p, e
 							}
 							args = args[1:]
 						}
@@ -478,10 +478,10 @@ func (p *Parser) Parse(args []string) error {
 							}
 							match := strings.Join(tips, "\nor ")
 							if match != "" {
-								return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
+								return p, fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
 							}
 						}
-						return fmt.Errorf("unrecognized arguments: %s", sign)
+						return p, fmt.Errorf("unrecognized arguments: %s", sign)
 					}
 				}
 			}
@@ -494,12 +494,12 @@ func (p *Parser) Parse(args []string) error {
 	if targetParser.showHelp != nil && *targetParser.showHelp {
 		targetParser.PrintHelp()
 		if !targetParser.config.ContinueOnHelp {
-			return BreakAfterHelp{}
+			return targetParser, BreakAfterHelp{}
 		}
 	}
 	if p.showShellCompletion != nil && *p.showShellCompletion {
 		fmt.Println(p.FormatCompletionScript())
-		return BreakAfterShellScript{}
+		return targetParser, BreakAfterShellScript{}
 	}
 	entries := append(p.entries, p.positionArgs...) // ready for Required checking & Default parsing
 	for _, _p := range p.subParser {
@@ -508,17 +508,17 @@ func (p *Parser) Parse(args []string) error {
 	for _, arg := range entries {
 		if !arg.assigned && arg.Default != "" {
 			if e := arg.parseValue(nil); e != nil {
-				return e
+				return targetParser, e
 			}
 		}
 		if arg.Required && !arg.assigned {
-			return fmt.Errorf("%s is required", arg.getMetaName())
+			return targetParser, fmt.Errorf("%s is required", arg.getMetaName())
 		}
 	}
 	if p.InvokeAction != nil {
 		p.InvokeAction(p.Invoked)
 	}
-	return nil
+	return targetParser, nil
 }
 
 // AddCommand will add sub command entry parser
