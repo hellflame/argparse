@@ -397,7 +397,8 @@ func (p *Parser) Parse(args []string) (*Parser, error) {
 		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
 		if matchSub {
 			subParser = p.subParserMap[args[0]]
-			_, e := subParser.Parse(args[1:])
+			var e error
+			subParser, e = subParser.Parse(args[1:])
 			if e != nil {
 				return subParser, e
 			}
