@@ -12,7 +12,7 @@ func main() {
 	parser := argparse.NewParser("npm", "test npm install xxx", nil)
 	install := parser.AddCommand("install", "install something", nil)
 	pkgs := install.Strings("", "package", &argparse.Option{Positional: true})
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

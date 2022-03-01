@@ -15,7 +15,7 @@ func main() {
 	parser.AddCommand("test", "testing", &argparse.ParserConfig{DefaultAction: func() {
 		fmt.Println("ok, now you know you are testing")
 	}})
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

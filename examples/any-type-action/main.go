@@ -35,7 +35,7 @@ func main() {
 		return nil
 	}})
 
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

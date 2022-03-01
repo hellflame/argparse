@@ -25,7 +25,7 @@ func main() {
 	test.Int("", "bb", nil)
 	install := p.AddCommand("install", "", nil)
 	install.Strings("i", "in", nil)
-	if e := p.Parse(nil); e != nil {
+	if _, e := p.Parse(nil); e != nil {
 		switch e.(type) {
 		case argparse.BreakAfterHelp:
 			os.Exit(1)

@@ -29,7 +29,7 @@ func main() {
 		})
 	name := parser.String("n", "name", nil)
 	help := parser.Flag("help", "help-me", nil)
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

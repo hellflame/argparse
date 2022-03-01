@@ -16,7 +16,7 @@ func main() {
 	isOk := testParser.Flag("", "ok", nil)
 
 	parser.Strings("", "test", &argparse.Option{Action: func(args []string) error {
-		if e := testParser.Parse(args); e != nil {
+		if _, e := testParser.Parse(args); e != nil {
 			return e
 		}
 		fmt.Println("is it ok?", *isOk)
@@ -27,14 +27,14 @@ func main() {
 	count := buildParser.Int("c", "count", nil)
 
 	parser.Strings("", "build", &argparse.Option{Action: func(args []string) error {
-		if e := buildParser.Parse(args); e != nil {
+		if _, e := buildParser.Parse(args); e != nil {
 			return e
 		}
 		fmt.Println("got an int", *count)
 		return nil
 	}})
 
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

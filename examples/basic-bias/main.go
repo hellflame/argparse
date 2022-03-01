@@ -19,7 +19,7 @@ func main() {
 		DisableDefaultShowHelp: true})
 	name := parser.String("n", "name", nil)
 	help := parser.Flag("help", "help-me", nil)
-	if e := parser.Parse(os.Args[1:]); e != nil {
+	if _, e := parser.Parse(os.Args[1:]); e != nil {
 		fmt.Println(e.Error())
 		return
 	}

@@ -13,7 +13,7 @@ func main() {
 		&argparse.ParserConfig{AddShellCompletion: true})
 	name := parser.String("n", "name", nil)
 	greet := parser.String("g", "greet", &argparse.Option{HideEntry: true})
-	if e := parser.Parse(nil); e != nil {
+	if _, e := parser.Parse(nil); e != nil {
 		fmt.Println(e.Error())
 		return
 	}
