@@ -9,7 +9,7 @@ import (
 
 func Test_CreateParser(t *testing.T) {
 	p := NewParser("test", "this is a desc", nil)
-	if e := p.Parse(nil); e == nil {
+	if _, e := p.Parse(nil); e == nil {
 		t.Error("not available for test env")
 	}
 }
@@ -92,7 +92,7 @@ func TestParser_AddCommand(t *testing.T) {
 
 	sub := parser.AddCommand("test", "this is test", nil)
 	sub.Flag("t", "test", nil)
-	if e := parser.Parse([]string{"test", "-t"}); e != nil {
+	if _, e := parser.Parse([]string{"test", "-t"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -104,7 +104,7 @@ func TestParser_Default(t *testing.T) {
 	b := parser.Int("", "b", &Option{Default: "1", Positional: true})
 	sub := parser.AddCommand("test", "", nil)
 	c := sub.Int("", "a", &Option{Default: "2"})
-	if e := parser.Parse([]string{}); e != nil {
+	if _, e := parser.Parse([]string{}); e != nil {
 		t.Errorf(e.Error())
 		return
 	}
@@ -127,19 +127,19 @@ func TestParser_unrec(t *testing.T) {
 	parser.String("a", "aa", nil)
 	parser.String("b", "bb", &Option{Positional: true})
 	parser.Strings("", "ab", &Option{Help: "this is abcc"})
-	if e := parser.Parse([]string{"x", "b"}); e != nil {
+	if _, e := parser.Parse([]string{"x", "b"}); e != nil {
 		if e.Error() != "unrecognized arguments: b" {
 			t.Error("failed to un-recognize")
 			return
 		}
 	}
-	if e := parser.Parse([]string{"-a", "a", "b", "bx"}); e != nil {
+	if _, e := parser.Parse([]string{"-a", "a", "b", "bx"}); e != nil {
 		if e.Error() != "unrecognized arguments: bx" {
 			t.Error("failed to un-recognize")
 			return
 		}
 	}
-	if e := parser.Parse([]string{"cover-bb", "--ax"}); e != nil {
+	if _, e := parser.Parse([]string{"cover-bb", "--ax"}); e != nil {
 		err := e.Error()
 		if !strings.Contains(err, "unrecognized arguments: --ax") ||
 			!strings.Contains(err, "--ab (this is abcc)") ||
@@ -148,13 +148,13 @@ func TestParser_unrec(t *testing.T) {
 			return
 		}
 	}
-	if e := parser.Parse([]string{"cover-bb", "--abc"}); e != nil {
+	if _, e := parser.Parse([]string{"cover-bb", "--abc"}); e != nil {
 		if e.Error() != "unrecognized arguments: --abc\ndo you mean?: --ab (this is abcc)" {
 			t.Error("failed to output help msg")
 			return
 		}
 	}
-	if e := parser.Parse([]string{"cover-bb", "cd"}); e != nil {
+	if _, e := parser.Parse([]string{"cover-bb", "cd"}); e != nil {
 		if e.Error() != "unrecognized arguments: cd" {
 			t.Error("failed to tell")
 			return
@@ -172,25 +172,25 @@ func TestParser_Parse(t *testing.T) {
 	e := parser.String("", "ee", &Option{Positional: true})
 	g := parser.Strings("", "gg", &Option{Positional: true})
 
-	if e := parser.Parse([]string{"-a", "linux", "-b", "b1", "b2", "--cc", "x", "--ff"}); e != nil {
+	if _, e := parser.Parse([]string{"-a", "linux", "-b", "b1", "b2", "--cc", "x", "--ff"}); e != nil {
 		t.Errorf(e.Error())
 	}
 	if *a != "linux" || len(*b) != 2 || (*b)[1] != "b2" || *c != "x" || !*f {
 		t.Error("failed to parse string")
 		return
 	}
-	if e := parser.Parse([]string{"-a"}); e == nil {
+	if _, e := parser.Parse([]string{"-a"}); e == nil {
 		t.Error("expect argument")
 		return
 	}
-	if e := parser.Parse([]string{"linux", "ok"}); e != nil {
+	if _, e := parser.Parse([]string{"linux", "ok"}); e != nil {
 		t.Error("failed to parse")
 		return
 	}
 	if *d != "linux" || *e != "ok" {
 		t.Error("failed to parse position args")
 	}
-	if e := parser.Parse([]string{"linux", "ok", "g1", "g2"}); e != nil {
+	if _, e := parser.Parse([]string{"linux", "ok", "g1", "g2"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -209,7 +209,7 @@ func TestParser_types(t *testing.T) {
 	e := parser.Float("", "e", nil)
 	f := parser.Floats("", "f", nil)
 	g := parser.Flag("", "g", nil)
-	if e := parser.Parse([]string{"--a", "a", "--b", "b1", "b2", "--c", "1",
+	if _, e := parser.Parse([]string{"--a", "a", "--b", "b1", "b2", "--c", "1",
 		"--d", "1", "2", "--e", "3.14", "--f", "0.618", "2.7", "--g"}); e != nil {
 		t.Error(e.Error())
 		return
@@ -228,17 +228,17 @@ func TestParser_Choices(t *testing.T) {
 		&Option{Choices: []interface{}{"x"}})
 	parser.Ints("", "b",
 		&Option{Choices: []interface{}{1, 2}})
-	if e := parser.Parse([]string{"--a", "y"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "y"}); e != nil {
 		if e.Error() != "args must be one|some of [x]" {
 			t.Error("failed to make a choice")
 			return
 		}
 	}
-	if e := parser.Parse([]string{"--a", "x"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "x"}); e != nil {
 		t.Error("error choice")
 		return
 	}
-	if e := parser.Parse([]string{"--b", "3"}); e != nil {
+	if _, e := parser.Parse([]string{"--b", "3"}); e != nil {
 		if e.Error() != "args must be one|some of [1 2]" {
 			t.Error("failed to make choices")
 			return
@@ -255,7 +255,7 @@ func TestParser_Validate(t *testing.T) {
 		}
 		return nil
 	}})
-	if e := parser.Parse([]string{"--a", "ok"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "ok"}); e != nil {
 		if e.Error() != "not ok" {
 			t.Error("not ok")
 			return
@@ -265,7 +265,7 @@ func TestParser_Validate(t *testing.T) {
 		t.Error("this is invalid value")
 		return
 	}
-	if e := parser.Parse([]string{"--a", "this is ok"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "this is ok"}); e != nil {
 		t.Error("this is not ok")
 		return
 	}
@@ -293,7 +293,7 @@ func TestParser_Formatter(t *testing.T) {
 		i = fmt.Sprintf("=> %s", arg)
 		return
 	}})
-	if e := parser.Parse([]string{"--a", "1"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "1"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -301,13 +301,13 @@ func TestParser_Formatter(t *testing.T) {
 		t.Error("failed to format value")
 		return
 	}
-	if e := parser.Parse([]string{"--b", "False"}); e != nil {
+	if _, e := parser.Parse([]string{"--b", "False"}); e != nil {
 		if e.Error() != "no False" {
 			t.Error("formatter should filtered this")
 			return
 		}
 	}
-	if e := parser.Parse([]string{"--b", "b"}); e != nil {
+	if _, e := parser.Parse([]string{"--b", "b"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -322,14 +322,14 @@ func TestParser_Required(t *testing.T) {
 	a := parser.String("", "a", &Option{Required: true})
 	parser.String("", "b", nil)
 	c := parser.Int("", "c", &Option{Required: true, Positional: true})
-	if e := parser.Parse([]string{"--b", "linux"}); e != nil {
+	if _, e := parser.Parse([]string{"--b", "linux"}); e != nil {
 		if e.Error() != "A is required" {
 			t.Error("A is required but unknown")
 			return
 		}
 	}
 	// parser should be new, strictly speaking
-	if e := parser.Parse([]string{"--a", "x", "3"}); e != nil {
+	if _, e := parser.Parse([]string{"--a", "x", "3"}); e != nil {
 		t.Error("failed to parse required value")
 		return
 	}
@@ -341,7 +341,7 @@ func TestParser_Required(t *testing.T) {
 	p := NewParser("", "", nil)
 	p.String("", "a", &Option{Required: true, Positional: true})
 	p.String("", "b", nil)
-	if e := p.Parse([]string{"--b", "x"}); e != nil {
+	if _, e := p.Parse([]string{"--b", "x"}); e != nil {
 		if e.Error() != "A is required" {
 			t.Error("A is required")
 			return
@@ -362,7 +362,7 @@ func TestParse_Actions(t *testing.T) {
 		}
 		return nil
 	}})
-	if e := p.Parse([]string{"1", "2", "3"}); e != nil {
+	if _, e := p.Parse([]string{"1", "2", "3"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -378,7 +378,7 @@ func TestParse_Actions(t *testing.T) {
 		buttonColor = "RED"
 		return nil
 	}})
-	if e := p.Parse([]string{"--a"}); e != nil {
+	if _, e := p.Parse([]string{"--a"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -475,28 +475,28 @@ func TestParser_Fail(t *testing.T) {
 	p.Int("", "a", nil)
 	p.Float("", "b", nil)
 	p.Floats("", "c", &Option{Positional: true})
-	if e := p.Parse([]string{"--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
+	if _, e := p.Parse([]string{"--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
 		t.Error("failed to check invalid int")
 		return
 	}
-	if e := p.Parse([]string{"--b", "x"}); e == nil || e.Error() != "invalid float value: x" {
+	if _, e := p.Parse([]string{"--b", "x"}); e == nil || e.Error() != "invalid float value: x" {
 		t.Error("failed to check invalid float")
 		return
 	}
-	if e := p.Parse([]string{"a", "b", "c"}); e == nil || e.Error() != "invalid float value: a" {
+	if _, e := p.Parse([]string{"a", "b", "c"}); e == nil || e.Error() != "invalid float value: a" {
 		t.Error("failed to check invalid value in multi positional")
 		return
 	}
 	p = NewParser("", "", nil)
 	p.Int("", "a", &Option{Positional: true})
-	if e := p.Parse([]string{"a"}); e == nil || e.Error() != "invalid int value: a" {
+	if _, e := p.Parse([]string{"a"}); e == nil || e.Error() != "invalid int value: a" {
 		t.Error("failed to check invalid value in positional")
 		return
 	}
 	test := p.AddCommand("test", "", nil)
 	test.Int("", "a", nil)
 	test.Float("", "b", &Option{Default: "x"})
-	if e := p.Parse([]string{"test", "--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
+	if _, e := p.Parse([]string{"test", "--a", "x"}); e == nil || e.Error() != "invalid int value: x" {
 		t.Error("failed to check invalid value in sub command")
 		return
 	}
@@ -504,7 +504,7 @@ func TestParser_Fail(t *testing.T) {
 	p = NewParser("", "", nil)
 	p.Float("", "a", &Option{Default: "x"})
 	p.Int("", "b", nil)
-	if e := p.Parse([]string{"--b", "1"}); e == nil || e.Error() != "invalid float value: x" {
+	if _, e := p.Parse([]string{"--b", "1"}); e == nil || e.Error() != "invalid float value: x" {
 		t.Error("failed to check invalid value with default")
 		return
 	}
@@ -515,7 +515,7 @@ func TestParser_WithSubCommand(t *testing.T) {
 	f := p.Flag("", "a", nil)
 	sub := p.AddCommand("test", "", nil)
 	x := sub.Int("", "a", &Option{Default: "1"})
-	if e := p.Parse([]string{"--a"}); e != nil {
+	if _, e := p.Parse([]string{"--a"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -542,7 +542,7 @@ func TestDefaultAction(t *testing.T) {
 	p := NewParser("", "", &ParserConfig{DefaultAction: func() {
 		d = true
 	}})
-	if e := p.Parse([]string{}); e != nil {
+	if _, e := p.Parse([]string{}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -556,7 +556,7 @@ func TestDefaultAction(t *testing.T) {
 	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
 		test = true
 	}})
-	if e := p.Parse([]string{}); e != nil {
+	if _, e := p.Parse([]string{}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -570,7 +570,7 @@ func TestDefaultAction(t *testing.T) {
 	p.AddCommand("test", "", &ParserConfig{DefaultAction: func() {
 		test = true
 	}})
-	if e := p.Parse([]string{"test"}); e != nil {
+	if _, e := p.Parse([]string{"test"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -608,7 +608,7 @@ func TestParse_AddCompletion(t *testing.T) {
 func TestParse_AllowShort(t *testing.T) {
 	p := NewParser("", "", nil)
 	x := p.Int("x", "", nil)
-	if e := p.Parse([]string{"-x", "1"}); e != nil {
+	if _, e := p.Parse([]string{"-x", "1"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -648,7 +648,7 @@ func TestParser_Invoke(t *testing.T) {
 		No2Parsed = invoked
 	}
 
-	if e := p.Parse([]string{"sub", "-b", "linux"}); e != nil {
+	if _, e := p.Parse([]string{"sub", "-b", "linux"}); e != nil {
 		t.Error(e.Error())
 		return
 	}
@@ -669,7 +669,7 @@ func TestParser_Invoke(t *testing.T) {
 func TestParser_Error(t *testing.T) {
 	p := NewParser("", "", nil)
 	p.Int("x", "", nil)
-	if e := p.Parse([]string{}); e != nil {
+	if _, e := p.Parse([]string{}); e != nil {
 		switch e.(type) {
 		case BreakAfterHelp:
 			if e.Error() != "" {
@@ -682,7 +682,7 @@ func TestParser_Error(t *testing.T) {
 
 	p = NewParser("", "", &ParserConfig{AddShellCompletion: true})
 	p.Int("x", "", nil)
-	if e := p.Parse([]string{"--completion"}); e != nil {
+	if _, e := p.Parse([]string{"--completion"}); e != nil {
 		switch e.(type) {
 		case BreakAfterShellScript:
 			if e.Error() != "" {
