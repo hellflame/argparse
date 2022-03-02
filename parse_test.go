@@ -653,7 +653,7 @@ func TestParser_Invoke(t *testing.T) {
 		return
 	}
 	if p.Invoked || mainParsed {
-		t.Error("main parse is not parsed")
+		t.Error("root parse should not be parsed")
 		return
 	}
 	if !sub.Invoked || !subParsed {
@@ -713,4 +713,16 @@ func TestMaxHeaderLength(t *testing.T) {
 	p.String("s", "short", &Option{Help: "this is short help message"})
 	p.String("l", "this-is-a-very-long-args", &Option{Help: "this is long"})
 	p.FormatHelp()
+}
+
+func TestParseOptionalAfterPositional(t *testing.T) {
+	p := NewParser("", "", nil)
+	a := p.String("a", "", &Option{Positional: true})
+	bs := p.Strings("b", "", nil)
+	if e := p.Parse([]string{"position", "-b", "1", "2"}); e != nil {
+		t.Error(e.Error())
+	}
+	if *a != "position" || (*bs)[0] != "1" || (*bs)[1] != "2" {
+		t.Error("failed to set values")
+	}
 }
