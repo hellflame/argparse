@@ -381,11 +381,6 @@ func (p *Parser) Parse(args []string) error {
 	if args == nil {
 		args = os.Args[1:]
 	}
-	// matchSub := false
-	// if len(p.subParser) > 0 && len(args) > 0 {
-	// 	_, matchSub = p.subParserMap[args[0]]
-	// }
-	// var subParser *Parser
 	if len(args) == 0 {
 		if p.config.DefaultAction != nil {
 			p.config.DefaultAction()
@@ -394,7 +389,7 @@ func (p *Parser) Parse(args []string) error {
 			p.showHelp = &help
 		}
 	} else {
-		if len(p.subParser) > 0 && len(args) > 0 {
+		if len(p.subParser) > 0 {
 			if subParser, match := p.subParserMap[args[0]]; match {
 				return subParser.Parse(args[1:])
 			}
@@ -483,10 +478,6 @@ func (p *Parser) Parse(args []string) error {
 			}
 		}
 	}
-	// targetParser := p
-	// if subParser != nil {
-	// 	targetParser = subParser
-	// }
 	if p.showHelp != nil && *p.showHelp {
 		p.PrintHelp()
 		if !p.config.ContinueOnHelp {
@@ -497,11 +488,8 @@ func (p *Parser) Parse(args []string) error {
 		fmt.Println(p.FormatCompletionScript())
 		return BreakAfterShellScript{}
 	}
-	entries := append(p.entries, p.positionArgs...) // ready for Required checking & Default parsing
-	// for _, _p := range p.subParser {
-	// 	entries = append(entries, append(_p.entries, _p.positionArgs...)...)
-	// }
-	for _, arg := range entries {
+	entries := append(p.entries, p.positionArgs...)
+	for _, arg := range entries { // check Required & set Default value
 		if !arg.assigned && arg.Default != "" {
 			if e := arg.parseValue(nil); e != nil {
 				return e
