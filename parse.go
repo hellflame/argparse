@@ -381,11 +381,11 @@ func (p *Parser) Parse(args []string) error {
 	if args == nil {
 		args = os.Args[1:]
 	}
-	matchSub := false
-	if len(p.subParser) > 0 && len(args) > 0 {
-		_, matchSub = p.subParserMap[args[0]]
-	}
-	var subParser *Parser
+	// matchSub := false
+	// if len(p.subParser) > 0 && len(args) > 0 {
+	// 	_, matchSub = p.subParserMap[args[0]]
+	// }
+	// var subParser *Parser
 	if len(args) == 0 {
 		if p.config.DefaultAction != nil {
 			p.config.DefaultAction()
@@ -394,106 +394,102 @@ func (p *Parser) Parse(args []string) error {
 			p.showHelp = &help
 		}
 	} else {
-		p.Invoked = true // when there is any match, it's invoked, or the default action will be called
-		if matchSub {
-			subParser = p.subParserMap[args[0]]
-			e := subParser.Parse(args[1:])
-			if e != nil {
-				return e
+		if len(p.subParser) > 0 && len(args) > 0 {
+			if subParser, match := p.subParserMap[args[0]]; match {
+				return subParser.Parse(args[1:])
 			}
-		} else {
-			lastPositionArgIndex := 0
-			registeredPositionsLength := len(p.positionArgs)
-			for len(args) > 0 {
-				sign := args[0]
-				if arg, ok := p.entryMap[sign]; ok {
-					if arg.isFlag {
-						_ = arg.parseValue(nil)
-						args = args[1:]
+		}
+		lastPositionArgIndex := 0
+		registeredPositionsLength := len(p.positionArgs)
+		for len(args) > 0 {
+			sign := args[0]
+			if arg, ok := p.entryMap[sign]; ok {
+				if arg.isFlag {
+					_ = arg.parseValue(nil)
+					args = args[1:]
+				} else {
+					var tillNext []string // find user inputs before next registered optional argument
+					for _, a := range args[1:] {
+						if _, isEntry := p.entryMap[a]; !isEntry {
+							tillNext = append(tillNext, a)
+						} else {
+							break
+						}
+					}
+					if len(tillNext) == 0 { // argument takes at least one input as argument, but there is 0
+						return fmt.Errorf("argument %s expect argument",
+							strings.Join(arg.getWatchers(), "/"))
+					}
+					if arg.multi { // if argument takes more than one arguments, it will take all user input before next registered argument, and proceed 'args' parsing to next registered argument
+						e := arg.parseValue(tillNext)
+						if e != nil {
+							return e
+						}
+						args = args[len(tillNext)+1:]
+					} else { // then the argument takes only one argument, and proceed the left arguments for positional argument parsing
+						e := arg.parseValue(tillNext[0:1])
+						if e != nil {
+							return e
+						}
+						args = args[2:]
+					}
+				}
+			} else {
+				if registeredPositionsLength > lastPositionArgIndex { // while there is unparsed positional argument
+					arg := p.positionArgs[lastPositionArgIndex]
+					lastPositionArgIndex += 1
+					var tillNext []string // find user inputs before next registered optional argument
+					for _, a := range args {
+						if _, isEntry := p.entryMap[a]; !isEntry {
+							tillNext = append(tillNext, a)
+						} else {
+							break
+						}
+					}
+					if arg.multi {
+						e := arg.parseValue(tillNext)
+						if e != nil {
+							return e
+						}
+						args = args[len(tillNext):]
 					} else {
-						var tillNext []string // find user inputs before next registered optional argument
-						for _, a := range args[1:] {
-							if _, isEntry := p.entryMap[a]; !isEntry {
-								tillNext = append(tillNext, a)
-							} else {
-								break
-							}
+						e := arg.parseValue(tillNext[0:1])
+						if e != nil {
+							return e
 						}
-						if len(tillNext) == 0 { // argument takes at least one input as argument, but there is 0
-							return fmt.Errorf("argument %s expect argument",
-								strings.Join(arg.getWatchers(), "/"))
-						}
-						if arg.multi { // if argument takes more than one arguments, it will take all user input before next registered argument, and proceed 'args' parsing to next registered argument
-							e := arg.parseValue(tillNext)
-							if e != nil {
-								return e
-							}
-							args = args[len(tillNext)+1:]
-						} else { // then the argument takes only one argument, and proceed the left arguments for positional argument parsing
-							e := arg.parseValue(tillNext[0:1])
-							if e != nil {
-								return e
-							}
-							args = args[2:]
-						}
+						args = args[1:]
 					}
 				} else {
-					if registeredPositionsLength > lastPositionArgIndex { // while there is unparsed positional argument
-						arg := p.positionArgs[lastPositionArgIndex]
-						lastPositionArgIndex += 1
-						var tillNext []string // find user inputs before next registered optional argument
-						for _, a := range args {
-							if _, isEntry := p.entryMap[a]; !isEntry {
-								tillNext = append(tillNext, a)
-							} else {
-								break
-							}
+					if strings.HasPrefix(sign, shortPrefix) {
+						var candidates []string
+						for k := range p.entryMap {
+							candidates = append(candidates, k)
 						}
-						if arg.multi {
-							e := arg.parseValue(tillNext)
-							if e != nil {
-								return e
+						var tips []string
+						for _, m := range decideMatch(sign, candidates) {
+							helpInfo := p.entryMap[m].Help
+							if helpInfo != "" {
+								helpInfo = fmt.Sprintf(" (%s)", helpInfo)
 							}
-							args = args[len(tillNext):]
-						} else {
-							e := arg.parseValue(tillNext[0:1])
-							if e != nil {
-								return e
-							}
-							args = args[1:]
+							tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
 						}
-					} else {
-						if strings.HasPrefix(sign, shortPrefix) {
-							var candidates []string
-							for k := range p.entryMap {
-								candidates = append(candidates, k)
-							}
-							var tips []string
-							for _, m := range decideMatch(sign, candidates) {
-								helpInfo := p.entryMap[m].Help
-								if helpInfo != "" {
-									helpInfo = fmt.Sprintf(" (%s)", helpInfo)
-								}
-								tips = append(tips, fmt.Sprintf("%s%s", m, helpInfo))
-							}
-							match := strings.Join(tips, "\nor ")
-							if match != "" {
-								return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
-							}
+						match := strings.Join(tips, "\nor ")
+						if match != "" {
+							return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
 						}
-						return fmt.Errorf("unrecognized arguments: %s", sign)
 					}
+					return fmt.Errorf("unrecognized arguments: %s", sign)
 				}
 			}
 		}
 	}
-	targetParser := p
-	if subParser != nil {
-		targetParser = subParser
-	}
-	if targetParser.showHelp != nil && *targetParser.showHelp {
-		targetParser.PrintHelp()
-		if !targetParser.config.ContinueOnHelp {
+	// targetParser := p
+	// if subParser != nil {
+	// 	targetParser = subParser
+	// }
+	if p.showHelp != nil && *p.showHelp {
+		p.PrintHelp()
+		if !p.config.ContinueOnHelp {
 			return BreakAfterHelp{}
 		}
 	}
@@ -502,9 +498,9 @@ func (p *Parser) Parse(args []string) error {
 		return BreakAfterShellScript{}
 	}
 	entries := append(p.entries, p.positionArgs...) // ready for Required checking & Default parsing
-	for _, _p := range p.subParser {
-		entries = append(entries, append(_p.entries, _p.positionArgs...)...)
-	}
+	// for _, _p := range p.subParser {
+	// 	entries = append(entries, append(_p.entries, _p.positionArgs...)...)
+	// }
 	for _, arg := range entries {
 		if !arg.assigned && arg.Default != "" {
 			if e := arg.parseValue(nil); e != nil {
@@ -515,6 +511,8 @@ func (p *Parser) Parse(args []string) error {
 			return fmt.Errorf("%s is required", arg.getMetaName())
 		}
 	}
+
+	p.Invoked = true
 	if p.InvokeAction != nil {
 		p.InvokeAction(p.Invoked)
 	}

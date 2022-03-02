@@ -116,8 +116,8 @@ func TestParser_Default(t *testing.T) {
 		t.Error("failed to set default positional value")
 		return
 	}
-	if *c != 2 {
-		t.Error("failed to set default value in sub command")
+	if *c == 2 {
+		t.Error("sub command should not parse")
 		return
 	}
 }
@@ -523,8 +523,8 @@ func TestParser_WithSubCommand(t *testing.T) {
 		t.Error("failed to parse ")
 		return
 	}
-	if *x != 1 {
-		t.Error("failed to parse default value for sub command")
+	if *x == 1 {
+		t.Error("sub command is not parsed, default value should not be bond")
 		return
 	}
 }
@@ -623,7 +623,7 @@ func TestParse_AllowShort(t *testing.T) {
 
 func TestParser_Invoke(t *testing.T) {
 	p := NewParser("", "", nil)
-	a := p.String("a", "", nil)
+	a := p.String("a", "", &Option{Default: "no!"})
 	sub := p.AddCommand("sub", "", nil)
 	b := sub.String("b", "", nil)
 	mainParsed := false
@@ -631,8 +631,8 @@ func TestParser_Invoke(t *testing.T) {
 	No2Parsed := false
 	p.InvokeAction = func(invoked bool) {
 		mainParsed = invoked
-		if *a != "" {
-			t.Error("error!")
+		if *a == "no!" {
+			t.Error("not parsed parser should not bind default")
 		}
 	}
 	sub.InvokeAction = func(invoked bool) {
@@ -652,8 +652,9 @@ func TestParser_Invoke(t *testing.T) {
 		t.Error(e.Error())
 		return
 	}
-	if !p.Invoked || !mainParsed {
-		t.Error("main parse state error")
+	print(p.Invoked, mainParsed)
+	if p.Invoked || mainParsed {
+		t.Error("main parse is not parsed")
 		return
 	}
 	if !sub.Invoked || !subParsed {
