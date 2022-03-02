@@ -539,6 +539,16 @@ The two `--flag` will parse seperately, so you can use `tFlag` & `t` to referenc
 1. sub command has different context, so you can have two `--flag`, and different help message output
 2. sub command show help message seperately, it's for user to understand your program *step by step*. While `Group Argument` helps user to understand your program *group by group*
 
+**[v1.7.3]** Fix:
+
+* Invoked Action
+
+if subparser is invoked, the root parser will **NOT** be invoked.
+
+* When Not Invoked
+
+if subparser is **NOT** invoked, no argument's default value will be applied, and required argument will not be checked ... The subparser remains dead. (It's a bug if the subparser gets alive !)
+
 #### 10. Argument Action √
 
 Argument Action allows you to do anything with the argument if there is any match, this enables infinite possibility when parsing arguments. [example](examples/any-type-action/main.go)

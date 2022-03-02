@@ -652,7 +652,6 @@ func TestParser_Invoke(t *testing.T) {
 		t.Error(e.Error())
 		return
 	}
-	print(p.Invoked, mainParsed)
 	if p.Invoked || mainParsed {
 		t.Error("main parse is not parsed")
 		return
