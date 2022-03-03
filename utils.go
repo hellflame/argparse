@@ -8,24 +8,23 @@ import (
 	"strings"
 )
 
-const fallbackWidth = 80
+var terminalWidth = 80
 
-func getTerminalWidth() int {
+func init() {
+	// decide ternimal width
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin // this is important
 	result, e := cmd.Output()
 	if e != nil {
-		return fallbackWidth
+		result = []byte("0 80")
 	}
 	parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
 	if w, e := strconv.Atoi(parse[1]); e == nil {
-		return w
+		terminalWidth = w
 	}
-	return fallbackWidth
 }
 
 func formatHelpRow(head, content string, maxHeadLength int, withBreak bool) string {
-	terminalWidth := getTerminalWidth()
 	content = strings.Replace(content, "\n", "", -1)
 	result := fmt.Sprintf("  %s ", head)
 	headLeftPadding := maxHeadLength - len(result)
