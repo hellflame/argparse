@@ -176,10 +176,11 @@ func (p *Parser) FormatHelp() string {
 			if arg.Group != "" {
 				continue
 			}
-			if _, exist := parsed[arg.full]; exist {
+			identifier := arg.getIdentifier()
+			if _, exist := parsed[identifier]; exist {
 				continue
 			}
-			parsed[arg.full] = true
+			parsed[identifier] = true
 			if arg.HideEntry {
 				continue
 			}
@@ -225,10 +226,11 @@ func (p *Parser) formatUsage() string {
 	}
 	parsed := make(map[string]bool)
 	for _, arg := range p.entries {
-		if _, exist := parsed[arg.full]; exist {
+		identifier := arg.getIdentifier()
+		if _, exist := parsed[identifier]; exist {
 			continue
 		}
-		parsed[arg.full] = true
+		parsed[identifier] = true
 		argUsage := arg.formatUsage()
 		if argUsage != "" {
 			usage += argUsage

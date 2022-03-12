@@ -140,6 +140,13 @@ func (a *arg) formatUsage() string {
 	return fmt.Sprintf("[%s] ", u)
 }
 
+func (a *arg) getIdentifier() string {
+	if a.full != "" {
+		return a.full
+	}
+	return a.short
+}
+
 func (a *arg) formatHelpHeader() string {
 	metaName := a.getMetaName()
 	if a.Positional {
