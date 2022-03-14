@@ -54,12 +54,10 @@ func (a *arg) validate() error {
 	if a.short == a.full { // this will cause register conflict
 		return fmt.Errorf("arg short is full")
 	}
-	if a.Positional {
-		if a.isFlag { // positional argument can't be a flag, use flag instead
+	if a.isFlag {
+		if a.Positional { // positional argument can't be a flag, use flag instead
 			return fmt.Errorf("positional is a flag")
 		}
-	}
-	if a.isFlag {
 		if a.Meta != "" { // flag has no meta info to show
 			return fmt.Errorf("flag with meta")
 		}
@@ -98,10 +96,7 @@ func (a *arg) getMetaName() string {
 	if a.Meta != "" {
 		return a.Meta // Meta variable given by programmer
 	}
-	if a.full != "" {
-		return strings.ToUpper(a.full) // it's upper case in python
-	}
-	return strings.ToUpper(a.short) // as backup choice
+	return strings.ToUpper(a.getIdentifier())
 }
 
 func (a *arg) formatUsage() string {
@@ -113,8 +108,9 @@ func (a *arg) formatUsage() string {
 	if a.Positional { // positional usage
 		if a.Required {
 			if a.multi {
-				return fmt.Sprintf("[%s ...] ", meta)
+				return fmt.Sprintf("%s [%s ...] ", meta, meta)
 			}
+			return fmt.Sprintf("%s ", meta)
 		}
 		if a.multi {
 			return fmt.Sprintf("[%s [%s ...]] ", meta, meta)

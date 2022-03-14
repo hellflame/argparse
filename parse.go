@@ -148,7 +148,7 @@ func (p *Parser) FormatHelp() string {
 		helpBreak = true
 	}
 	if len(p.subParser) > 0 {
-		section := "\navailable commands:\n"
+		section := "\ncommands:\n"
 		for _, parser := range p.subParser {
 			section += formatHelpRow(parser.name, parser.description, headerLength, helpBreak) + "\n"
 		}
@@ -156,7 +156,7 @@ func (p *Parser) FormatHelp() string {
 	}
 	withHint := p.config.WithHint
 	if len(p.positionArgs) > 0 { // dealing positional arguments present
-		section := "\npositional arguments:\n"
+		section := "\npositionals:\n"
 		for _, arg := range p.positionArgs {
 			if arg.Group != "" || arg.HideEntry {
 				continue

@@ -506,7 +506,7 @@ usage: sub-command <cmd> [-h] [-f]
 
 Go is a tool for managing Go source code.
 
-available commands:
+commands:
   test        start a bug report
 
 options:

@@ -38,7 +38,7 @@ func formatHelpRow(head, content string, maxHeadLength int, withBreak bool) stri
 	} else {
 		rows = append(rows, result+content)
 	}
-	for len(rows[len(rows)-1]) > terminalWidth {
+	for len(rows[len(rows)-1]) > terminalWidth { // break into lines
 		lastIndex := len(rows) - 1
 		lastOne := rows[lastIndex]
 		rows[lastIndex] = rows[lastIndex][0:terminalWidth]
