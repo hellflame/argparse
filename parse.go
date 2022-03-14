@@ -120,7 +120,7 @@ func (p *Parser) PrintHelp() {
 func (p *Parser) FormatHelp() string {
 	result := p.formatUsage()
 	if p.description != "" {
-		result += "\n\n" + p.description + "\n"
+		result += "\n\n" + p.description
 	}
 	headerLength := 10 // here set minimum header length, the code after will find the max length of headers
 	for _, parser := range p.subParser {
@@ -148,15 +148,15 @@ func (p *Parser) FormatHelp() string {
 		helpBreak = true
 	}
 	if len(p.subParser) > 0 {
-		section := "\ncommands:\n"
+		section := "\n\ncommands:"
 		for _, parser := range p.subParser {
-			section += formatHelpRow(parser.name, parser.description, headerLength, helpBreak) + "\n"
+			section += "\n" + formatHelpRow(parser.name, parser.description, headerLength, helpBreak)
 		}
 		result += section
 	}
 	withHint := p.config.WithHint
 	if len(p.positionArgs) > 0 { // dealing positional arguments present
-		section := "\npositionals:\n"
+		section := ""
 		for _, arg := range p.positionArgs {
 			if arg.Group != "" || arg.HideEntry {
 				continue
@@ -165,13 +165,16 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak) + "\n"
+			section += "\n" + formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak)
+		}
+		if section != "" {
+			section = "\n\npositionals:" + section
 		}
 		result += section
 	}
 	if len(p.entries) > 0 { // dealing optional arguments present
 		parsed := make(map[string]bool)
-		section := "\noptions:\n"
+		section := ""
 		for _, arg := range p.entries {
 			if arg.Group != "" {
 				continue
@@ -188,25 +191,28 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak) + "\n"
+			section += "\n" + formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak)
+		}
+		if section != "" {
+			section = "\n\noptions:" + section
 		}
 		result += section
 	}
 	for _, group := range p.entryGroupOrder { // dealing arguments group present
-		section := fmt.Sprintf("\n%s:\n", group)
+		section := fmt.Sprintf("\n\n%s:", group)
 		content := ""
 		for _, arg := range p.entryGroup[group] {
 			if arg.HideEntry {
 				continue
 			}
-			content += formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength, helpBreak) + "\n"
+			content += "\n" + formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength, helpBreak)
 		}
 		if content != "" {
 			result += section + content
 		}
 	}
 	if p.config.EpiLog != "" {
-		result += "\n" + p.config.EpiLog
+		result += "\n\n" + p.config.EpiLog
 	}
 
 	return result
