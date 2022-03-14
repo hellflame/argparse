@@ -102,3 +102,14 @@ func TestExtraInfo(t *testing.T) {
 		return
 	}
 }
+
+func TestFormatUsagePositional(t *testing.T) {
+	if (&arg{short: "x", Option: Option{Positional: true, Required: true}}).formatUsage() != "X " {
+		t.Error("positional requred usage error")
+		return
+	}
+	if (&arg{short: "x", Option: Option{multi: true, Positional: true, Required: true}}).formatUsage() != "X [X ...] " {
+		t.Error("multi positional requred usage error")
+		return
+	}
+}
