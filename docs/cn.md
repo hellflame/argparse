@@ -711,7 +711,7 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
-##### Argument Process Flow Map
+##### 参数解析流图
 
 ```
 
@@ -741,7 +741,7 @@ fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
                        └─────────────┘
 ```
 
-The return value of last process will be the input of next process, if shows it in code, it's like
+上一层处理的返回值将作为下一次处理的输入，代码类似如下：
 
 ```python
 with MatchFound:
@@ -753,11 +753,11 @@ with MatchFound:
         yield ChoiceCheck(Formatter(arg))
 ```
 
-## Config
+## 配置
 
-### 1. ParserConfig
+### 1. 解析配置
 
-Relative struct: 
+相关结构体: 
 
 ```go
 type ParserConfig struct {
@@ -803,9 +803,9 @@ func main() {
 }
 ```
 
-[example](../examples/parser-config)
+[栗子](../examples/parser-config)
 
-Output:
+输出:
 
 ```bash
 => go run main.go
@@ -824,11 +824,11 @@ options: # no [-h/--help] flag is registerd, which is affected by DisableHelp
 more detail please visit https://github.com/hellflame/argparse  # <=== EpiLog
 ```
 
-Except the comment above, `ContinueOnHelp` is only affective on your program process, which give you possibility to do something when default `help` is shown
+除了上述注释提到的内容, `ContinueOnHelp` 可以让你在帮助信息展示出来之后做点其他事情
 
-### 2. ArgumentOptions
+### 2. 参数设置
 
-Related struct:
+相关结构体:
 
 ```go
 type Option struct {
@@ -848,7 +848,7 @@ type Option struct {
 }
 ```
 
-## How it works
+## 机制
 
 ```
   ┌──────────────────────┐ ┌──────────────────────┐
@@ -878,7 +878,7 @@ type Option struct {
                                  done
 ```
 
-## 错误 & 宕机
+## 错误(error) & 宕机(panic)
 
 原则是, __生产环境不产生宕机__ 
 
@@ -903,4 +903,5 @@ type Option struct {
 6. [如何添加子命令](../examples/sub-command)
 7. [处理长参数](../examples/long-args)
 8. [一个程序，多个解析](../examples/multi-parser)
-9. [修改帮助入口的位置](../example/change-help)
+9. [修改帮助入口的位置](../examples/change-help)
+9. [参数分组](../examples/argument-groups)

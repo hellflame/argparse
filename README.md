@@ -944,5 +944,6 @@ feel free to add different use cases
 6. [how to add sub command](examples/sub-command)
 7. [deal with long args](examples/long-args)
 8. [multiple parser in one program](examples/multi-parser)
-9. [decide help's position](example/change-help)
+9. [decide help's position](examples/change-help)
+9. [argument groups](examples/argument-groups)
 
