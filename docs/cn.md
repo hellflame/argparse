@@ -905,3 +905,4 @@ type Option struct {
 8. [一个程序，多个解析](../examples/multi-parser)
 9. [修改帮助入口的位置](../examples/change-help)
 9. [参数分组](../examples/argument-groups)
+9. [批量创建参数](../examples/batch-create-arguments)

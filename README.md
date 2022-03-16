@@ -946,4 +946,5 @@ feel free to add different use cases
 8. [multiple parser in one program](examples/multi-parser)
 9. [decide help's position](examples/change-help)
 9. [argument groups](examples/argument-groups)
+9. [batch create arguments](examples/batch-create-arguments)
 

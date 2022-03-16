@@ -1,3 +1,4 @@
+// this is show case for creating argument groups
 package main
 
 import (
