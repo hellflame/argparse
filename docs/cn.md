@@ -711,6 +711,81 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
+#### 15. 限制参数头部长度 [ >= 1.7.0 ]
+
+如果参数过长，可以设置 `ParserConfig.MaxHeaderLength` 到一个合理的长度。 
+
+在设置 `MaxHeaderLength` 之前，帮助信息可能像这样(因为默认会自动调整头部长度到最长的参数长度)
+
+```bash
+usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
+options:
+  --help, -h                                                                        show this help message
+  --short SHORT, -s SHORT                                                           this is a short args
+  --medium-size MEDIUM-SIZE, -m MEDIUM-SIZE                                         this is a medium size args
+  --this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS, -l THIS-IS-A-VERY-LONG-ARGS  this is a very long args
+
+```
+
+在设置了 `ParserConfig.MaxHeaderLength = 20` (一般建议在 20 ~ 30 之间)，如果参数的帮助信息过长，会换行并缩进20个空格。
+
+```bash
+usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
+options:
+  --help, -h        show this help message
+  --short SHORT, -s SHORT
+                    this is a short args
+  --medium-size MEDIUM-SIZE, -m MEDIUM-SIZE
+                    this is a medium size args
+  --this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS, -l THIS-IS-A-VERY-LONG-ARGS
+                    this is a very long args
+```
+
+[example](../examples/long-args/main.go)
+
+#### 16. 可继承参数 [ >= 1.8.0 ]
+
+如果有参数在根命令和子命令中都表示同样的意思，比如 `debug` (调试状态), `verbose` (回显模式) 等，并且你也不想写太多次重复代码，有两种推荐方式来简化该过程：
+
+在 *v1.8.0* 以前，由于根命令和子命令的类型都是相同的，可以在 `for` 循环中使用 `Action` 来实现。
+
+```go
+parser := argparse.NewParser("", "", nil)
+sub := parser.AddCommand("sub", "", nil)
+sub2 := parser.AddCommand("sub2", "", nil)
+
+url := ""
+for _, p := range []*argparse.Parser{parser, sub, sub2} {
+    p.String("", "url", &argparse.Option{Action: func(args []string) error {
+        url = args[0]
+        return nil
+    }})
+}
+
+if e := parser.Parse(nil); e != nil {
+    return
+}
+print(url)
+```
+
+代码可能看起来没有那么整洁，所以诞生了 `Inheritable` 这一参数配置项。当设置参数 `&argparse.Option{Inheritable: true}` , 在这__之后__的子命令将可以继承该命令或者重载这一参数。
+
+```go
+parser := argparse.NewParser("", "", nil)
+verbose := parser.Flag("v", "", &argparse.Option{Inheritable: true, Help: "show verbose info"}) // inheritable argument
+local := parser.AddCommand("local", "", nil)
+service := parser.AddCommand("service", "", nil)
+version := service.Int("v", "version", &argparse.Option{Help: "version choice"})
+```
+
+最终，子命令 `local` 会继承标志参数 `verbose` , 如果用户输入 `program local -v`, `*verbose` 将变成 `true`，这意味着 `*verbose` 在根命令和继承了该参数的子命令间是共享的。
+
+然而，因为 `v` 也被子命令 `service` 注册为整形可选参数，所以 `-v` 只能表示版本选择，而不是回显，该参数已被重载。
+
+> 注意 `Inheritable` 同样适用于位置参数，如果位置参数的元名称相同，那么 `argparse` 就会判定他们为同一位置参数。
+
+[example](../examples/inherit/main.go)
+
 ##### 参数解析流图
 
 ```
@@ -906,3 +981,4 @@ type Option struct {
 9. [修改帮助入口的位置](../examples/change-help)
 9. [参数分组](../examples/argument-groups)
 9. [批量创建参数](../examples/batch-create-arguments)
+9. [参数继承](../examples/inherit)

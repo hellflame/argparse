@@ -70,7 +70,7 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 	}
 	if !config.DisableHelp {
 		parser.showHelp = parser.Flag("h", "help",
-			&Option{Help: "show this help message", Inheritable: true})
+			&Option{Help: "show this help message"}) // not suitable for override!
 	}
 	if config.AddShellCompletion {
 		parser.showShellCompletion = parser.Flag("", "completion",

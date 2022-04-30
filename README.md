@@ -750,6 +750,47 @@ options:
 
 [example](examples/long-args/main.go)
 
+#### 16. Inheriable argument [ >= 1.8.0 ]
+
+When some argument represent the same thing among root parser and sub parsers, such as `debug`, `verbose` .... and you don't want to write dumplicate argument code for too many times, you have two recommended ways:
+
+before *v1.8.0*, as all sub parsers are the same type as root parser, use a `for` loop with `Action` to do it.
+
+```go
+parser := argparse.NewParser("", "", nil)
+sub := parser.AddCommand("sub", "", nil)
+sub2 := parser.AddCommand("sub2", "", nil)
+
+url := ""
+for _, p := range []*argparse.Parser{parser, sub, sub2} {
+    p.String("", "url", &argparse.Option{Action: func(args []string) error {
+        url = args[0]
+        return nil
+    }})
+}
+
+if e := parser.Parse(nil); e != nil {
+    return
+}
+print(url)
+```
+
+The code might be less clean, and there comes `Inheritable` , which is an `argument option` . When argument with `&argparse.Option{Inheritable: true}`, sub parsers added __after__ the argument will be able to inherit this argument or override it.
+
+```go
+parser := argparse.NewParser("", "", nil)
+verbose := parser.Flag("v", "", &argparse.Option{Inheritable: true, Help: "show verbose info"}) // inheritable argument
+local := parser.AddCommand("local", "", nil)
+service := parser.AddCommand("service", "", nil)
+version := service.Int("v", "version", &argparse.Option{Help: "version choice"})
+```
+
+As a result,  sub parser `local` will inhert `verbose` as a `Flag`, when pass user input `program local -v`, `*verbose` will be `true`, which means `*verbose` is shared among root parser and inherited parsers. However, as prefix `v` is also registered as `Int` by sub parser `service`, you can't use `-v` to `show verbose`, but `version choice` , it's `overrided`.
+
+> Note `Inheritable` is valid for `Positional`, if their metaNames are the same, `argparse` will consider them the same.
+
+[example](examples/inherit/main.go)
+
 ##### Argument Process Flow Map
 
 ```
@@ -947,4 +988,5 @@ feel free to add different use cases
 9. [decide help's position](examples/change-help)
 9. [argument groups](examples/argument-groups)
 9. [batch create arguments](examples/batch-create-arguments)
+9. [argument inherit](examples/inherit)
 
