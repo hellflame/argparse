@@ -916,6 +916,7 @@ type Option struct {
   HideEntry  bool   // hide usage & help display
   Help       string // help message
   Group      string // argument group info, default to be no group
+  Inheritable bool  // sub parsers after this argument can inherit it
   Action     func(args []string) error // bind actions when the match is found, 'args' can be nil to be a flag
   Choices    []interface{}  // input argument must be one/some of the choice
   Validate   func(arg string) error  // customize function to check argument validation
