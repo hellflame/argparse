@@ -726,3 +726,55 @@ func TestParseOptionalAfterPositional(t *testing.T) {
 		t.Error("failed to set values")
 	}
 }
+
+func TestConflictPositional(t *testing.T) {
+	p := NewParser("", "", nil)
+	p.String("a", "", &Option{Positional: true})
+	closure := func() {
+		defer func() {
+			if e := recover(); e == nil {
+				t.Error("failed to panic for conflict positional!")
+			}
+		}()
+		p.Int("", "a", &Option{Positional: true})
+	}
+	closure()
+}
+
+func TestInheritable(t *testing.T) {
+	p := NewParser("", "", nil)
+	f1 := p.Flag("f", "flag", &Option{Inheritable: true})
+	p.Flag("f2", "flag2", &Option{Inheritable: true})
+	pos1 := p.String("s", "str", &Option{Positional: true, Inheritable: true, Help: "position str"})
+	p.Int("p2", "pos2", &Option{Positional: true, Inheritable: true, Help: "positional 2"})
+
+	sub := p.AddCommand("sub1", "", nil)
+	f2 := sub.Float("f2", "", nil)                                                          // override flag2
+	pos2 := sub.Float("", "pos2", &Option{Positional: true, Help: "override positional 2"}) // override pos2
+
+	p.String("f3", "", &Option{Inheritable: true})
+
+	if e := p.Parse([]string{"sub1", "-f", "pos"}); e != nil {
+		t.Error("f1 should be inherited by sub1")
+		return
+	}
+	if !*f1 || *pos1 != "pos" {
+		t.Error("failed to inherit from root parser")
+		return
+	}
+
+	if e := p.Parse([]string{"sub1", "-f3", "linux"}); e == nil {
+		t.Error("f3 should not be inherited")
+		return
+	}
+	// sub.PrintHelp()
+	if e := p.Parse([]string{"sub1", "-f2", "0.2", "fill inherit string", "9.9"}); e != nil {
+		t.Error("override failed!")
+		return
+	}
+	if *f2 > 1 || *pos2 < 1 {
+		println(*f2, *pos2)
+		t.Error("mess parse")
+		return
+	}
+}

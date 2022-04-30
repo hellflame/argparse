@@ -19,21 +19,22 @@ type arg struct {
 
 // Option is the only type to config when creating argument
 type Option struct {
-	Meta       string                                // meta value for help/usage generate
-	multi      bool                                  // take more than one argument
-	Default    string                                // default argument value if not given
-	isFlag     bool                                  // use as flag
-	Required   bool                                  // require to be set
-	Positional bool                                  // is positional argument
-	HideEntry  bool                                  // hide usage & help display
-	Help       string                                // help message
-	NoHint     bool                                  // disable hint info for the argument (usable when ParserConfig.WithHint = true)
-	HintInfo   string                                // specified hint info suffixed after help message, when ParserConfig.WithHint = true
-	Group      string                                // argument group info, default to be no group
-	Action     func(args []string) error             // bind actions when the match is found, 'args' can be nil to be a flag
-	Choices    []interface{}                         // input argument must be one/some of the choice
-	Validate   func(arg string) error                // customize function to check argument validation
-	Formatter  func(arg string) (interface{}, error) // format input arguments by the given method
+	Meta        string                                // meta value for help/usage generate
+	multi       bool                                  // take more than one argument
+	Default     string                                // default argument value if not given
+	isFlag      bool                                  // use as flag
+	Required    bool                                  // require to be set
+	Positional  bool                                  // is positional argument
+	HideEntry   bool                                  // hide usage & help display
+	Help        string                                // help message
+	NoHint      bool                                  // disable hint info for the argument (usable when ParserConfig.WithHint = true)
+	HintInfo    string                                // specified hint info suffixed after help message, when ParserConfig.WithHint = true
+	Group       string                                // argument group info, default to be no group
+	Inheritable bool                                  // sub parsers after this argument can inherit it
+	Action      func(args []string) error             // bind actions when the match is found, 'args' can be nil to be a flag
+	Choices     []interface{}                         // input argument must be one/some of the choice
+	Validate    func(arg string) error                // customize function to check argument validation
+	Formatter   func(arg string) (interface{}, error) // format input arguments by the given method
 }
 
 // validate args setting before parsing args, right after adding to parser

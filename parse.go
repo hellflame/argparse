@@ -21,9 +21,10 @@ type Parser struct {
 	showHelp            *bool // flag to decide show help message
 	showShellCompletion *bool // flag to decide show shell completion
 
-	entries      []*arg
-	entryMap     map[string]*arg
-	positionArgs []*arg
+	entries        []*arg
+	entryMap       map[string]*arg
+	positionArgs   []*arg
+	positionalPool map[string]*arg
 
 	entryGroupOrder []string
 	entryGroup      map[string][]*arg
@@ -63,12 +64,13 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		entryGroup:      make(map[string][]*arg),
 		entryGroupOrder: []string{},
 		positionArgs:    []*arg{},
+		positionalPool:  make(map[string]*arg),
 		subParser:       []*Parser{},
 		subParserMap:    make(map[string]*Parser),
 	}
 	if !config.DisableHelp {
 		parser.showHelp = parser.Flag("h", "help",
-			&Option{Help: "show this help message"})
+			&Option{Help: "show this help message", Inheritable: true})
 	}
 	if config.AddShellCompletion {
 		parser.showShellCompletion = parser.Flag("", "completion",
@@ -83,6 +85,22 @@ func (p *Parser) registerArgument(a *arg) error {
 		return e
 	}
 	if a.Positional {
+		id := a.getMetaName()
+		if match, exist := p.positionalPool[id]; exist {
+			if !match.Inheritable {
+				return fmt.Errorf("conflict positional for '%s', say: '%s'", id, match.Help)
+			}
+			// remove inheriable positional
+			pos := -1
+			for i, e := range p.positionArgs {
+				if match == e {
+					pos = i
+					break
+				}
+			}
+			p.positionArgs = append(p.positionArgs[0:pos], p.positionArgs[pos+1:]...)
+		}
+		p.positionalPool[id] = a
 		p.positionArgs = append(p.positionArgs, a)
 	}
 	if a.Group != "" {
@@ -93,8 +111,20 @@ func (p *Parser) registerArgument(a *arg) error {
 	}
 	for _, watcher := range a.getWatchers() { // register optional arguments to 'entryMap'
 		if match, exist := p.entryMap[watcher]; exist {
-			return fmt.Errorf("conflict entry for '%s', say: '%s'", watcher, match.Help)
+			if !match.Inheritable {
+				return fmt.Errorf("conflict entry for '%s', say: '%s'", watcher, match.Help)
+			}
+			// remove inheritable option
+			pos := -1
+			for i, e := range p.entries {
+				if e == match {
+					pos = i
+					break
+				}
+			}
+			p.entries = append(p.entries[0:pos], p.entries[pos+1:]...)
 		}
+		// inheritable is overrided here
 		p.entryMap[watcher] = a
 		p.entries = append(p.entries, a)
 	}
@@ -515,7 +545,7 @@ func (p *Parser) Parse(args []string) error {
 	return nil
 }
 
-// AddCommand will add sub command entry parser
+// AddCommand add sub command entry parser
 //
 // Return a new pointer to sub command parser
 func (p *Parser) AddCommand(name string, description string, config *ParserConfig) *Parser {
@@ -533,6 +563,22 @@ func (p *Parser) AddCommand(name string, description string, config *ParserConfi
 	parser.parentList = append(p.parentList, p.name)
 	if e := p.registerParser(parser); e != nil {
 		panic(e.Error())
+	}
+	for _, a := range p.positionArgs {
+		if a.Inheritable {
+			parser.registerArgument(a)
+		}
+	}
+	exist := make(map[string]int)
+	for _, a := range p.entries {
+		if !a.Inheritable {
+			continue
+		}
+		key := strings.Join(a.getWatchers(), "-")
+		if _, ok := exist[key]; !ok {
+			parser.registerArgument(a)
+			exist[key] = 1
+		}
 	}
 	return parser
 }
