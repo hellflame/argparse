@@ -321,12 +321,10 @@ It used `Validate` to do the trick, we'll talk about it later in more detail
 Python code is like:
 
 ```python
-function valid_type(arg) {
-  if !os.path.exist(arg) {
+def valid_type(arg):
+  if not os.path.exist(arg):
     raise Exception("can't access {}".format(arg))
-  }
   return arg
-}
 
 parser.add_argument("-s", "--full", type=valid_type)
 ```
