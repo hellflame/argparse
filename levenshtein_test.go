@@ -22,6 +22,10 @@ func TestLevDistance(t *testing.T) {
 }
 
 func TestLevDecide(t *testing.T) {
+	if len(decideMatch("xxx", []string{})) != 0 {
+		t.Error("failed to strip empty")
+		return
+	}
 	if decideMatch("linux", []string{"linux", "a", "b"})[0] != "linux" {
 		t.Error("failed to match same word")
 		return

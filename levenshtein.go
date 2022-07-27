@@ -1,6 +1,9 @@
 package argparse
 
 func decideMatch(target string, candidates []string) []string {
+	if len(candidates) <= 0 {
+		return []string{} // no match at all
+	}
 	ldArray := make([]int, len(candidates))
 	for i, c := range candidates {
 		ldArray[i] = levDistance(target, c)
