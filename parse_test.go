@@ -778,3 +778,42 @@ func TestInheritable(t *testing.T) {
 		return
 	}
 }
+
+func TestBindParser(t *testing.T) {
+	parser := NewParser("", "", &ParserConfig{DisableHelp: true})
+	a := parser.AddCommand("a", "", nil)
+	b := parser.AddCommand("b", "", nil)
+	c := parser.AddCommand("c", "", nil)
+
+	ab := parser.String("", "ab", &Option{
+		BindParsers: []*Parser{a, b},
+	})
+	bc := parser.String("", "bc", &Option{
+		BindParsers: []*Parser{b, c},
+	})
+	if len(parser.entries) != 0 || len(a.entries) != 1 || len(b.entries) != 2 || len(c.entries) != 1 {
+		t.Error("error binding")
+		return
+	}
+	if e := parser.Parse([]string{"b", "--ab", "x", "--bc", "y"}); e != nil {
+		t.Error(e)
+		return
+	}
+	if *ab != "x" || *bc != "y" {
+		t.Error("failed to parse")
+	}
+}
+
+func TestBindParserConflict(t *testing.T) {
+	defer func() {
+		if e := recover(); e == nil || e.(string) != "conflict entry for '-c', say: ''" {
+			t.Error("failed to confilict")
+		}
+	}()
+	parser := NewParser("", "", nil)
+	a := parser.AddCommand("a", "", nil)
+
+	parser.String("c", "", &Option{BindParsers: []*Parser{
+		a, a,
+	}})
+}

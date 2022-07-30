@@ -35,6 +35,7 @@ type Option struct {
 	Choices     []interface{}                         // input argument must be one/some of the choice
 	Validate    func(arg string) error                // customize function to check argument validation
 	Formatter   func(arg string) (interface{}, error) // format input arguments by the given method
+	BindParsers []*Parser                             // specify parsers to bind
 }
 
 // validate args setting before parsing args, right after adding to parser

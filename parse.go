@@ -80,6 +80,16 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 }
 
 func (p *Parser) registerArgument(a *arg) error {
+	if a.BindParsers != nil {
+		backup := a.BindParsers
+		a.BindParsers = nil
+		for _, bp := range backup {
+			if e := bp.registerArgument(a); e != nil {
+				return e
+			}
+		}
+		return nil
+	}
 	e := a.validate()
 	if e != nil {
 		return e
