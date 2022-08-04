@@ -643,7 +643,7 @@ source `start --completion`
 
 Completion will register to your shell by your program name, so you `MUST`  give your program a fix name
 
-#### 13. Hide Entry [ >= 1.3.0 ]
+#### 13. Hide Entry [ >= 1.3 ]
 
 Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
 
@@ -685,7 +685,7 @@ Which will have effect on `Shell Completion Script`
 
 [example](examples/hide-help-entry/main.go)
 
-#### 14. Invoked & InvokeAction [ >= 1.4.0 ]
+#### 14. Invoked & InvokeAction [ >= 1.4 ]
 
 When there is valid match for main parser or sub parser,  `Parser.Invoked` will be set true. If `Parser.InvokeAction` is set, it will be executed with the state `Parser.Invoked`. 
 
@@ -716,7 +716,7 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
-#### 15. Limit args header length [ >= 1.7.0 ]
+#### 15. Limit args header length [ >= 1.7 ]
 
 When argument is too long, you can set `ParserConfig.MaxHeaderLength` to a reasonable length.
 
@@ -748,11 +748,11 @@ options:
 
 [example](examples/long-args/main.go)
 
-#### 16. Inheriable argument [ >= 1.8.0 ]
+#### 16. Inheriable argument [ >= 1.8 ]
 
 When some argument represent the same thing among root parser and sub parsers, such as `debug`, `verbose` .... and you don't want to write dumplicate argument code for too many times, you have two recommended ways:
 
-before *v1.8.0*, as all sub parsers are the same type as root parser, use a `for` loop with `Action` to do it.
+before *v1.8*, as all sub parsers are the same type as root parser, use a `for` loop with `Action` to do it.
 
 ```go
 parser := argparse.NewParser("", "", nil)
@@ -773,7 +773,7 @@ if e := parser.Parse(nil); e != nil {
 print(url)
 ```
 
-The code might be less clean, and there comes `Inheritable` , which is an `argument option` . When argument with `&argparse.Option{Inheritable: true}`, sub parsers added __after__ the argument will be able to inherit this argument or override it.
+The code might be less clean, and there comes `Inheritable` , which is an `argument option` . When argument with __`&argparse.Option{Inheritable: true}`__, sub parsers added __after__ the argument will be able to inherit this argument or override it.
 
 ```go
 parser := argparse.NewParser("", "", nil)
@@ -788,6 +788,32 @@ As a result,  sub parser `local` will inhert `verbose` as a `Flag`, when pass us
 > Note `Inheritable` is valid for `Positional`, if their metaNames are the same, `argparse` will consider them the same.
 
 [example](examples/inherit/main.go)
+
+#### 17. Bind given parsers for an argument [ >= 1.9 ]
+
+This is a very flexable way to create argument for multiple parsers. Create one argument using the main parser, and provide a series of parsers by setting the option when you create the argument:
+
+ __`Option{BindParsers: []*Parser{a, b, ...}}`__.
+
+```go
+parser := argparse.NewParser("", "", nil)
+a := parser.AddCommand("a", "", nil)
+b := parser.AddCommand("b", "", nil)
+c := parser.AddCommand("c", "", nil)
+
+ab := parser.String("", "ab", &argparse.Option{
+    BindParsers: []*argparse.Parser{a, b},
+})
+bc := parser.String("", "bc", &argparse.Option{
+    BindParsers: []*argparse.Parser{b, c},
+})
+```
+
+As a result, subparser `a` & `b` will bind a `String` argument with entry `--ab` and referred to by var `ab` , subparser `b` & `c` will bind a `String` argument with entry `--bc` and referred to by var `bc`. 
+
+__Note__ that both arguments are detached from main `parser`, because you've given the `BindParsers`. If you still want to bind the argument to the main parser, append it to `BindParsers`, like `BindParsers: []*argparse.Parser{b, c, parser}`.
+
+This is one way two share a single argument among different parsers. Be aware that creating argument like this still need to go through conflict check, if there's already a `--ab` exist in `a` or `b` parser, there will be a panic to notice the programer.
 
 ##### Argument Process Flow Map
 

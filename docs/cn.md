@@ -636,7 +636,7 @@ source `start --completion`
 
 命令补全会将命令的名字作为注册入口注册到脚本环境，所以你最好给你的程序一个固定的名字
 
-#### 13. 隐藏入口 [ >= 1.3.0 ]
+#### 13. 隐藏入口 [ >= 1.3 ]
 
 有时候, 你可能想要对用户隐藏一些入口, 因为用户不应该知道这些入口或不需要知道，但你依然需要使用这些入口
 
@@ -680,7 +680,7 @@ options:
 
 [example](../examples/hide-help-entry/main.go)
 
-#### 14. 匹配状态与匹配动作 [ >= 1.4.0 ]
+#### 14. 匹配状态与匹配动作 [ >= 1.4 ]
 
 当主解析或子命令解析被匹配到时，`Parser.Invoked` 会设置为 true ，如果设置了 `Parser.InvokeAction` ，那么它会接受`Parser.Invoked` 作为参数被执行
 
@@ -711,7 +711,7 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
-#### 15. 限制参数头部长度 [ >= 1.7.0 ]
+#### 15. 限制参数头部长度 [ >= 1.7 ]
 
 如果参数过长，可以设置 `ParserConfig.MaxHeaderLength` 到一个合理的长度。 
 
@@ -743,11 +743,11 @@ options:
 
 [example](../examples/long-args/main.go)
 
-#### 16. 可继承参数 [ >= 1.8.0 ]
+#### 16. 可继承参数 [ >= 1.8 ]
 
 如果有参数在根命令和子命令中都表示同样的意思，比如 `debug` (调试状态), `verbose` (回显模式) 等，并且你也不想写太多次重复代码，有两种推荐方式来简化该过程：
 
-在 *v1.8.0* 以前，由于根命令和子命令的类型都是相同的，可以在 `for` 循环中使用 `Action` 来实现。
+在 *v1.8* 以前，由于根命令和子命令的类型都是相同的，可以在 `for` 循环中使用 `Action` 来实现。
 
 ```go
 parser := argparse.NewParser("", "", nil)
@@ -785,6 +785,30 @@ version := service.Int("v", "version", &argparse.Option{Help: "version choice"})
 > 注意 `Inheritable` 同样适用于位置参数，如果位置参数的元名称相同，那么 `argparse` 就会判定他们为同一位置参数。
 
 [example](../examples/inherit/main.go)
+
+#### 17. 为参数指定绑定命令解析 [ >= 1.9 ]
+
+通过这种方式可以灵活的为多个命令解析器绑定同一个参数。首先通过主命令解析器创建一个参数，然后通过__`Option{BindParsers: []*Parser{a, b, ...}}`__ 为其提供一系列的命令解析器即可。
+
+```go
+parser := argparse.NewParser("", "", nil)
+a := parser.AddCommand("a", "", nil)
+b := parser.AddCommand("b", "", nil)
+c := parser.AddCommand("c", "", nil)
+
+ab := parser.String("", "ab", &argparse.Option{
+    BindParsers: []*argparse.Parser{a, b},
+})
+bc := parser.String("", "bc", &argparse.Option{
+    BindParsers: []*argparse.Parser{b, c},
+})
+```
+
+如此这般，子解析器 `a` 和 `b` 将绑定一个入口为 `--ab` 的 `String` 类型的参数，通过变量 `ab` 来引用；子解析器 `b` 和 `c` 将绑定一个入口为 `--bc` 的 `String` 类型参数，通过变量 `bc` 来引用。
+
+__注意__ 两个参数都已经和主解析器解绑了，因为你已经主动指定了 `BindParsers`。如果你依然想要把这个参数绑定到主解析器上，那么就把主解析器追加到 `BindParsers` 即可，如: `BindParsers: []*argparse.Parser{b, c, parser}`。
+
+通过这种方式可以在不同的解析器之间共享一个参数。但是注意这种创建方式依然需要进行冲突检测，如果 `a` 或者 `b` 已经绑定了一个 `--ab` 的参数，那么程序员就会收到一个panic。
 
 ##### 参数解析流图
 
