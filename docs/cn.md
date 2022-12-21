@@ -76,7 +76,7 @@ hello hellflame
 
 1. `NewParser` 第一个参数是你的程序的名字, __可以为空__。如果程序名为空, 则会使用 `path.Base(os.Args[0])` 作为程序名。在发布名称不确定的时候会比较方便
 2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数。
-3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5.0)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5.0)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
+3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5) 活着返回错误 `BreakAfterHelpError` (version >= 1.10)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
 
 关于 __parse__ 动作执行:
 
@@ -627,6 +627,7 @@ __注意__:
 1. 命令行补全现在仅支持 `bash` & `zsh` 
 2. 它只会生成简单的补全模式，总比没有好
 3. 子命令不会注册该方法
+3. 如果用户触发了补全输出，`Parse` 将返回 `BreakAfterShellScriptError` 错误
 
 保存输出脚本到 `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , 然后重启脚本环境 或 `source ~/.bashrc` 会使脚本生效 
 

@@ -15,8 +15,11 @@ func main() {
 	parser := argparse.NewParser("basic", "this is a basic program", nil)
 	name := parser.String("n", "name", nil)
 	if e := parser.Parse(nil); e != nil {
-		switch e.(type) {
-		case argparse.BreakAfterHelp:
+		// // version < 1.10
+		// switch e.(type) {
+		// case argparse.BreakAfterHelp:
+		switch e {
+		case argparse.BreakAfterHelpError:
 			os.Exit(1)
 		default:
 			fmt.Println(e.Error())

@@ -529,12 +529,12 @@ func (p *Parser) Parse(args []string) error {
 	if p.showHelp != nil && *p.showHelp {
 		p.PrintHelp()
 		if !p.config.ContinueOnHelp {
-			return BreakAfterHelp{}
+			return BreakAfterHelpError
 		}
 	}
 	if p.showShellCompletion != nil && *p.showShellCompletion {
 		fmt.Println(p.FormatCompletionScript())
-		return BreakAfterShellScript{}
+		return BreakAfterShellScriptError
 	}
 	entries := append(p.entries, p.positionArgs...)
 	for _, arg := range entries { // check Required & set Default value

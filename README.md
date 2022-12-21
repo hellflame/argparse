@@ -82,7 +82,7 @@ About the object __parser__ :
 
 1. `NewParser`'s first argument is the name of your program, it's ok __to be empty__. when it's empty string, program name will be `path.Base(os.Args[0])` . It can be handy when the release name is not decided yet.
 2. `help` function is injected by default, you can disable it with `&ParserConfig{DisableHelp: true}` when using `NewParser`, then you can use any way to define your own `help` .
-3. When *help message* showed up, the program will default __exit with code 1 (version < v1.5.0)__ or __return error type BreakAfterHelp (version >= 1.5.0)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp = true` .
+3. When *help message* showed up, the program will default __exit with code 1 (version < v1.5)__ or __return error type BreakAfterHelp (version >= 1.5)__ or the __error equals BreakAfterHelpError (version >= 1.10)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp = true` .
 
 About __parse__ action:
 
@@ -634,6 +634,7 @@ __Note__:
 1. the completion script only support `bash` & `zsh` for now
 2. and it only generate simple complete code for basic use, it should be better than nothing.
 3. sub command has __no__ completion entry
+3. you will know if the user has triggered this input by checking the error returned from `Parse`. If it's a `BreakAfterShellScriptError`, then yes.
 
 Save the output code (using `start --completion`) to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. Or just save completion by appending this line in `~/.bashrc`:
 

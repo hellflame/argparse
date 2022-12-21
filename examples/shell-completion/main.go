@@ -10,8 +10,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hellflame/argparse"
 	"os"
+
+	"github.com/hellflame/argparse"
 )
 
 func main() {
@@ -26,10 +27,10 @@ func main() {
 	install := p.AddCommand("install", "", nil)
 	install.Strings("i", "in", nil)
 	if e := p.Parse(nil); e != nil {
-		switch e.(type) {
-		case argparse.BreakAfterHelp:
+		switch e {
+		case argparse.BreakAfterHelpError:
 			os.Exit(1)
-		case argparse.BreakAfterShellScript:
+		case argparse.BreakAfterShellScriptError:
 		default:
 			fmt.Printf(e.Error())
 		}

@@ -15,3 +15,9 @@ type BreakAfterShellScript struct {
 func (b BreakAfterShellScript) Error() string {
 	return ""
 }
+
+// BreakAfterHelpError indicates that is's a break after help call
+var BreakAfterHelpError = BreakAfterHelp{}
+
+// BreakAfterShellScriptError indicates that it's a break after shell script call
+var BreakAfterShellScriptError = BreakAfterShellScript{}
