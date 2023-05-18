@@ -8,22 +8,22 @@ Argparser is inspired by [python argparse](https://docs.python.org/3.9/library/a
 
 It's small but Powerful
 
-Providing not just simple parsing args, but :
+Providing not only simple parsing args, but :
 
 - [x] Sub Command
 - [x] Argument Groups
 - [x] Positional Arguments
-- [x] Customize Parse Formatter
-- [x] Customize Validate checker
-- [x] Argument Choice support
-- [x] Argument Action support (infinite possible)
-- [x] Shell Completion support
-- [x] Levenshtein Error Correction
+- [x] Customizable Parse Formatter
+- [x] Customizable Validate Checker
+- [x] Argument Choice Support
+- [x] Argument Action Support (infinite possible)
+- [x] Shell Completion Support
+- [x] Levenshtein Reminder
 - [ ] ......
 
 ## Aim
 
-The aim of the package is to better serve programers to build better command line programs by `golang`.
+The aim of the project is to help programers build better command line programs using `golang`.
 
 ## Installation
 
@@ -31,7 +31,7 @@ The aim of the package is to better serve programers to build better command lin
 go get -u github.com/hellflame/argparse
 ```
 
-> no any third-party dependence needed
+> no third-party dependence required
 
 ## Usage
 
@@ -47,9 +47,9 @@ import (
 
 func main() {
     parser := argparse.NewParser("basic", "this is a basic program", nil)
-  
+
     name := parser.String("n", "name", nil)
-  
+
     if e := parser.Parse(nil); e != nil {
         fmt.Println(e.Error())
       	return
@@ -76,23 +76,23 @@ options:
 hello hellflame
 ```
 
-A few points
+A few points:
 
 About the object __parser__ :
 
-1. `NewParser`'s first argument is the name of your program, it's ok __to be empty__. when it's empty string, program name will be `path.Base(os.Args[0])` . It can be handy when the release name is not decided yet.
-2. `help` function is injected by default, you can disable it with `&ParserConfig{DisableHelp: true}` when using `NewParser`, then you can use any way to define your own `help` .
-3. When *help message* showed up, the program will default __exit with code 1 (version < v1.5)__ or __return error type BreakAfterHelp (version >= 1.5)__ or the __error equals BreakAfterHelpError (version >= 1.10)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp = true` .
+1. `NewParser`'s first argument is the name of your program, it's ok __to be empty__. When it's an empty string, the program's name will be `path.Base(os.Args[0])` . It can be handy when the release name is not decided yet.
+2. `help` entry is usable by default, you can disable it with `&ParserConfig{DisableHelp: true}` when invoking `NewParser`, then you can define your own `help` .
+3. When *help message* showed up, the program will default __exit with code 1 (version < v1.5)__ or __return error with type BreakAfterHelp (version >= 1.5)__ or the __error equals BreakAfterHelpError (version >= 1.10)__ , this is stoppable by setting `ParserConfig.ContinueOnHelp = true` .
 
-About __parse__ action:
+About the action __parse__ :
 
-1. The argument `name` can be bond to user input only __after__  `parser.Parse` 
-2. When giving `parser.Parse` a `nil` as argument, `os.Args[1:]` is used as parse source
+1. The argument `name` is bond to user's input __after__  `parser.Parse` 
+2. When give `parser.Parse` a `nil` as the argument, `os.Args[1:]` is used as parse source
 3. The short name of your argument can be __more than one character__
 
 ---
 
-Based on those points above, the code can be like this:
+Based on those points above, the code can be altered like this:
 
 ```go
 func main() {
@@ -126,7 +126,7 @@ Check output:
 
 => go run main.go -h
 unrecognized arguments: -h
-do you mean?: -n
+do you mean?: -n?
 
 # the real help entry is -help / --help-me
 => go run main.go -help
@@ -142,20 +142,20 @@ options:
 hello hellflame
 ```
 
-A few points:
+A few more points:
 
-1. `DisableHelp` only prevent  `-h/--help` flag to register to parser, but the `help` is still available using `PrintHelp` and `FormatHelp`.
-2. If keep `DisableDefaultShowHelp` to be false, when there is no argument, the `help` message will still show up as Default Action.
-3. After the manually call of `parser.PrintHelp()` , `return` will put an end to the `main` function.
+1. `DisableHelp` only prevent  `-h/--help` flag from registering to parser, but the `help` function is still available using `PrintHelp` and `FormatHelp`.
+2. When `DisableDefaultShowHelp` is false, and there is no user input, the `help` message will still show up as Default Action.
+3. Display help message by invoking `parser.PrintHelp()` , `return` will put an end to the `main` function.
 4. Notice the order of usage array, it's mostly the order of creating arguments, I tried to keep them this way. [example](example/change-help)
 
 ### Features
 
-some show case
+Some show cases
 
 #### 1. Levenshtein error correct [ >= v1.2.0 ]
 
-the `Parser` will try to match __options__ when there is no match
+the `Parser` will try to give most posibile __options__ as recommend when there is no match
 
 ```go
 parser := NewParser("", "", nil)
@@ -166,11 +166,11 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
     return
   }
 }
-// when user input '--ax', Parser will try to find best matches with smallest levenshtein-distance
-// here for eg is: --aa
+// when user input '--ax', Parser will try to find best matches with nearrest levenshtein-distance
+// here for example is --aa
 ```
 
-Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be seen as `Positional Argument` , then there will be no error correct. 
+Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be regard as `Positional Argument` , and there will be no recommend. 
 
 #### 2. Help info hint [ >= v1.6.0 ]
 
@@ -203,10 +203,10 @@ Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
 #### 1. Flag
 
 ```go
-parser.Flag("short", "full", nil)
+parser.Flag(short, full, *Option)
 ```
 
-`Flag` create flag argument, Return a `*bool` point to the parse result
+`Flag` create a flag argument, return a `*bool` pointer to the parse result
 
 Python version is like `add_argument("-s", "--full", action="store_true")`
 
@@ -215,84 +215,84 @@ Flag Argument can only be used as an __OptionalArguments__
 #### 2. String
 
 ```go
-parser.String("short", "full", nil)
+parser.String(short, full, *Option)
 ```
 
-`String` create string argument, return a `*string` point to the parse result
+`String` create a string argument, return a `*string` pointer to the parse result
 
-String Argument can be used as Optional or Positional Arguments, default to be Optional, then it's like `add_argument("-s", "--full")` in python
+String Argument can be used as Optional or Positional Argument, default to be Optional. It's like `add_argument("-s", "--full")` in python
 
 Set `Option.Positional = true` to use as Positional Argument, it's like `add_argument("s", "full")` in python
 
-#### 3. StringList
+#### 3. String List
 
 ```go
-parser.Strings("short", "full", nil)
+parser.Strings(short, full, *Option)
 ```
 
-`Strings` create string list argument, return a `*[]string` point to the parse result
+`Strings` create a string list argument, return a `*[]string` pointer to the parse result
 
-Mostly like `*Parser.String()`
+Options are mostly like `*Parser.String()`
 
 Python version is like `add_argument("-s", "--full", nargs="*")` 
 
 #### 4. Int
 
 ```go
-parser.Int("short", "full", nil)
+parser.Int(short, full, *Option)
 ```
 
-`Int` create int argument, return a `*int` point to the parse result
+`Int` create an int argument, return a `*int` pointer to the parse result
 
-Mostly like `*Parser.String()`, except the return type
+Options are mostly like `*Parser.String()`, except the return type
 
 Python version is like `add_argument("-s", "--full", type=int)`
 
-#### 5. IntList
+#### 5. Int List
 
 ```go
-parser.Ints("short", "full", nil)
+parser.Ints(short, full, *Option)
 ```
 
-`Ints` create int list argument, return a `*[]int` point to the parse result
+`Ints` create an int list argument, return a `*[]int` pointer to the parse result
 
-Mostly like `*Parser.Int()`
+Options are mostly like `*Parser.Int()`
 
 Python version is like `add_argument("-s", "--full", type=int, nargs="*")`
 
 #### 6. Float
 
 ```go
-parser.Float("short", "full", nil)
+parser.Float(short, full, *Option)
 ```
 
-`Float` create float argument, return a `*float64` point to the parse result
+`Float` create a float argument, return a `*float64` pointer to the parse result
 
-Mostly like `*Parser.String()`, except the return type
+Options are mostly like `*Parser.String()`, except the return type
 
 Python version is like `add_argument("-s", "--full", type=double)` 
 
-#### 7. FloatList
+#### 7. Float List
 
 ```go
-parser.Floats("short", "full", nil)
+parser.Floats(short, full, *Option)
 ```
 
-`Floats` create float list argument, return a `*[]float64` point to the parse result
+`Floats` create a float list argument, return a `*[]float64` pointer to the parse result
 
-Mostly like `*Parser.Float()`
+Options are mostly like `*Parser.Float()`
 
 Python version is like `add_argument("-s", "--full", type=double, nargs="*")` 
 
 ### Other Types
 
-For complex type or even customized types are __not directly supported__ , but it doesn't mean you can't do anything before parsing to your own type, here shows some cases:
+For complex types or even customized types, this library do __not directly support__ these feature , but it doesn't mean you can't do anything. Here are some cases:
 
 #### 1. File type
 
-You can check file's existence before read it, and tell if it's a valid file, etc. [example](examples/customzed-types/main.go)
+You can check file's existence before reading it, and tells if it's a valid file, check modify time, etc. [example](examples/customzed-types/main.go)
 
-Though the return type is still a `string` , but it's more garanteed to use the argument as what you wanted
+Though the return type is still a `string` , but it's more garanteed to use them
 
 ```go
 path := parser.String("f", "file", &argparse.Option{
@@ -316,7 +316,7 @@ if *path != "" {
 }
 ```
 
-It used `Validate` to do the trick, we'll talk about it later in more detail
+The case above used `Validate` to do the trick, we'll talk about it later in more detail
 
 Python code is like:
 
@@ -329,9 +329,9 @@ def valid_type(arg):
 parser.add_argument("-s", "--full", type=valid_type)
 ```
 
-The difference is that, python can return any type from the type function `valid_type` , and you can just return a `File` type in there
+The difference is that, python can return any type from the type function `valid_type` , and you can just return a `file` type in there
 
-There is a little problem if Argument return a `*File` in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak. Instead of a `*File` to use with danger, you can manage the resouce much safer:
+There could arise some problems if a `*File` is returned in go. the `*File` might be used somewhere before, which makes it non-idempotent, and you need to `Close` the file somewhere, or the memory may leak, the resource management can be a problem. Instead of using `*File` with danger, you can manage the resouce in much safer way:
 
 ```go
 func dealFile(path) {
@@ -351,9 +351,9 @@ Checkout `Action` for example, then you can handle any type when parsing argumen
 
 ### Advanced
 
-#### 1. ArgumentGroup
+#### 1. Argument Group
 
-Argument group is useful to present argument help infos in group, only affects how the help info displays, using `Group` config to do so. [example](examples/yt-download/main.go)
+Argument group is useful to arrange arguments help info in to groups, only affects how the help info displays, use `Group` config to do so. [example](examples/yt-download/main.go)
 
 ```go
 parser.Flag("", "version", &argparse.Option{
@@ -362,9 +362,9 @@ parser.Flag("", "version", &argparse.Option{
 })
 ```
 
-#### 2. DisplayMeta
+#### 2. Display Meta
 
-When the full name of the argument is too long or seems ugly, `Meta` can change how it displays in help. see more about __MaxHeaderLength__. [example](examples/yt-download/main.go)
+When the full name of the argument is too long to display, `Meta` can change how it displays in help info. More Control can be optimized by __MaxHeaderLength__. [example](examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -373,15 +373,15 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-It will looks like this in help message:
+It will look like this in help message:
 
 ```bash
   --playlist-start NUMBER  Playlist video to start at (default is 1)
 ```
 
-#### 3.DefaultValue
+#### 3.Default Value
 
-If the argument is not passed from arguments array (like `os.Args`), default value can be passed to continue. [example](examples/yt-download/main.go)
+If the argument is not specified by user, default value will be applied. [example](examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -390,11 +390,11 @@ parser.Int("", "playlist-start", &argparse.Option{
 })
 ```
 
-Noted the Default value is not the type of `Int` , because the value is used like an argument from parse args (`os.Args`), it's got to get through `Validate` & `Formatter` & `parse` actions (if exist).
+Note that the Default value is a `String`, the value is used like an argument from `os.Args`, it has to get through `Validate` & `Formatter` & `parse` actions (if exist).
 
-Also, the Default value can only be one `String` , if you want an Array arguments, you can only have one element Array as default value. You can apply your default array after *parse*.
+Also, the Default value can only be a `String` , and if you want an Array of arguments, you can only have one element Array as default value. You can apply your default array after *parse*.
 
-#### 4. RequiredArgument
+#### 4. Required Argument
 
 If the argument must be input by user, set `Required` to be `true`. [example](examples/yt-download/main.go)
 
@@ -407,7 +407,7 @@ parser.Strings("", "url", &argparse.Option{
 
 Flag argument can not be `Required` (you should know the reason and flag argument has more restrictions, you will be noticed when using it)
 
-#### 5. PositionalArgument
+#### 5. Positional Argument
 
 If you want users to input arguments by positions, set `Positional` to be true. [example](examples/yt-download/main.go)
 

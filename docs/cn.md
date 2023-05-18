@@ -12,7 +12,7 @@ Argparser 项目是受 [python argparse](https://docs.python.org/3.9/library/arg
 - [x] 参数范围限定支持
 - [x] 参数行为支持 (释放无限可能性)
 - [x] 命令行自动补全脚本支持
-- [x] 根据编辑距离的纠错
+- [x] 根据编辑距离的输入提示
 - [ ] ......
 
 ## 目标
@@ -120,7 +120,7 @@ func main() {
 
 => go run main.go -h
 unrecognized arguments: -h
-do you mean: -n
+do you mean?: -n?
 
 # the real help entry is -help / --help-me
 => go run main.go -help
@@ -155,7 +155,7 @@ hello hellflame
 parser := NewParser("", "", nil)
 parser.String("a", "aa", nil)
 if e := parser.Parse([]string{"--ax"}); e != nil {
-  if e.Error() != "unrecognized arguments: --ax\ndo you mean: --aa" {
+  if e.Error() != "unrecognized arguments: --ax\ndo you mean?: --aa" {
     t.Error("failed to guess input")
     return
   }
