@@ -75,13 +75,13 @@ hello hellflame
 关于 __parser__ 结构体 :
 
 1. `NewParser` 第一个参数是你的程序的名字, __可以为空__。如果程序名为空, 则会使用 `path.Base(os.Args[0])` 作为程序名。在发布名称不确定的时候会比较方便
-2. `help` 方法会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助函数，甚至不给出帮助函数。
-3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5) 活着返回错误 `BreakAfterHelpError` (version >= 1.10)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
+2. `help` 入口会自动注入, 但也可以在 `NewParser` 时设定 `&ParserConfig{DisableHelp: true}` 来取消这个帮助入口，然后就可以用自己的帮助入口，甚至不给出帮助入口。
+3. 帮助信息显示后，程序会以状态码 1 退出程序(verison < v1.5)，或者返回错误类型 `BreakAfterHelp` (version >= 1.5) 或者返回错误 `BreakAfterHelpError` (version >= 1.10)。可以设置 `ParserConfig.ContinueOnHelp`  为 `true`, 阻止这种退出
 
 关于 __parse__ 动作执行:
 
 1. 只有在 `parser.Parse` 后用户输入才会被绑定到参数 `name` 
-2. 若 `parser.Parse` 接受 `nil` 作为参数, `os.Args[1:]` 会作为解析来源
+2. 若 `parser.Parse` 接受 `nil` 作为参数, `os.Args[1:]` 会作为命令解析来源
 3. 参数缩写可以 __不止一个字符__
 
 ---
@@ -120,7 +120,7 @@ func main() {
 
 => go run main.go -h
 unrecognized arguments: -h
-do you mean?: -n?
+do you mean?: -n
 
 # the real help entry is -help / --help-me
 => go run main.go -help
@@ -138,8 +138,8 @@ hello hellflame
 
 几点说明:
 
-1. `DisableHelp` 只是阻止了  `-h/--help` 注册到解析器, 但依然可以通过其他方式得到帮助信息（`PrintHelp` 或者 `FormatHelp`）
-2. 如果保持 `DisableDefaultShowHelp` 为 `false`, 当没有用户输入时, 帮助信息会作为默认行为输出
+1. `DisableHelp` 只是阻止了  `-h/--help` 注册成为入口, 但依然可以通过其他方式得到帮助信息（`PrintHelp` 或者 `FormatHelp`）
+2. 如果 `DisableDefaultShowHelp` 为 `false`, 当没有用户输入时, 默认会输出帮助信息
 3. 在手动执行 `parser.PrintHelp()` 后, `return` 会结束 `main` 方法
 4. 注意使用信息输出的顺序, 基本和这些参数的创建顺序一致, 这是有意为之的 [example](../example/change-help)
 
@@ -164,11 +164,11 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 // here for eg is: --aa
 ```
 
-注意如果包含 `位置参数` 时 , 未知参数可能会被视为位置参数，就没有任何纠错提示了
+注意如果程序包含 `位置参数` 时 , 未知参数可能会被视为位置参数，就没有任何纠错提示了
 
 #### 2. 帮助提示信息 [ >= v1.6.0 ]
 
-帮助信息可以包含一些提示信息， 比如默认值，可选范围，必填标记，甚至任何提示信息。如：
+帮助信息可以自动添加一些提示信息， 比如默认值，可选范围，必填标记，甚至任何提示信息。如：
 
 ```bash
 usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
@@ -194,22 +194,22 @@ options:
 
 ### 支持的参数
 
-#### 1. Flag
+#### 1. 标记参数
 
 ```go
-parser.Flag("short", "full", nil)
+parser.Flag(short, full, *Option)
 ```
 
 `Flag` 会创建标记参数, 返回 `*bool` 指针保存结果
 
 Python代码可能像这样： `add_argument("-s", "--full", action="store_true")`
 
-标记参数只可能是__可选参数__
+标记参数只可能是__可选参数__，其他限制参考 [标记参数限制](#restriction-of-flags)
 
-#### 2. String
+#### 2. 字符串参数
 
 ```go
-parser.String("short", "full", nil)
+parser.String(short, full, *Option)
 ```
 
 `String` 会创建字符串参数, 返回 `*string` 指针保存结果
@@ -218,10 +218,10 @@ parser.String("short", "full", nil)
 
 设置 `Option.Positional = true` 变为位置参数, Python代码如 `add_argument("s", "full")`
 
-#### 3. StringList
+#### 3. 字符切片参数
 
 ```go
-parser.Strings("short", "full", nil)
+parser.Strings(short, full, *Option)
 ```
 
 `Strings` 创建字符串数组参数, 返回 `*[]string` 指针保存结果
@@ -230,10 +230,10 @@ parser.Strings("short", "full", nil)
 
 Python代码如 `add_argument("-s", "--full", nargs="*")` 
 
-#### 4. Int
+#### 4. 整型参数
 
 ```go
-parser.Int("short", "full", nil)
+parser.Int(short, full, *Option)
 ```
 
 `Int` 创建整数参数, 返回 `*int` 指针保存结果
@@ -242,22 +242,22 @@ parser.Int("short", "full", nil)
 
 Python代码如 `add_argument("-s", "--full", type=int)`
 
-#### 5. IntList
+#### 5. 整型切片参数
 
 ```go
-parser.Ints("short", "full", nil)
+parser.Ints(short, full, *Option)
 ```
 
-`Ints` 创建整数数组参数, 返回 `*[]int` 指针保存结果
+`Ints` 创建整数切片参数, 返回 `*[]int` 指针保存结果
 
 和 `*Parser.Int()` 差不多
 
 Python代码如 `add_argument("-s", "--full", type=int, nargs="*")`
 
-#### 6. Float
+#### 6. 浮点类型参数
 
 ```go
-parser.Float("short", "full", nil)
+parser.Float(short, full, *Option)
 ```
 
 `Float` 创建浮点数参数, 返回 `*float64` 指针保存结果
@@ -266,13 +266,13 @@ parser.Float("short", "full", nil)
 
 Python代码如 `add_argument("-s", "--full", type=double)` 
 
-#### 7. FloatList
+#### 7. 浮点切片参数
 
 ```go
-parser.Floats("short", "full", nil)
+parser.Floats(short, full, *Option)
 ```
 
-`Floats` 创建浮点数数组参数, 返回 `*[]float64` 指针保存结果
+`Floats` 创建浮点数切片参数, 返回 `*[]float64` 指针保存结果
 
 和 `*Parser.Float()` 差不多
 
@@ -280,7 +280,7 @@ Python代码如 `add_argument("-s", "--full", type=double, nargs="*")`
 
 ### 其他类型
 
-这个项目对复杂类型甚至自定义类型是__没有直接支持__的，但这并不妨碍你在解析自己的类型前做点什么
+该项目对复杂类型甚至自定义类型是__没有直接支持__的，但这并不妨碍你在解析自己的类型前做点什么
 
 #### 1. 文件类型
 
@@ -347,9 +347,9 @@ func dealFile(path) {
 
 ### 高级用法
 
-#### 1. 命令行组
+#### 1. 命令组
 
-命令行组适合在帮助信息里讲参数分组。这只会影响帮助信息的显示，没别的作用。使用配置里的 `Group` 来实现[example](../examples/yt-download/main.go)
+命令组适合在帮助信息里将参数分组展示。这只会影响帮助信息的显示，没别的作用。使用配置里的 `Group` 来实现[example](../examples/yt-download/main.go)
 
 ```go
 parser.Flag("", "version", &argparse.Option{
@@ -360,7 +360,7 @@ parser.Flag("", "version", &argparse.Option{
 
 #### 2. 元信息
 
-当参数的完整名称太长或者丑丑的，修改元信息可以改变帮助信息里的展示内容[example](../examples/yt-download/main.go)
+当参数的完整名称太长，修改元信息可以改变帮助信息里的展示内容[example](../examples/yt-download/main.go)
 
 ```go
 parser.Int("", "playlist-start", &argparse.Option{
@@ -392,7 +392,7 @@ parser.Int("", "playlist-start", &argparse.Option{
 
 #### 4. 必选参数
 
-如果参数必须给出, 设 `Required` 为 `true` 即可, [example](../examples/yt-download/main.go)
+如果要求用户必须输入该参数, 设 `Required` 为 `true` 即可, [example](../examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -401,7 +401,7 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-标志类参数不能为 `Required` , 你应该知道为什么。当然，标志参数会有更多限制，在使用的过程中会发现的
+标志类参数不能为 `Required` , 你应该知道为什么。当然，标志参数会有更多[限制](#restriction-of-flags)，在使用的过程中会发现的
 
 #### 5. 位置参数
 
@@ -419,7 +419,7 @@ parser.Strings("", "url", &argparse.Option{
 1. 在各种参数中间, `--play-list 2 xxxxxxxx --update`, 如果这个参数的前面是数组类型的参数，那么后面可选参数前的参数都会认为是该位置参数的值，如这里的 `url`: `--user-ids id1 id2 url --update` ，会被当作 `user-ids` 的参数之一
 2. 在另一个单个位置参数之后, `--mode login username password` , 最后一个 `password` 会作为第二个位置参数的值
 
-所以请小心使用，有时候会比较容易搞混，和python版本的命令行解析一样
+所以请小心使用，有时候会比较容易搞混，虽然python版本的命令行解析也是这样。
 
 #### 6. 参数检查
 
@@ -456,9 +456,9 @@ parser.String("", "b", &Option{
 })
 ```
 
-如果给了 `Validate`, `Formatter` 将在 `Validate` 之后执行
+如果设置了 `Validate`, `Formatter` 将在 `Validate` 之后执行
 
-如果 `Formatter` 返回错误类型, 就会表现的和 `Validate` 一样
+如果 `Formatter` 返回错误类型, 作用就会和 `Validate` 一样
 
 返回类型 `interface{}` 应该和参数类型一致, 或与数组元素类型一致, 栗子里返回的是 `string` 类型
 
@@ -530,6 +530,7 @@ options:
 
 1. 子命令拥有不同的解析域, 所以你可以有两个 `--flag`, 以及不同的帮助输出
 2. 子命令也会单独显示帮助信息, 可以让用户分布理解你的命令.  `Group Argument` 则会分组让用户理解你的命令
+2. 理论上你可以无限的创建子命令，创建子命令的子命令的子命令的子命令...... 然而，这也会导致程序难以使用，容易耗尽用户的耐心。
 
 **[v1.7.3]** 修复:
 
@@ -539,9 +540,9 @@ options:
 
 * 未被调用时
 
-如果子命令**未**被调用，那么其相关参数不会赋予默认值，必须参数不会被检查... 总之，子命令会保持沉默。(如果子命令有动静的话就是有bug存在)
+如果子命令**未**被调用，那么其相关参数不会赋予默认值，必须参数不会被检查... 总之，子命令会保持沉默。(如果子命令有动静的话就是有bug)
 
-#### 10. 参数行为 √
+#### 10. 参数行为
 
 参数行为在当出现匹配时允许你做任何操作, 这将开启无限的可能性, [example](../examples/any-type-action/main.go)
 
@@ -576,6 +577,7 @@ fmt.Println(sum)  // this is a 6 if everything goes on fine
    * `[]string{"a1", "a2"}` : 意味着这是一个数组类型参数
 2. 可以返回错误类型, 并且会被正常的捕捉到
 3. 返回值的类型不重要, 使用 `p.Strings` 和 `p.Ints` 是一样的, 因为 `arg.Action` 会在 __绑定参数__ 前执行, 这意味着 `Action` 拥有 __最高的执行权限__
+3. 如果 `Action` 被执行了，后续的 `Validate`, `Formatter`, 候选检查，以及用户值绑定都会被忽略
 
 #### 11. 默认解析行为 [ >= v0.4 ]
 
@@ -632,7 +634,7 @@ __注意__:
 保存输出脚本到 `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , 然后重启脚本环境 或 `source ~/.bashrc` 会使脚本生效 
 
 ```bash
-source `start --completion`
+eval `start --completion`
 ```
 
 命令补全会将命令的名字作为注册入口注册到脚本环境，所以你最好给你的程序一个固定的名字
@@ -852,6 +854,14 @@ with MatchFound:
       if Validate(arg):
         yield ChoiceCheck(Formatter(arg))
 ```
+
+##### 标记参数的限制 {#restriction-of-flags}
+
+1. 不能为位置参数 (Positional)
+2. 没有可选项 (Choices)
+3. 不能为必选 (Required)
+4. 不能格式化 (Formatter)
+5. 不能校验 (Validate)
 
 ## 配置
 

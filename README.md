@@ -210,7 +210,7 @@ parser.Flag(short, full, *Option)
 
 Python version is like `add_argument("-s", "--full", action="store_true")`
 
-Flag Argument can only be used as an __OptionalArguments__
+Flag Argument can only be used as an __OptionalArguments__, more restrictions see [restrictions](#restriction-of-flags).
 
 #### 2. String
 
@@ -396,7 +396,7 @@ Also, the Default value can only be a `String` , and if you want an Array of arg
 
 #### 4. Required Argument
 
-If the argument must be input by user, set `Required` to be `true`. [example](examples/yt-download/main.go)
+If the argument must be specified by the user, set `Required` to be `true`. [example](examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -405,11 +405,11 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-Flag argument can not be `Required` (you should know the reason and flag argument has more restrictions, you will be noticed when using it)
+Flag argument can not be `Required` (flag argument has more [restrictions](#restriction-of-flags), you will be noticed while choosing it)
 
 #### 5. Positional Argument
 
-If you want users to input arguments by positions, set `Positional` to be true. [example](examples/yt-download/main.go)
+If you want users to input arguments by position, set `Positional` to be true. [example](examples/yt-download/main.go)
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -418,16 +418,16 @@ parser.Strings("", "url", &argparse.Option{
 })
 ```
 
-The position of the PositionalArgument is quit flex, with not much restrictions, it's ok to be
+The position of the Positional Argument is quit flex, with not much restrictions, it's ok to be
 
-1. in the middle of arguments, `--play-list 2 xxxxxxxx --update`, if the argument before it is not an Array argument, won't parse `url` in this case: `--user-ids id1 id2 url --update` 
-2. after another single value PositionalArgument, `--mode login username password` , the last `password` will be parsed as second PositionalArgument
+1. in the middle of other arguments, `--play-list 2 xxxxxxxx --update`. If the argument before it is an Array argument,  `url` will be treated as one of the Array argument: `--user-ids id1 id2 url --update` 
+2. after another single value Positional Argument, `--mode login username password` , the last `password` will be regard as another Positional Argument
 
-So, use it carefully, it may __confuse__ (for the users), which is the same as Python Version of argparse
+So, use it carefully, it may __confuse__ (for the users), which is the same in argparse of Python Version.
 
-#### 6. ArgumentValidate
+#### 6. Argument Validation
 
-Provide `Validate` function to check each passed-in argument
+Provide `Validate` function to check every one of its argument
 
 ```go
 parser.Strings("", "url", &argparse.Option{
@@ -443,9 +443,11 @@ parser.Strings("", "url", &argparse.Option{
 
 `Validate` function is executed just after when `Default` value is set, which means, the default value has to go through `Validate` check.
 
-#### 7. ArgumentFormatter
+> If the argument is an array type (`Ints`, `Strings`, `Floats` ...), every element will be validated by this function.
 
-Re-format input argument, the limitation is that, the return type of `Formatter` should be the same as your argument type
+#### 7. Argument Formatter
+
+Re-format input argument, but remember that, the return type of `Formatter` should be the same as your argument type
 
 ```go
 parser.String("", "b", &Option{
@@ -464,11 +466,11 @@ If `Validate` is set, `Formatter` is executed after `Validate`.
 
 If error is raised in `Formatter`, it acts like `Validate`.
 
-The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, here,  to be `string` as Example shows
+The return type of `interface{}` should be the same as your Argument Type, or Element Type of your Arguments, here,  is a `string` in the Example.
 
-#### 8. ArgumentChoices
+#### 8. Argument Choices
 
-Restrict inputs to be within the given choices, using `Choices`
+Restrict inputs to be within the given choices, use `Choices`
 
 ```go
 parser.Ints("", "hours", &Option{
@@ -484,9 +486,9 @@ When it's single value, the value must be one of the `Choices`
 
 When it's value array, each value must be one of of `Choices`
 
-#### 9. SubCommands
+#### 9. Sub Commands
 
-Create new parser scope, within the sub command parser, arguments won't interrupt main parser
+Create new parser scope, arguments won't interrupt other parsers(root parser and other sub parsers)
 
 ```go
 func main() {
@@ -536,6 +538,7 @@ The two `--flag` will parse seperately, so you can use `tFlag` & `t` to referenc
 
 1. sub command has different context, so you can have two `--flag`, and different help message output
 2. sub command show help message seperately, it's for user to understand your program *step by step*. While `Group Argument` helps user to understand your program *group by group*
+2. Theoretically, you can create sub parser infinitely. Create a sub parser of a sub parser of a subparser ... Somehow, which would make the program harder to use, and easy to run out of users' patience.
 
 **[v1.7.3]** Fix:
 
@@ -547,7 +550,7 @@ if subparser is invoked, the root parser will **NOT** be invoked.
 
 if subparser is **NOT** invoked, no argument's default value will be applied, and required argument will not be checked ... The subparser remains dead. (It's a bug if the subparser gets alive !)
 
-#### 10. Argument Action √
+#### 10. Argument Action
 
 Argument Action allows you to do anything with the argument if there is any match, this enables infinite possibility when parsing arguments. [example](examples/any-type-action/main.go)
 
@@ -575,25 +578,25 @@ if e := p.Parse([]string{"1", "2", "3"}); e != nil {
 fmt.Println(sum)  // 6
 ```
 
-A few points to be noted:
+A few points:
 
-1. `Action` is a function with `args []string` as input，the `args` has two kind of input
+1. `Action` is a function with `args []string` as input，the `args` has two kinds of input
    * `nil` : which means it's a `Flag` argument
-   * `[]string{"a1", "a2"}` : which means you have bind other type of argument, other than `Flag` argument
+   * `[]string{"a1", "a2"}` : which means you have bond other type of argument, other than `Flag` argument
 2. Errors can be returned if necessary, it can be normally captured in *parse*.
-3. The return type of the argument is not of much importance, using the `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding return value__, which means, `Action` has __top priority__
-4. After `Action` is executed,  `Validate`, `Formatter`, Choice check and value binding will be passed.
+3. The return type of the argument is not of much importance, using `p.Strings` is the same as `p.Ints` , because `arg.Action` will be executed __before binding value__, which means, `Action` has __top priority__
+4. If `Action` is executed,  `Validate`, `Formatter`, Choice check and value binding will be ignored.
 
 #### 11. Default Parse Action [ >= v0.4 ]
 
-Instead of showing help message as default, now you can set your own default action when no user input is given, [example](examples/parse-action/main.go)
+Instead of showing help message as default, you can set your own default action when no user input is given, [example](examples/parse-action/main.go)
 
 ```go
 parser := argparse.NewParser("basic", "this is a basic program", &argparse.ParserConfig{DefaultAction: func() {
   fmt.Println("hi ~\ntell me what to do?")
 }})
 parser.AddCommand("test", "testing", &argparse.ParserConfig{DefaultAction: func() {
-  fmt.Println("ok, now you know you are testing")
+  fmt.Println("ok, now you know we are testing")
 }})
 if e := parser.Parse(nil); e != nil {
   fmt.Println(e.Error())
@@ -601,9 +604,9 @@ if e := parser.Parse(nil); e != nil {
 }
 ```
 
-When `DefaultAction` is set, default show help message will be ignored.
+When `DefaultAction` is set, default action of showing help message will be ignored.
 
-`DefaultAction` is effective on sub-command, and if sub parser's `ParserConfig` is `nil`, `DefaultAction` from main parser will be inherited.
+`DefaultAction` is effective on sub command, and if sub parser's `ParserConfig` is `nil`, `DefaultAction` from main parser will be inherited.
 
 #### 12. Shell Completion Support [ >= v0.4 ]
 
@@ -634,22 +637,22 @@ __Note__:
 1. the completion script only support `bash` & `zsh` for now
 2. and it only generate simple complete code for basic use, it should be better than nothing.
 3. sub command has __no__ completion entry
-3. you will know if the user has triggered this input by checking the error returned from `Parse`. If it's a `BreakAfterShellScriptError`, then yes.
+3. you will know if the user has triggered this input by checking the error returned from `Parse` function, it's a `BreakAfterShellScriptError`.
 
 Save the output code (using `start --completion`) to `~/.bashrc` or `~/.zshrc` or `~/bash_profile` or some file at `/etc/bash_completion.d/` or `/usr/local/etc/bash_completion.d/` , then restart the shell or `source ~/.bashrc` will enable the completion. Or just save completion by appending this line in `~/.bashrc`:
 
 ```bash
-source `start --completion`
+eval `start --completion`
 ```
 
-Completion will register to your shell by your program name, so you `MUST`  give your program a fix name
+Completion the function is supported by shell, and the shell identify your program by its name, so you `MUST`  give your program a fix name.
 
 #### 13. Hide Entry [ >= 1.3 ]
 
-Sometimes, you want to hide some entry from user, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
+Sometimes, you want to hide en entry from users, because they should not see or are not necessary to know the entry, but you can still use the entry. Situations like:
 
 1. the entry is to help generate completion candidates (which has mess or not much meaningful output)
-2. secret back door that user should not know (you can use `os.Getenv` instead, but `argparse` can do more)
+2. secret back door that users should not know (you can use `os.Getenv` instead, but `argparse` can do more)
 
 You only need to set `Option{HideEntry: true}` 
 
@@ -682,13 +685,13 @@ options:
   --name NAME, -n NAME
 ```
 
-Which will have effect on `Shell Completion Script`
+Which will have effect in `Shell Completion Script`
 
 [example](examples/hide-help-entry/main.go)
 
 #### 14. Invoked & InvokeAction [ >= 1.4 ]
 
-When there is valid match for main parser or sub parser,  `Parser.Invoked` will be set true. If `Parser.InvokeAction` is set, it will be executed with the state `Parser.Invoked`. 
+When there is valid match for main parser or sub parser,  `Parser.Invoked` will be set true. If `Parser.InvokeAction` is set, it will be executed. 
 
 ```go
 p := NewParser("", "", nil)
@@ -721,7 +724,7 @@ fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 
 When argument is too long, you can set `ParserConfig.MaxHeaderLength` to a reasonable length.
 
-Before setting `MaxHeaderLength` , the help info may display like (which is default to fix the longest argument length):
+Before setting `MaxHeaderLength` , the help info may display like (which is default to adjust to the longest argument length):
 
 ```bash
 usage: long-args [--help] [--short SHORT] [--medium-size MEDIUM-SIZE] [--this-is-a-very-long-args THIS-IS-A-VERY-LONG-ARGS]
@@ -751,9 +754,9 @@ options:
 
 #### 16. Inheriable argument [ >= 1.8 ]
 
-When some argument represent the same thing among root parser and sub parsers, such as `debug`, `verbose` .... and you don't want to write dumplicate argument code for too many times, you have two recommended ways:
+When some argument represent the same thing among root parser and sub parsers, such as `debug`, `verbose` .... and you don't want to write duplicated arguments code for too many times, you have two recommended ways:
 
-before *v1.8*, as all sub parsers are the same type as root parser, use a `for` loop with `Action` to do it.
+before *v1.8*, as all sub parsers are the same type as root parser, use a `for` loop with `Action` would do it.
 
 ```go
 parser := argparse.NewParser("", "", nil)
@@ -774,23 +777,23 @@ if e := parser.Parse(nil); e != nil {
 print(url)
 ```
 
-The code might be less clean, and there comes `Inheritable` , which is an `argument option` . When argument with __`&argparse.Option{Inheritable: true}`__, sub parsers added __after__ the argument will be able to inherit this argument or override it.
+The code above might be less clean, and there comes `Inheritable` , which is an `argument option` . When argument sets __`&argparse.Option{Inheritable: true}`__, sub parsers added __after__ the argument will be able to inherit this argument or override it.
 
 ```go
 parser := argparse.NewParser("", "", nil)
 verbose := parser.Flag("v", "", &argparse.Option{Inheritable: true, Help: "show verbose info"}) // inheritable argument
 local := parser.AddCommand("local", "", nil)
 service := parser.AddCommand("service", "", nil)
-version := service.Int("v", "version", &argparse.Option{Help: "version choice"})
+version := service.Int("v", "version", &argparse.Option{Help: "choose version"})
 ```
 
-As a result,  sub parser `local` will inhert `verbose` as a `Flag`, when pass user input `program local -v`, `*verbose` will be `true`, which means `*verbose` is shared among root parser and inherited parsers. However, as prefix `v` is also registered as `Int` by sub parser `service`, you can't use `-v` to `show verbose`, but `version choice` , it's `overrided`.
+As a result,  sub parser `local` will inhert `verbose` as a `Flag`, when pass user input `program local -v`, `*verbose` will be `true`, which means `*verbose` is shared among root parser and inherited parsers. However, as prefix `v` is also registered as `Int` by sub parser `service`, you can't use `-v` to `show verbose`, but `choose version` , it's `overrided`.
 
 > Note `Inheritable` is valid for `Positional`, if their metaNames are the same, `argparse` will consider them the same.
 
 [example](examples/inherit/main.go)
 
-#### 17. Bind given parsers for an argument [ >= 1.9 ]
+#### 17. Bind given parsers to an argument [ >= 1.9 ]
 
 This is a very flexable way to create argument for multiple parsers. Create one argument using the main parser, and provide a series of parsers by setting the option when you create the argument:
 
@@ -812,9 +815,9 @@ bc := parser.String("", "bc", &argparse.Option{
 
 As a result, subparser `a` & `b` will bind a `String` argument with entry `--ab` and referred to by var `ab` , subparser `b` & `c` will bind a `String` argument with entry `--bc` and referred to by var `bc`. 
 
-__Note__ that both arguments are detached from main `parser`, because you've given the `BindParsers`. If you still want to bind the argument to the main parser, append it to `BindParsers`, like `BindParsers: []*argparse.Parser{b, c, parser}`.
+__Note__ that both arguments are detached from main `parser`, because you've set the `BindParsers`. If you still want to bind the argument to the main parser, append it to `BindParsers`, like `BindParsers: []*argparse.Parser{b, c, parser}`.
 
-This is one way two share a single argument among different parsers. Be aware that creating argument like this still need to go through conflict check, if there's already a `--ab` exist in `a` or `b` parser, there will be a panic to notice the programer.
+This is one way to share a single argument among different parsers. Be aware that creating argument like this still need to go through conflict check, if there's already a `--ab` exist in `a` or `b` parser, there will be a panic to notice the programer.
 
 ##### Argument Process Flow Map
 
@@ -858,9 +861,17 @@ with MatchFound:
         yield ChoiceCheck(Formatter(arg))
 ```
 
+##### Restrictions Of Flag Argument {#restriction-of-flags}
+
+1. Can't be Positional
+2. Can't has Choices
+3. Can't be Required
+4. Can't set Formatter
+5. Can't set Validate function
+
 ## Config
 
-### 1. ParserConfig
+### 1. Parser Config
 
 Relative struct: 
 
@@ -929,9 +940,9 @@ options: # no [-h/--help] flag is registerd, which is affected by DisableHelp
 more detail please visit https://github.com/hellflame/argparse  # <=== EpiLog
 ```
 
-Except the comment above, `ContinueOnHelp` is only affective on your program process, which give you possibility to do something when default `help` is shown
+Except the comment above, `ContinueOnHelp` is only affective on your program process, which gives you possibility to do something when `help` entry is invoked.
 
-### 2. ArgumentOptions
+### 2. Argument Options
 
 Related struct:
 
@@ -993,7 +1004,7 @@ Cases where `argparse` will panic:
 1. failed to add subcommand
 2. failed to add argument entry, `Strings`, `Flag`, etc.
 
-Those failures is not allowed, and you will notice when you develop your program. The rest errors will be returned in `Parse`, which you should be able to tell users what to do.
+Those failures is not allowed, and you will notice when you test your program. The rest errors will be returned in `Parse`, which you should be able to tell users what to do.
 
 ## [Examples](examples)
 

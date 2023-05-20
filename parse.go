@@ -100,7 +100,7 @@ func (p *Parser) registerArgument(a *arg) error {
 			if !match.Inheritable {
 				return fmt.Errorf("conflict positional for '%s', say: '%s'", id, match.Help)
 			}
-			// remove inheriable positional
+			// remove inheritable positional
 			pos := -1
 			for i, e := range p.positionArgs {
 				if match == e {
@@ -134,7 +134,7 @@ func (p *Parser) registerArgument(a *arg) error {
 			}
 			p.entries = append(p.entries[0:pos], p.entries[pos+1:]...)
 		}
-		// inheritable is overrided here
+		// inheritable is overridden here
 		p.entryMap[watcher] = a
 		p.entries = append(p.entries, a)
 	}
