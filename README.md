@@ -126,7 +126,7 @@ Check output:
 
 => go run main.go -h
 unrecognized arguments: -h
-do you mean?: -n?
+do you mean?: -n
 
 # the real help entry is -help / --help-me
 => go run main.go -help
