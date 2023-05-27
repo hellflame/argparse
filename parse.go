@@ -182,6 +182,7 @@ func (p *Parser) FormatHelp() string {
 	return p.FormatHelpWithColor(NoColor)
 }
 
+// FormatHelpWithColor allows you to generate a colorful help message with the given schema
 func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
 	result := wrapperColor(p.formatUsage(), schema.Usage)
 	if p.description != "" {

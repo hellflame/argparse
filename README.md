@@ -19,6 +19,7 @@ Providing not only simple parsing args, but :
 - [x] Argument Action Support (infinite possible)
 - [x] Shell Completion Support
 - [x] Levenshtein Reminder
+- [x] Output Color Schema Support
 - [ ] ......
 
 ## Aim
@@ -819,6 +820,18 @@ __Note__ that both arguments are detached from main `parser`, because you've set
 
 This is one way to share a single argument among different parsers. Be aware that creating argument like this still need to go through conflict check, if there's already a `--ab` exist in `a` or `b` parser, there will be a panic to notice the programer.
 
+#### 18. Color Schema Support [ >= 1.11 ]
+
+Set `ParserConfig.WithColor = true`, and the help message can be dyed with different colors, if the users' terminal support color.
+
+Also Set `ParserConfig.EnsureColor = true`, and the help message will surely dye with colors. This is for some rare terminals without the environment variable `TERM`, the programer can check it for your own. Normally this is not necessary.
+
+You can also set `ParserConfig.ColorSchema` to dye the help message with your own style. Take `DefaultColor` for reference, most part of the help message can be given a `Color` with *Code* and *Property*. A few knowledge of how color is presented in terminal is required. Normally you can try set Color *Code* within 30 and 49 to represent different text color and background color, and set Color *Property* within 10. Do some combinations, and you'll master them, just try!
+
+[example](./examples/colorful/main.go)
+
+![](./docs/images/colorful.png)
+
 ##### Argument Process Flow Map
 
 ```
@@ -877,15 +890,21 @@ Relative struct:
 
 ```go
 type ParserConfig struct {
-  Usage                  string // manual usage display
-  EpiLog                 string // message after help
-  DisableHelp            bool   // disable help entry register [-h/--help]
-  ContinueOnHelp         bool   // set true to: continue program after default help is printed
-  DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
-  DefaultAction          func() // set default action to replace default help action
-  AddShellCompletion     bool   // set true to register shell completion entry [--completion]
-  WithHint               bool   // argument help message with argument default value hint
-  MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+  Usage  string // manual usage display
+  EpiLog string // message after help
+
+  DisableHelp            bool // disable help entry register [-h/--help]
+  ContinueOnHelp         bool // set true to: continue program after default help is printed
+  DisableDefaultShowHelp bool // set false to: default show help when there is no args to parse (default action)
+
+  DefaultAction      func() // set default action to replace default help action
+  AddShellCompletion bool   // set true to register shell completion entry [--completion]
+  WithHint           bool   // argument help message with argument default value hint
+  MaxHeaderLength    int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+
+  WithColor   bool         // enable colorful help message if the terminal has support for color
+  EnsureColor bool         // use color code for sure, skip terminal env check
+  ColorSchema *ColorSchema // use given color schema to draw help info
 }
 ```
 
@@ -1026,4 +1045,5 @@ feel free to add different use cases
 9. [argument groups](examples/argument-groups)
 9. [batch create arguments](examples/batch-create-arguments)
 9. [argument inherit](examples/inherit)
+9. [color support](examples/colorful)
 

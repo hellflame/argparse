@@ -7,8 +7,8 @@ import (
 )
 
 type Color struct {
-	Code     int
-	Property int
+	Code     int // color code for text color or background color, normally within 30 ~ 49
+	Property int // property code, eg: 1 for bold, 4 for underline, etc.
 }
 
 type ColorSchema struct {
@@ -24,7 +24,10 @@ type ColorSchema struct {
 	Epilog Color
 }
 
+// Just black & white
 var NoColor = &ColorSchema{}
+
+// Default color schema
 var DefaultColor = &ColorSchema{
 	Usage:      Color{37, 1},
 	GroupTitle: Color{32, 1},

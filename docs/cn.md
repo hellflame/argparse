@@ -13,6 +13,7 @@ Argparser 项目是受 [python argparse](https://docs.python.org/3.9/library/arg
 - [x] 参数行为支持 (释放无限可能性)
 - [x] 命令行自动补全脚本支持
 - [x] 根据编辑距离的输入提示
+- [x] 颜色方案支持
 - [ ] ......
 
 ## 目标
@@ -813,6 +814,18 @@ __注意__ 两个参数都已经和主解析器解绑了，因为你已经主动
 
 通过这种方式可以在不同的解析器之间共享一个参数。但是注意这种创建方式依然需要进行冲突检测，如果 `a` 或者 `b` 已经绑定了一个 `--ab` 的参数，那么程序员就会收到一个panic。
 
+#### 18. 颜色方案支持 [ >= 1.11 ]
+
+设置 `ParserConfig.WithColor = true`，主要用户的终端支持颜色，帮助信息可以染上不同的颜色。
+
+同时设置 `ParserConfig.EnsureColor = true`，会保证输出带有颜色码的帮助信息。之所以有这个参数，是因为有少数终端没有设置 `TERM` 这个环境变量，导致自动检测失败。程序员可以自行进行特殊终端的兼容检测。所以一般可以不用管该参数。
+
+也可以设置 `ParserConfig.ColorSchema` 来输出自己风格的帮助信息。大概可以参考 `DefaultColor` ，大部分帮助信息可以设置一个包含 *颜色码* 和 *属性* 的 `Color` 结构体。这个需要一些关于终端是如何展示颜色的知识。一般的话可以尝试将 *颜色码* 设置在 30 到 49 之间，设置 *属性* 为不超过10 的整数，剩下的就是多做组合，然后就能掌握颜色规律了。Just do it!
+
+[example](../examples/colorful/main.go)
+
+![](./images/colorful.png)
+
 ##### 参数解析流图
 
 ```
@@ -871,15 +884,21 @@ with MatchFound:
 
 ```go
 type ParserConfig struct {
-  Usage                  string // manual usage display
-  EpiLog                 string // message after help
-  DisableHelp            bool   // disable help entry register [-h/--help]
-  ContinueOnHelp         bool   // set true to: continue program after default help is printed
-  DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
-  DefaultAction          func() // set default action to replace default help action
-  AddShellCompletion     bool   // set true to register shell completion entry [--completion]
-  WithHint               bool   // argument help message with argument default value hint
-  MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+  Usage  string // manual usage display
+  EpiLog string // message after help
+
+  DisableHelp            bool // disable help entry register [-h/--help]
+  ContinueOnHelp         bool // set true to: continue program after default help is printed
+  DisableDefaultShowHelp bool // set false to: default show help when there is no args to parse (default action)
+
+  DefaultAction      func() // set default action to replace default help action
+  AddShellCompletion bool   // set true to register shell completion entry [--completion]
+  WithHint           bool   // argument help message with argument default value hint
+  MaxHeaderLength    int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+
+  WithColor   bool         // enable colorful help message if the terminal has support for color
+  EnsureColor bool         // use color code for sure, skip terminal env check
+  ColorSchema *ColorSchema // use given color schema to draw help info
 }
 ```
 
@@ -1018,3 +1037,4 @@ type Option struct {
 9. [参数分组](../examples/argument-groups)
 9. [批量创建参数](../examples/batch-create-arguments)
 9. [参数继承](../examples/inherit)
+9. [颜色支持](../examples/colorful)
