@@ -36,15 +36,21 @@ type Parser struct {
 
 // ParserConfig is the only type to config `Parser`, programmers only need to use this type to control `Parser` action
 type ParserConfig struct {
-	Usage                  string // manual usage display
-	EpiLog                 string // message after help
-	DisableHelp            bool   // disable help entry register [-h/--help]
-	ContinueOnHelp         bool   // set true to: continue program after default help is printed
-	DisableDefaultShowHelp bool   // set false to: default show help when there is no args to parse (default action)
-	DefaultAction          func() // set default action to replace default help action
-	AddShellCompletion     bool   // set true to register shell completion entry [--completion]
-	WithHint               bool   // argument help message with argument default value hint
-	MaxHeaderLength        int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+	Usage  string // manual usage display
+	EpiLog string // message after help
+
+	DisableHelp            bool // disable help entry register [-h/--help]
+	ContinueOnHelp         bool // set true to: continue program after default help is printed
+	DisableDefaultShowHelp bool // set false to: default show help when there is no args to parse (default action)
+
+	DefaultAction      func() // set default action to replace default help action
+	AddShellCompletion bool   // set true to register shell completion entry [--completion]
+	WithHint           bool   // argument help message with argument default value hint
+	MaxHeaderLength    int    // max argument header length in help menu, help info will start at new line if argument meta info is too long
+
+	WithColor   bool         // enable colorful help message if the terminal has support for color
+	EnsureColor bool         // use color code for sure, skip terminal env check
+	ColorSchema *ColorSchema // use given color schema to draw help info
 }
 
 // NewParser create the parser object with optional name & description & ParserConfig
@@ -56,17 +62,20 @@ func NewParser(name string, description string, config *ParserConfig) *Parser {
 		name = strings.ReplaceAll(path.Base(os.Args[0]), " ", "") // avoid space for shell complete code generate
 	}
 	parser := &Parser{
-		name:            name,
-		description:     description,
-		config:          config,
+		name:        name,
+		description: description,
+		config:      config,
+
 		entries:         []*arg{},
 		entryMap:        make(map[string]*arg),
 		entryGroup:      make(map[string][]*arg),
 		entryGroupOrder: []string{},
-		positionArgs:    []*arg{},
-		positionalPool:  make(map[string]*arg),
-		subParser:       []*Parser{},
-		subParserMap:    make(map[string]*Parser),
+
+		positionArgs:   []*arg{},
+		positionalPool: make(map[string]*arg),
+
+		subParser:    []*Parser{},
+		subParserMap: make(map[string]*Parser),
 	}
 	if !config.DisableHelp {
 		parser.showHelp = parser.Flag("h", "help",
@@ -156,12 +165,29 @@ func (p *Parser) PrintHelp() {
 	fmt.Println(p.FormatHelp())
 }
 
-// FormatHelp only format help message for manual use, for example: decide when to print help message
+// FormatHelp only format help message for manual use, you can decide when to print help message
 func (p *Parser) FormatHelp() string {
-	result := p.formatUsage()
-	if p.description != "" {
-		result += "\n\n" + p.description
+	if !p.config.WithColor {
+		return p.FormatHelpWithColor(NoColor)
 	}
+
+	if p.config.EnsureColor || checkTerminalColorSupport() {
+		schema := DefaultColor
+		if p.config.ColorSchema != nil {
+			schema = p.config.ColorSchema
+		}
+		return p.FormatHelpWithColor(schema)
+	}
+
+	return p.FormatHelpWithColor(NoColor)
+}
+
+func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
+	result := wrapperColor(p.formatUsage(), schema.Usage)
+	if p.description != "" {
+		result += "\n\n" + wrapperColor(p.description, schema.Description)
+	}
+	// calculate header length
 	headerLength := 10 // here set minimum header length, the code after will find the max length of headers
 	for _, parser := range p.subParser {
 		l := len(parser.name)
@@ -170,13 +196,13 @@ func (p *Parser) FormatHelp() string {
 		}
 	}
 	for _, arg := range p.positionArgs {
-		l := len(arg.formatHelpHeader())
+		l, _ := arg.formatHelpHeader(schema.Argument, schema.Meta)
 		if l > headerLength {
 			headerLength = l
 		}
 	}
 	for _, arg := range p.entries {
-		l := len(arg.formatHelpHeader())
+		l, _ := arg.formatHelpHeader(schema.Argument, schema.Meta)
 		if l > headerLength {
 			headerLength = l
 		}
@@ -187,15 +213,19 @@ func (p *Parser) FormatHelp() string {
 		headerLength = p.config.MaxHeaderLength
 		helpBreak = true
 	}
+	// sub command
 	if len(p.subParser) > 0 {
-		section := "\n\ncommands:"
+		section := "\n\n" + wrapperColor("commands:", schema.GroupTitle)
 		for _, parser := range p.subParser {
-			section += "\n" + formatHelpRow(parser.name, parser.description, headerLength, helpBreak)
+			section += "\n" + formatHelpRow(wrapperColor(parser.name, schema.Command), parser.description,
+				len(parser.name), headerLength, helpBreak)
 		}
 		result += section
 	}
 	withHint := p.config.WithHint
-	if len(p.positionArgs) > 0 { // dealing positional arguments present
+
+	// positional arguments
+	if len(p.positionArgs) > 0 {
 		section := ""
 		for _, arg := range p.positionArgs {
 			if arg.Group != "" || arg.HideEntry {
@@ -205,13 +235,16 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += "\n" + formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak)
+			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
+			section += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
 		}
 		if section != "" {
-			section = "\n\npositionals:" + section
+			section = "\n\n" + wrapperColor("positionals:", schema.GroupTitle) + section
 		}
 		result += section
 	}
+
+	// optional arguments
 	if len(p.entries) > 0 { // dealing optional arguments present
 		parsed := make(map[string]bool)
 		section := ""
@@ -231,28 +264,36 @@ func (p *Parser) FormatHelp() string {
 			if withHint && !arg.NoHint {
 				help = arg.formatHelpWithExtraInfo()
 			}
-			section += "\n" + formatHelpRow(arg.formatHelpHeader(), help, headerLength, helpBreak)
+			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
+			section += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
 		}
 		if section != "" {
-			section = "\n\noptions:" + section
+			section = "\n\n" + wrapperColor("options:", schema.GroupTitle) + section
 		}
 		result += section
 	}
-	for _, group := range p.entryGroupOrder { // dealing arguments group present
-		section := fmt.Sprintf("\n\n%s:", group)
+
+	// argument groups
+	for _, group := range p.entryGroupOrder {
+		section := "\n\n" + wrapperColor(group+":", schema.GroupTitle)
 		content := ""
 		for _, arg := range p.entryGroup[group] {
 			if arg.HideEntry {
 				continue
 			}
-			content += "\n" + formatHelpRow(arg.formatHelpHeader(), arg.Help, headerLength, helpBreak)
+			help := arg.Help
+			if withHint && !arg.NoHint {
+				help = arg.formatHelpWithExtraInfo()
+			}
+			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
+			content += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
 		}
 		if content != "" {
 			result += section + content
 		}
 	}
 	if p.config.EpiLog != "" {
-		result += "\n\n" + p.config.EpiLog
+		result += "\n\n" + wrapperColor(p.config.EpiLog, schema.Epilog)
 	}
 
 	return result

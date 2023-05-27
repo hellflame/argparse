@@ -145,20 +145,30 @@ func (a *arg) getIdentifier() string {
 	return a.short
 }
 
-func (a *arg) formatHelpHeader() string {
+func (a *arg) formatHelpHeader(argument, meta Color) (size int, content string) {
 	metaName := a.getMetaName()
 	if a.Positional {
-		return metaName
+		size = len(metaName)
+		content = wrapperColor(metaName, argument)
+		return
 	}
+
+	wrapped := []string{}
 	watchers := a.getWatchers()
-	if a.isFlag {
-		return strings.Join(watchers, ", ")
-	}
-	var signedWatchers []string
 	for _, w := range watchers {
-		signedWatchers = append(signedWatchers, fmt.Sprintf("%s %s", w, metaName))
+		if a.isFlag {
+			wrapped = append(wrapped, wrapperColor(w, argument))
+			size += len(w)
+		} else {
+			wrapped = append(wrapped,
+				fmt.Sprintf("%s %s", wrapperColor(w, argument),
+					wrapperColor(metaName, meta)))
+			size += len(w) + len(metaName) + 1
+		}
 	}
-	return strings.Join(signedWatchers, ", ")
+	size += (len(wrapped) - 1) * 2
+	content = strings.Join(wrapped, ", ")
+	return
 }
 
 func (a *arg) formatHelpWithExtraInfo() string {

@@ -24,10 +24,10 @@ func init() {
 	}
 }
 
-func formatHelpRow(head, content string, maxHeadLength int, withBreak bool) string {
+func formatHelpRow(head, content string, bareHeadLength, maxHeadLength int, withBreak bool) string {
 	content = strings.Replace(content, "\n", "", -1)
 	result := fmt.Sprintf("  %s ", head)
-	headLeftPadding := maxHeadLength - len(result)
+	headLeftPadding := maxHeadLength - bareHeadLength - 3
 	if headLeftPadding > 0 { // fill left padding
 		result += strings.Repeat(" ", headLeftPadding)
 	}

@@ -2,6 +2,7 @@ package argparse
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -816,4 +817,22 @@ func TestBindParserConflict(t *testing.T) {
 	parser.String("c", "", &Option{BindParsers: []*Parser{
 		a, a,
 	}})
+}
+
+func TestColorful(t *testing.T) {
+	os.Setenv("TERM", "")
+	p := NewParser("", "", &ParserConfig{WithColor: true})
+	p.String("l", "", nil)
+	if strings.Contains(p.FormatHelp(), "\033[00m") {
+		t.Error("should be no color")
+		return
+	}
+
+	p = NewParser("", "", &ParserConfig{WithHint: true,
+		WithColor: true, EnsureColor: true, ColorSchema: DefaultColor})
+	p.String("l", "", &Option{HintInfo: "", Group: "base"})
+	if !strings.Contains(p.FormatHelp(), "\033[00m") {
+		t.Error("should be colorful")
+		return
+	}
 }

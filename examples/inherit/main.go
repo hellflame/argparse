@@ -1,3 +1,5 @@
+// inheritable arguments
+
 package main
 
 import (
