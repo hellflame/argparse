@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for most simple use of argparse
 //
 // with a String Optional Argument created binding to variable 'name'

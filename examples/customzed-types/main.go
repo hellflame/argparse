@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for some advanced use
 //
 // use Option.Validate to check if the user input is valid
@@ -9,10 +11,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/hellflame/argparse"
 	"io/ioutil"
 	"net/url"
 	"os"
+
+	"github.com/hellflame/argparse"
 )
 
 func main() {

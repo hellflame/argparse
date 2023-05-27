@@ -1,3 +1,5 @@
+//go:build ignore
+
 // inheritable arguments
 
 package main

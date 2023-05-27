@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for expand * for positional arguments
 //
 // run the code like "go run main.go ~" or "go run main.go ~/*"
@@ -5,6 +7,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

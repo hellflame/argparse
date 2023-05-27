@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this show case is for 'ParserConfig', showing how the config affect your parsing progress
 //
 // set ParserConfig.Usage will change your usage line, which can sometime be too complex for user to read
@@ -15,6 +17,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

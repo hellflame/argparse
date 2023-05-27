@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for argument action
 //
 // argument action will be executed when user input has a match to the binding argument
@@ -5,9 +7,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/hellflame/argparse"
 	"io/ioutil"
 	"strconv"
+
+	"github.com/hellflame/argparse"
 )
 
 // run like: go run main.go 2 3 4 --b main.go

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for using color in argparse
 //
 // demo for ColorSchema

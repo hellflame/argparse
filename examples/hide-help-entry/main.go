@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for Hide entry
 //
 // you won't see argument 'greet', but you can still use the entry
@@ -5,6 +7,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this show case is for sub command
 //
 // sub command is created by AddCommand, which returns a *Parser for programmer to bind arguments
@@ -9,6 +11,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

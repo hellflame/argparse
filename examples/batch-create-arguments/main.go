@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for creating arguments by batch
 package main
 

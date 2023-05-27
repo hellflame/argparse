@@ -1,3 +1,5 @@
+//go:build ignore
+
 // example on how to change help args' position in help message
 //
 // note that the order of your argument is the same as the order when you add them,
@@ -6,6 +8,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for multi parser in Action
 //
 // it act like sub command, but with less restriction
@@ -5,6 +7,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hellflame/argparse"
 )
 

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // this is show case for a little bit complex than 'basic'
 //
 // which disabled the default help menu entry '-h' or '--help',
@@ -9,8 +11,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hellflame/argparse"
 	"os"
+
+	"github.com/hellflame/argparse"
 )
 
 func main() {

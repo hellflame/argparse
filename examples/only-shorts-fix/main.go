@@ -1,10 +1,13 @@
+//go:build ignore
+
 // show case for testing multi arguments with only short tags
 package main
 
 import (
-	"github.com/hellflame/argparse"
 	"os"
 	"strings"
+
+	"github.com/hellflame/argparse"
 )
 
 func main() {
