@@ -11,6 +11,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
 
@@ -45,7 +46,7 @@ func main() {
 	}
 
 	if *path != "" {
-		if read, e := os.ReadFile(*path); e == nil {
+		if read, e := ioutil.ReadFile(*path); e == nil {
 			fmt.Println(string(read))
 		}
 	}

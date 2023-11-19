@@ -7,7 +7,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"io/ioutil"
 	"strconv"
 
 	"github.com/hellflame/argparse"
@@ -30,7 +30,7 @@ func main() {
 	}})
 
 	parser.String("", "b", &argparse.Option{Action: func(args []string) error {
-		raw, e := os.ReadFile(args[0])
+		raw, e := ioutil.ReadFile(args[0])
 		if e != nil {
 			return e
 		}
