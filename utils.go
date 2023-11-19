@@ -8,10 +8,8 @@ import (
 	"strings"
 )
 
-var terminalWidth = 80
-
-func init() {
-	// decide ternimal width
+func decideTerminalWidth() int {
+	// decide terminal width
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin // this is important
 	result, e := cmd.Output()
@@ -20,11 +18,12 @@ func init() {
 	}
 	parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
 	if w, e := strconv.Atoi(parse[1]); e == nil {
-		terminalWidth = w
+		return w
 	}
+	return 80
 }
 
-func formatHelpRow(head, content string, bareHeadLength, maxHeadLength int, withBreak bool) string {
+func formatHelpRow(head, content string, bareHeadLength, maxHeadLength, terminalWidth int, withBreak bool) string {
 	content = strings.Replace(content, "\n", "", -1)
 	result := fmt.Sprintf("  %s ", head)
 	headLeftPadding := maxHeadLength - bareHeadLength - 3

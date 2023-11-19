@@ -184,6 +184,7 @@ func (p *Parser) FormatHelp() string {
 
 // FormatHelpWithColor allows you to generate a colorful help message with the given schema
 func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
+	terminalWidth := decideTerminalWidth()
 	result := wrapperColor(p.formatUsage(), schema.Usage)
 	if p.description != "" {
 		result += "\n\n" + wrapperColor(p.description, schema.Description)
@@ -219,7 +220,7 @@ func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
 		section := "\n\n" + wrapperColor("commands:", schema.GroupTitle)
 		for _, parser := range p.subParser {
 			section += "\n" + formatHelpRow(wrapperColor(parser.name, schema.Command), parser.description,
-				len(parser.name), headerLength, helpBreak)
+				len(parser.name), headerLength, terminalWidth, helpBreak)
 		}
 		result += section
 	}
@@ -237,7 +238,7 @@ func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
 				help = arg.formatHelpWithExtraInfo()
 			}
 			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
-			section += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
+			section += "\n" + formatHelpRow(header, help, size, headerLength, terminalWidth, helpBreak)
 		}
 		if section != "" {
 			section = "\n\n" + wrapperColor("positionals:", schema.GroupTitle) + section
@@ -266,7 +267,7 @@ func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
 				help = arg.formatHelpWithExtraInfo()
 			}
 			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
-			section += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
+			section += "\n" + formatHelpRow(header, help, size, headerLength, terminalWidth, helpBreak)
 		}
 		if section != "" {
 			section = "\n\n" + wrapperColor("options:", schema.GroupTitle) + section
@@ -287,7 +288,7 @@ func (p *Parser) FormatHelpWithColor(schema *ColorSchema) string {
 				help = arg.formatHelpWithExtraInfo()
 			}
 			size, header := arg.formatHelpHeader(schema.Argument, schema.Meta)
-			content += "\n" + formatHelpRow(header, help, size, headerLength, helpBreak)
+			content += "\n" + formatHelpRow(header, help, size, headerLength, terminalWidth, helpBreak)
 		}
 		if content != "" {
 			result += section + content
