@@ -193,6 +193,24 @@ options:
 
 [example](../examples/sub-command)
 
+#### 3. 额外的特殊位置参数 [ >= v1.12 ]
+
+当用户想要输入一些以 `-` 或 `--` 开头的一些入参，通常解析器会警告你 `未知的参数`。
+
+如果的确想要这样做，只需要把入参放到 `--` 之后。
+
+比如: `./run -- extra1 extra2`，在栗子里，`extra1` 和 `extra2` 可以是任何东西，比如: 
+
+`./run -- --1 -x`
+
+如果最后一个位置参数接受多个入参，那么用户在 `--` 前后的位置入参都会当作这个位置参数的值。
+
+```go
+names := parser.Strings("", "names", &argparse.Option{Positional: true})
+parser.parse([]string{"a", "--", "b", "c"})
+// names == ["a", "b", "c"]
+```
+
 ### 支持的参数
 
 #### 1. 标记参数
@@ -305,7 +323,7 @@ if e := parser.Parse(nil); e != nil {
 }
 
 if *path != "" {
-  if read, e := ioutil.ReadFile(*path); e == nil {
+  if read, e := os.ReadFile(*path); e == nil {
     fmt.Println(string(read))
   }
 }
@@ -1038,3 +1056,4 @@ type Option struct {
 9. [批量创建参数](../examples/batch-create-arguments)
 9. [参数继承](../examples/inherit)
 9. [颜色支持](../examples/colorful)
+9. [额外特殊参数](../examples/extra-arguments)

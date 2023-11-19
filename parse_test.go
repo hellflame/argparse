@@ -774,7 +774,6 @@ func TestInheritable(t *testing.T) {
 		return
 	}
 	if *f2 > 1 || *pos2 < 1 {
-		println(*f2, *pos2)
 		t.Error("mess parse")
 		return
 	}
@@ -834,5 +833,98 @@ func TestColorful(t *testing.T) {
 	if !strings.Contains(p.FormatHelp(), "\033[00m") {
 		t.Error("should be colorful")
 		return
+	}
+}
+
+func TestExtraPositional(t *testing.T) {
+	idx, remains := findExtraPositionalArgs([]string{"linux", "ok", "--", "x", "y"})
+	if idx != 2 || strings.Join(remains, ",") != "x,y" {
+		t.Error("failed to find remain")
+		return
+	}
+	idx, remains = findExtraPositionalArgs([]string{"linux", "--ok"})
+	if idx != 0 || len(remains) > 0 {
+		t.Error("failed to skip remain")
+	}
+}
+
+func TestParseWithExtra(t *testing.T) {
+	p := NewParser("", "", nil)
+	x := p.String("x", "", &Option{Positional: true})
+	if e := p.Parse([]string{"--", "--x"}); e != nil {
+		t.Error(e)
+	}
+	if *x != "--x" {
+		t.Error("failed to parse only one extra")
+	}
+
+	p = NewParser("", "", nil)
+	p.String("x", "", nil) // optional string
+	y := p.String("y", "", &Option{Positional: true})
+	if e := p.Parse([]string{"--", "-x"}); e != nil {
+		t.Error(e)
+	}
+	if *y != "-x" {
+		t.Error("failed to parse extra argument with one optional ahead")
+	}
+
+	p = NewParser("", "", nil)
+	x = p.String("x", "", &Option{Positional: true})
+	y = p.String("y", "", &Option{Positional: true})
+	if e := p.Parse([]string{"ok", "--", "what"}); e != nil {
+		t.Error(e)
+	}
+	if *x != "ok" || *y != "what" {
+		t.Error("failed to parse extra argument with another normal positional")
+	}
+
+	p = NewParser("", "", nil)
+	x = p.String("x", "", &Option{Positional: true})
+	ys := p.Strings("y", "", &Option{Positional: true})
+
+	if e := p.Parse([]string{"x", "y", "--"}); e != nil {
+		t.Error(e)
+	}
+	if *x != "x" || strings.Join(*ys, ",") != "y" {
+		t.Error("failed to skip -- for multi-type positional")
+	}
+
+	p = NewParser("", "", nil)
+	x = p.String("x", "", &Option{Positional: true})
+	ys = p.Strings("y", "", &Option{Positional: true})
+
+	if e := p.Parse([]string{"x", "y", "--", "y"}); e != nil {
+		t.Error(e)
+	}
+	if *x != "x" || strings.Join(*ys, ",") != "y,y" {
+		t.Error("failed to merge arguments for multi-type positional")
+	}
+
+	p = NewParser("", "", nil)
+	x = p.String("x", "", &Option{Positional: true})
+	ys = p.Strings("y", "", &Option{Positional: true})
+
+	if e := p.Parse([]string{"x", "--", "y"}); e != nil {
+		t.Error(e)
+	}
+	if *x != "x" || strings.Join(*ys, ",") != "y" {
+		t.Error("failed to merge arguments for multi-type positional")
+	}
+
+	p = NewParser("", "", nil)
+	p.Int("x", "", &Option{Positional: true})
+	p.Ints("y", "", &Option{Positional: true})
+	if e := p.Parse([]string{"--", "x", "2", "3"}); e == nil {
+		t.Error("failed to parse extra error")
+	}
+	if e := p.Parse([]string{"--", "1", "y", "3"}); e == nil {
+		t.Error("failed to parse extra error")
+	}
+
+	p = NewParser("", "", nil)
+	p.Int("x", "", &Option{Positional: true})
+	p.Strings("y", "", nil)
+	if e := p.Parse([]string{"4", "-x", "2", "3"}); e == nil {
+		t.Error("failed to parse extra error")
 	}
 }

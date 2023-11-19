@@ -13,7 +13,7 @@ type arg struct {
 	short    string
 	full     string
 	target   interface{}
-	assigned bool
+	assigned bool // whether the argument is parsed
 	Option
 }
 

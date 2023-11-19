@@ -199,6 +199,22 @@ Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
 
 [example](examples/sub-command)
 
+#### 3. Extra special positional arguments [ >= v1.12 ]
+
+When the user want to input some special arguments starting with `-` or `--` , normally the parser will warn you with  `unrecognized arguments`. 
+
+If you want to do so, simply input any arguments after a single `--`. 
+
+For example: `./run -- extra1 extra2`.  In the example, `extra1`  and `extra2` can be anything, `./run -- --1 -x`.
+
+If the last positional argument receives multiple inputs, then the positional inputs before and after `--` will all be its value.
+
+```go
+names := parser.Strings("", "names", &argparse.Option{Positional: true})
+parser.parse([]string{"a", "--", "b", "c"})
+// names == ["a", "b", "c"]
+```
+
 ### Supported Arguments
 
 #### 1. Flag
@@ -311,7 +327,7 @@ if e := parser.Parse(nil); e != nil {
 }
 
 if *path != "" {
-  if read, e := ioutil.ReadFile(*path); e == nil {
+  if read, e := os.ReadFile(*path); e == nil {
     fmt.Println(string(read))
   }
 }
@@ -1046,4 +1062,5 @@ feel free to add different use cases
 9. [batch create arguments](examples/batch-create-arguments)
 9. [argument inherit](examples/inherit)
 9. [color support](examples/colorful)
+9. [extra arguments](examples/extra-arguments)
 

@@ -465,6 +465,22 @@ fi
 `, p.formatBashCompletionScript(), p.formatZshCompletionScript())
 }
 
+// find extra positional arguments
+func findExtraPositionalArgs(args []string) (idx int, remains []string) {
+	startRemain := false
+	remainMark := "--"
+	for i, a := range args {
+		if startRemain {
+			remains = append(remains, a)
+		}
+		if !startRemain && a == remainMark {
+			startRemain = true
+			idx = i
+		}
+	}
+	return
+}
+
 // Parse will parse given args to bind to any registered arguments
 //
 // args: set nil to use os.Args[1:] by default
@@ -472,7 +488,13 @@ func (p *Parser) Parse(args []string) error {
 	if args == nil {
 		args = os.Args[1:]
 	}
-	if len(args) == 0 {
+	extraIdx, remains := findExtraPositionalArgs(args)
+	hasExtra := len(remains) > 0
+	if hasExtra || extraIdx > 0 {
+		args = args[:extraIdx]
+	}
+
+	if len(args) == 0 && !hasExtra {
 		if p.config.DefaultAction != nil {
 			p.config.DefaultAction()
 		} else if !p.config.DisableDefaultShowHelp {
@@ -488,13 +510,15 @@ func (p *Parser) Parse(args []string) error {
 		lastPositionArgIndex := 0
 		registeredPositionsLength := len(p.positionArgs)
 		for len(args) > 0 {
+			// iterate user input args
 			sign := args[0]
 			if arg, ok := p.entryMap[sign]; ok {
 				if arg.isFlag {
 					_ = arg.parseValue(nil)
 					args = args[1:]
 				} else {
-					var tillNext []string // find user inputs before next registered optional argument
+					// find user inputs before next registered optional argument
+					var tillNext []string
 					for _, a := range args[1:] {
 						if _, isEntry := p.entryMap[a]; !isEntry {
 							tillNext = append(tillNext, a)
@@ -502,29 +526,37 @@ func (p *Parser) Parse(args []string) error {
 							break
 						}
 					}
-					if len(tillNext) == 0 { // argument takes at least one input as argument, but there is 0
+					// argument takes at least one input as argument, but there is 0
+					if len(tillNext) == 0 {
 						return fmt.Errorf("argument %s expect argument",
 							strings.Join(arg.getWatchers(), "/"))
 					}
-					if arg.multi { // if argument takes more than one arguments, it will take all user input before next registered argument, and proceed 'args' parsing to next registered argument
+					// if argument takes more than one arguments,
+					// it will take all user input before next registered argument,
+					// and proceed 'args' parsing to next registered argument
+					if arg.multi {
 						e := arg.parseValue(tillNext)
 						if e != nil {
 							return e
 						}
 						args = args[len(tillNext)+1:]
-					} else { // then the argument takes only one argument, and proceed the left arguments for positional argument parsing
+					} else {
+						// then the argument takes only one argument
 						e := arg.parseValue(tillNext[0:1])
 						if e != nil {
 							return e
 						}
+						// proceed the left arguments for positional argument parsing
 						args = args[2:]
 					}
 				}
 			} else {
-				if registeredPositionsLength > lastPositionArgIndex { // while there is unparsed positional argument
+				// while there is unparsed positional argument
+				if registeredPositionsLength > lastPositionArgIndex {
 					arg := p.positionArgs[lastPositionArgIndex]
 					lastPositionArgIndex += 1
-					var tillNext []string // find user inputs before next registered optional argument
+					// find user inputs before next registered optional argument
+					var tillNext []string
 					for _, a := range args {
 						if _, isEntry := p.entryMap[a]; !isEntry {
 							tillNext = append(tillNext, a)
@@ -533,10 +565,13 @@ func (p *Parser) Parse(args []string) error {
 						}
 					}
 					if arg.multi {
-						e := arg.parseValue(tillNext)
+						// if any multi-type positional required,
+						// extra arguments with be regard as part of it
+						e := arg.parseValue(append(tillNext, remains...))
 						if e != nil {
 							return e
 						}
+						remains = []string{}
 						args = args[len(tillNext):]
 					} else {
 						e := arg.parseValue(tillNext[0:1])
@@ -579,6 +614,28 @@ func (p *Parser) Parse(args []string) error {
 		fmt.Println(p.FormatCompletionScript())
 		return BreakAfterShellScriptError
 	}
+
+	// apply extra arguments for only positional
+	if len(remains) > 0 {
+		for _, arg := range p.positionArgs {
+			if arg.assigned {
+				continue
+			}
+			if arg.multi {
+				e := arg.parseValue(remains)
+				if e != nil {
+					return e
+				}
+			} else {
+				e := arg.parseValue(remains[0:1])
+				if e != nil {
+					return e
+				}
+				remains = remains[1:]
+			}
+		}
+	}
+
 	entries := append(p.entries, p.positionArgs...)
 	for _, arg := range entries { // check Required & set Default value
 		if !arg.assigned && arg.Default != "" {

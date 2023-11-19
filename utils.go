@@ -16,11 +16,12 @@ func decideTerminalWidth() int {
 	if e != nil {
 		result = []byte("0 80")
 	}
+	width := 80
 	parse := strings.Split(strings.TrimRight(string(result), "\n"), " ")
 	if w, e := strconv.Atoi(parse[1]); e == nil {
-		return w
+		width = w
 	}
-	return 80
+	return width
 }
 
 func formatHelpRow(head, content string, bareHeadLength, maxHeadLength, terminalWidth int, withBreak bool) string {
