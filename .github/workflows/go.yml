@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: go mod download
     - name: Run Unit tests
-      run: go test -race -covermode atomic -coverprofile=covprofile ./...
+      run: go test -v -race -covermode atomic -coverprofile=covprofile ./...
     - name: Install goveralls
       run: go install github.com/mattn/goveralls@latest
     - name: Send coverage
