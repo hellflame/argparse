@@ -173,33 +173,7 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 
 Notice that if there are multiple `Positional Argument` , the `unrecognized arguments` will be regard as `Positional Argument` , and there will be no recommend. 
 
-#### 2. Help info hint [ >= v1.6.0 ]
-
-Help message can be generated with some hint info, like default value, choice range, required mark, or even any hint message. Like:
-
-```bash
-usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
-
-start a bug report
-
-options:
-  --help, -h                  show this help message
-  --flag, -f                  from test parser
-  --other, -o                 (optional => ∫)
-  --float FLOAT               (options: [0.100000, 0.200000], required)
-  --int INT, -i INT           this is int (default: 1)
-  --string STRING, -s STRING  no hint message
-```
-
-Enable global hint by setting parser config `&argparse.ParserConfig{WithHint: true}` .
-
-Disable one argument hint with `&argparse.Option{NoHint: true}`
-
-Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
-
-[example](examples/sub-command)
-
-#### 3. Extra special positional arguments [ >= v1.12 ]
+#### 2. Extra special positional arguments [ >= v1.12 ]
 
 When the user want to input some special arguments starting with `-` or `--` , normally the parser will warn you with  `unrecognized arguments`. 
 
@@ -737,7 +711,33 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
-#### 15. Limit args header length [ >= 1.7 ]
+#### 15. Help info hint [ >= v1.6 ]
+
+Help message can be generated with some hint info, like default value, choice range, required mark, or even any hint message. Like:
+
+```bash
+usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
+
+start a bug report
+
+options:
+  --help, -h                  show this help message
+  --flag, -f                  from test parser
+  --other, -o                 (optional => ∫)
+  --float FLOAT               (options: [0.100000, 0.200000], required)
+  --int INT, -i INT           this is int (default: 1)
+  --string STRING, -s STRING  no hint message
+```
+
+Enable global hint by setting parser config `&argparse.ParserConfig{WithHint: true}` .
+
+Disable one argument hint with `&argparse.Option{NoHint: true}`
+
+Customize argument hint with `&argparse.Option{HintInfo: "customize info"}`
+
+[example](examples/sub-command)
+
+#### 16. Limit args header length [ >= 1.7 ]
 
 When argument is too long, you can set `ParserConfig.MaxHeaderLength` to a reasonable length.
 
@@ -769,7 +769,7 @@ options:
 
 [example](examples/long-args/main.go)
 
-#### 16. Inheriable argument [ >= 1.8 ]
+#### 17. Inheriable argument [ >= 1.8 ]
 
 When some argument represent the same thing among root parser and sub parsers, such as `debug`, `verbose` .... and you don't want to write duplicated arguments code for too many times, you have two recommended ways:
 
@@ -810,7 +810,7 @@ As a result,  sub parser `local` will inhert `verbose` as a `Flag`, when pass us
 
 [example](examples/inherit/main.go)
 
-#### 17. Bind given parsers to an argument [ >= 1.9 ]
+#### 18. Bind given parsers to an argument [ >= 1.9 ]
 
 This is a very flexable way to create argument for multiple parsers. Create one argument using the main parser, and provide a series of parsers by setting the option when you create the argument:
 
@@ -836,7 +836,7 @@ __Note__ that both arguments are detached from main `parser`, because you've set
 
 This is one way to share a single argument among different parsers. Be aware that creating argument like this still need to go through conflict check, if there's already a `--ab` exist in `a` or `b` parser, there will be a panic to notice the programer.
 
-#### 18. Color Schema Support [ >= 1.11 ]
+#### 19. Color Schema Support [ >= 1.11 ]
 
 Set `ParserConfig.WithColor = true`, and the help message can be dyed with different colors, if the users' terminal support color.
 

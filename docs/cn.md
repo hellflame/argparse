@@ -167,33 +167,7 @@ if e := parser.Parse([]string{"--ax"}); e != nil {
 
 注意如果程序包含 `位置参数` 时 , 未知参数可能会被视为位置参数，就没有任何纠错提示了
 
-#### 2. 帮助提示信息 [ >= v1.6.0 ]
-
-帮助信息可以自动添加一些提示信息， 比如默认值，可选范围，必填标记，甚至任何提示信息。如：
-
-```bash
-usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
-
-start a bug report
-
-options:
-  --help, -h                  show this help message
-  --flag, -f                  from test parser
-  --other, -o                 (optional => ∫)
-  --float FLOAT               (options: [0.100000, 0.200000], required)
-  --int INT, -i INT           this is int (default: 1)
-  --string STRING, -s STRING  no hint message
-```
-
-通过设置 `&argparse.ParserConfig{WithHint: true}` 开启帮助提示信息。
-
-设置 `&argparse.Option{NoHint: true}` 禁用某个参数提示
-
-通过 `&argparse.Option{HintInfo: "customize info"}` 自定义参数提示
-
-[example](../examples/sub-command)
-
-#### 3. 额外的特殊位置参数 [ >= v1.12 ]
+#### 2. 额外的特殊位置参数 [ >= v1.12 ]
 
 当用户想要输入一些以 `-` 或 `--` 开头的一些入参，通常解析器会警告你 `未知的参数`。
 
@@ -733,7 +707,33 @@ if e := p.Parse(nil); e != nil {
 fmt.Println(p.Invoked, sub.Invoked, subNo2.Invoked)
 ```
 
-#### 15. 限制参数头部长度 [ >= 1.7 ]
+#### 15. 帮助提示信息 [ >= v1.6 ]
+
+帮助信息可以自动添加一些提示信息， 比如默认值，可选范围，必填标记，甚至任何提示信息。如：
+
+```bash
+usage: sub-command test [--help] [--flag] [--other] [--float FLOAT] [--int INT] [--string STRING]
+
+start a bug report
+
+options:
+  --help, -h                  show this help message
+  --flag, -f                  from test parser
+  --other, -o                 (optional => ∫)
+  --float FLOAT               (options: [0.100000, 0.200000], required)
+  --int INT, -i INT           this is int (default: 1)
+  --string STRING, -s STRING  no hint message
+```
+
+通过设置 `&argparse.ParserConfig{WithHint: true}` 开启帮助提示信息。
+
+设置 `&argparse.Option{NoHint: true}` 禁用某个参数提示
+
+通过 `&argparse.Option{HintInfo: "customize info"}` 自定义参数提示
+
+[example](../examples/sub-command)
+
+#### 16. 限制参数头部长度 [ >= 1.7 ]
 
 如果参数过长，可以设置 `ParserConfig.MaxHeaderLength` 到一个合理的长度。 
 
@@ -765,7 +765,7 @@ options:
 
 [example](../examples/long-args/main.go)
 
-#### 16. 可继承参数 [ >= 1.8 ]
+#### 17. 可继承参数 [ >= 1.8 ]
 
 如果有参数在根命令和子命令中都表示同样的意思，比如 `debug` (调试状态), `verbose` (回显模式) 等，并且你也不想写太多次重复代码，有两种推荐方式来简化该过程：
 
@@ -808,7 +808,7 @@ version := service.Int("v", "version", &argparse.Option{Help: "version choice"})
 
 [example](../examples/inherit/main.go)
 
-#### 17. 为参数指定绑定命令解析 [ >= 1.9 ]
+#### 18. 为参数指定绑定命令解析 [ >= 1.9 ]
 
 通过这种方式可以灵活的为多个命令解析器绑定同一个参数。首先通过主命令解析器创建一个参数，然后通过__`Option{BindParsers: []*Parser{a, b, ...}}`__ 为其提供一系列的命令解析器即可。
 
@@ -832,7 +832,7 @@ __注意__ 两个参数都已经和主解析器解绑了，因为你已经主动
 
 通过这种方式可以在不同的解析器之间共享一个参数。但是注意这种创建方式依然需要进行冲突检测，如果 `a` 或者 `b` 已经绑定了一个 `--ab` 的参数，那么程序员就会收到一个panic。
 
-#### 18. 颜色方案支持 [ >= 1.11 ]
+#### 19. 颜色方案支持 [ >= 1.11 ]
 
 设置 `ParserConfig.WithColor = true`，主要用户的终端支持颜色，帮助信息可以染上不同的颜色。
 
