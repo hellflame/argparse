@@ -530,6 +530,25 @@ func TestParser_WithSubCommand(t *testing.T) {
 	}
 }
 
+func TestParser_WithParentArg(t *testing.T) {
+	p := NewParser("", "", nil)
+	f := p.Flag("", "a", nil)
+	sub := p.AddCommand("test", "", nil)
+	x := sub.Int("", "a", &Option{Default: "1"})
+	if e := p.Parse([]string{"--a", "test", "--a", "2"}); e != nil {
+		t.Error(e.Error())
+		return
+	}
+	if !*f {
+		t.Error("failed to parse ")
+		return
+	}
+	if *x != 2 {
+		t.Error("sub command is not parsed, default value should not be bond")
+		return
+	}
+}
+
 func TestParser_usage(t *testing.T) {
 	p := NewParser("a", "", &ParserConfig{ContinueOnHelp: true})
 	test := p.AddCommand("test", "", nil)
