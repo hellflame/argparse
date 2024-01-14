@@ -599,6 +599,11 @@ func (p *Parser) Parse(args []string) error {
 							return fmt.Errorf("unrecognized arguments: %s\ndo you mean?: %s", sign, match)
 						}
 					}
+					
+					if subParser, match := p.subParserMap[args[0]]; match {
+						return subParser.Parse(args[1:])
+					}
+					
 					return fmt.Errorf("unrecognized arguments: %s", sign)
 				}
 			}
