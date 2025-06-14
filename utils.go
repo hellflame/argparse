@@ -1,7 +1,6 @@
 package argparse
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -18,23 +17,42 @@ func decideTerminalWidth() int {
 
 func formatHelpRow(head, content string, bareHeadLength, maxHeadLength, terminalWidth int, withBreak bool) string {
 	content = strings.Replace(content, "\n", "", -1)
-	result := fmt.Sprintf("  %s ", head)
-	headLeftPadding := maxHeadLength - bareHeadLength - 3
-	if headLeftPadding > 0 { // fill left padding
-		result += strings.Repeat(" ", headLeftPadding)
+
+	head = "  " + head + " " // head content
+	bareHeadLength += 3      // head length without control chars
+
+	// length of a single content row, constant
+	contentRowLen := terminalWidth - maxHeadLength
+
+	min := func(x, y int) int {
+		if x < y {
+			return x
+		} else {
+			return y
+		}
 	}
-	contentPadding := strings.Repeat(" ", maxHeadLength)
+
 	var rows []string
-	if withBreak && headLeftPadding < 0 {
-		rows = append(rows, result, contentPadding+content)
+	if withBreak && maxHeadLength < bareHeadLength {
+		rows = append(rows, head)
 	} else {
-		rows = append(rows, result+content)
+		// no break -> head is on the same row
+		// as first content line
+		var headRowPadding string
+		if maxHeadLength > bareHeadLength {
+			headRowPadding = strings.Repeat(" ", maxHeadLength-bareHeadLength)
+		}
+		rowLen := min(contentRowLen, len(content))
+		rows = append(rows, head+headRowPadding+content[:rowLen])
+		content = content[rowLen:]
 	}
-	for len(rows[len(rows)-1]) > terminalWidth { // break into lines
-		lastIndex := len(rows) - 1
-		lastOne := rows[lastIndex]
-		rows[lastIndex] = rows[lastIndex][0:terminalWidth]
-		rows = append(rows, contentPadding+lastOne[terminalWidth:])
+
+	rowPadding := strings.Repeat(" ", maxHeadLength)
+	for content != "" {
+		rowLen := min(contentRowLen, len(content))
+		rows = append(rows, rowPadding+content[:rowLen])
+		content = content[rowLen:]
 	}
+
 	return strings.Join(rows, "\n")
 }
